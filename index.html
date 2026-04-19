@@ -410,20 +410,32 @@
             jd /= 29.5305882;
             let b = parseInt(jd);
             jd -= b;
-            let b2 = Math.round(jd * 8);
-            if (b2 >= 8) b2 = 0;
+            
+            // คำนวณอายุดวงจันทร์แบบไทย (1-30 วัน)
+            let age = Math.round(jd * 29.53);
+            if (age === 0) age = 30;
+            
+            let phaseName = "";
+            let icon = "";
 
-            const phases = [
-                { name: "เดือนมืด", icon: "🌑" },
-                { name: "ข้างขึ้น", icon: "🌒" },
-                { name: "ขึ้น 8 ค่ำ", icon: "🌓" },
-                { name: "ข้างขึ้น", icon: "🌔" },
-                { name: "จันทร์เต็มดวง", icon: "🌕" },
-                { name: "ข้างแรม", icon: "🌖" },
-                { name: "แรม 8 ค่ำ", icon: "🌗" },
-                { name: "ข้างแรม", icon: "🌘" }
-            ];
-            return phases[b2];
+            if (age <= 15) {
+                phaseName = `ขึ้น ${age} ค่ำ`;
+                if (age === 15) icon = "🌕";
+                else if (age >= 12) icon = "🌔";
+                else if (age >= 8) icon = "🌓";
+                else if (age >= 4) icon = "🌒";
+                else icon = "🌑";
+            } else {
+                let waningAge = age - 15;
+                phaseName = `แรม ${waningAge} ค่ำ`;
+                if (waningAge === 15 || waningAge === 14) icon = "🌑";
+                else if (waningAge >= 12) icon = "🌘";
+                else if (waningAge >= 8) icon = "🌗";
+                else if (waningAge >= 4) icon = "🌖";
+                else icon = "🌕";
+            }
+
+            return { name: phaseName, icon: icon };
         }
 
         function getWindDirection(deg) {
@@ -463,6 +475,22 @@
             return map[code] || { text: "สภาพอากาศ", icon: "cloud" };
         }
 
+        // พิกัดเสริมทางทะเล (สำหรับ 23 จังหวัดชายฝั่ง) เพื่อให้ดึงข้อมูลน้ำขึ้นน้ำลงได้แม่นยำ
+        const coastalCoords = {
+            "กรุงเทพมหานคร": { lat: 13.45, lon: 100.45 }, "กระบี่": { lat: 7.9, lon: 98.8 },
+            "จันทบุรี": { lat: 12.4, lon: 102.0 }, "ฉะเชิงเทรา": { lat: 13.4, lon: 100.9 },
+            "ชลบุรี": { lat: 13.2, lon: 100.8 }, "ชุมพร": { lat: 10.4, lon: 99.3 },
+            "ตราด": { lat: 11.9, lon: 102.4 }, "ตรัง": { lat: 7.3, lon: 99.3 },
+            "นครศรีธรรมราช": { lat: 8.4, lon: 100.2 }, "นราธิวาส": { lat: 6.4, lon: 101.9 },
+            "ประจวบคีรีขันธ์": { lat: 11.7, lon: 99.9 }, "ปัตตานี": { lat: 6.9, lon: 101.3 },
+            "พังงา": { lat: 8.3, lon: 98.3 }, "เพชรบุรี": { lat: 12.9, lon: 100.1 },
+            "ภูเก็ต": { lat: 7.8, lon: 98.2 }, "ระนอง": { lat: 9.8, lon: 98.5 },
+            "ระยอง": { lat: 12.5, lon: 101.4 }, "สงขลา": { lat: 7.2, lon: 100.7 },
+            "สตูล": { lat: 6.5, lon: 99.8 }, "สมุทรสงคราม": { lat: 13.3, lon: 100.0 },
+            "สมุทรสาคร": { lat: 13.4, lon: 100.2 }, "สมุทรปราการ": { lat: 13.4, lon: 100.6 },
+            "สุราษฎร์ธานี": { lat: 9.2, lon: 99.4 }
+        };
+
         // Init App
         function init() {
             initTheme();
@@ -478,14 +506,14 @@
 
             select.addEventListener('change', (e) => {
                 const p = provinces[e.target.value];
-                fetchProvinceData(p.lat, p.lon);
+                fetchProvinceData(p.name, p.lat, p.lon);
             });
 
-            fetchProvinceData(provinces[0].lat, provinces[0].lon); // Load BKK first
+            fetchProvinceData(provinces[0].name, provinces[0].lat, provinces[0].lon); // Load BKK first
         }
 
         // Fetch Single Province
-        async function fetchProvinceData(lat, lon) {
+        async function fetchProvinceData(provName, lat, lon) {
             document.getElementById('loading-prov').classList.remove('hidden');
             document.getElementById('content-prov').classList.add('hidden');
 
@@ -494,8 +522,15 @@
                 const aqiPromise = fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,us_aqi&timezone=Asia%2FBangkok`);
                 // Get Weather + Precipitation Probability + UV + Wind + Sun
                 const weatherPromise = fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=Asia%2FBangkok&forecast_days=1`);
-                // Get Marine Tide (Might fail for inland, so we catch error softly)
-                const marinePromise = fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=ocean_height&timezone=Asia%2FBangkok`).catch(() => null);
+                
+                // Get Marine Tide (Use coastal coordinates if province is coastal)
+                let marineLat = lat;
+                let marineLon = lon;
+                if (coastalCoords[provName]) {
+                    marineLat = coastalCoords[provName].lat;
+                    marineLon = coastalCoords[provName].lon;
+                }
+                const marinePromise = fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${marineLat}&longitude=${marineLon}&hourly=ocean_height&timezone=Asia%2FBangkok`).catch(() => null);
                 
                 // Fetch All in Parallel to save time
                 const [aqiRes, weatherRes, marineRes] = await Promise.all([aqiPromise, weatherPromise, marinePromise]);
