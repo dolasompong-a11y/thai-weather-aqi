@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="th" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThaiAir Pro Max - สภาพอากาศ & คุณภาพอากาศ</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Kanit', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Light Theme Background */
+        body {
+            background: linear-gradient(-45deg, #74ebd5, #9face6, #8fd3f4, #a1c4fd);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        /* Dark Theme Background */
+        html.dark body {
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #141e30);
+            background-size: 400% 400%;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        html.dark .glass-panel {
+            background: rgba(30, 41, 59, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        html.dark .tab-active {
+            border-bottom: 2px solid #60a5fa;
+            color: #60a5fa;
+        }
+
+        .loader {
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        html.dark .loader { border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #60a5fa; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* แอนิเมชันตอนโหลดข้อมูลใหม่ */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-gray-800 dark:text-gray-100 antialiased p-2 sm:p-4 md:p-8 flex items-start sm:items-center justify-center">
+
+    <div class="glass-panel w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden transition-all duration-500 mt-4 sm:mt-0">
+        
+        <!-- Header -->
+        <div class="bg-white/40 dark:bg-slate-800/40 p-5 sm:p-6 border-b border-white/20 dark:border-slate-700/50 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i data-lucide="cloud-sun" class="w-8 h-8 text-blue-500 dark:text-blue-400"></i>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-teal-500 dark:from-blue-400 dark:to-teal-300 hidden sm:block">
+                    ThaiAir Pro Max
+                </h1>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button id="theme-toggle" class="p-2 rounded-full bg-white/50 dark:bg-slate-700/50 hover:bg-white/80 dark:hover:bg-slate-600/80 transition shadow-sm">
+                    <i data-lucide="moon" id="theme-icon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-gray-200/50 dark:border-slate-700/50 px-6 pt-2 overflow-x-auto hide-scroll whitespace-nowrap">
+            <button onclick="switchTab('provincial')" id="tab-provincial" class="tab-active pb-3 px-4 transition-colors">ดูรายจังหวัด</button>
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="text-gray-500 dark:text-gray-400 pb-3 px-4 hover:text-blue-500 transition-colors">แดชบอร์ด 77 จังหวัด</button>
+        </div>
+
+        <!-- Tab 1: Provincial Weather -->
+        <div id="view-provincial" class="p-4 sm:p-6 md:p-8 fade-in">
+            <div class="mb-6 relative w-full sm:max-w-md mx-auto">
+                <select id="province-select" class="w-full appearance-none bg-white/80 dark:bg-slate-700/80 border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-white py-3 px-4 pr-10 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium cursor-pointer transition">
+                    <!-- Options generated by JS -->
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 dark:text-gray-400">
+                    <i data-lucide="search" class="w-5 h-5"></i>
+                </div>
+            </div>
+
+            <div id="loading-prov" class="flex flex-col items-center justify-center py-10">
+                <div class="loader mb-4"></div>
+                <p class="text-gray-500 dark:text-gray-400">กำลังดึงข้อมูล...</p>
+            </div>
+
+            <div id="content-prov" class="hidden">
+                <!-- AQI Card -->
+                <div id="aqi-card" class="rounded-2xl p-6 text-center text-white mb-6 shadow-lg transition-colors duration-500 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-20">
+                        <i data-lucide="wind" class="w-24 h-24"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <h2 class="text-lg font-medium opacity-90 mb-1">ดัชนีคุณภาพอากาศ (US AQI)</h2>
+                        <div class="text-7xl md:text-8xl font-bold tracking-tighter mb-2 drop-shadow-md" id="aqi-value">--</div>
+                        <div class="text-2xl md:text-3xl font-semibold mb-4 drop-shadow-sm" id="aqi-status">--</div>
+                        
+                        <div class="bg-black/20 rounded-xl p-4 backdrop-blur-sm mt-4 text-left flex items-start gap-3">
+                            <i data-lucide="shield-alert" class="w-6 h-6 shrink-0 mt-0.5"></i>
+                            <p id="aqi-advice" class="text-sm md:text-base leading-relaxed">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid (5 Items) -->
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
+                    
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <span class="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold mb-1">PM 2.5</span>
+                        <div class="text-2xl font-bold" id="pm25-value">--</div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">µg/m³</span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <i data-lucide="thermometer" class="w-5 h-5 text-red-500 mb-1"></i>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">อุณหภูมิ</span>
+                        <div class="text-2xl font-bold" id="temp-value">--</div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">°C</span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <i data-lucide="cloud-rain" class="w-5 h-5 text-blue-600 mb-1"></i>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">โอกาสฝนตก</span>
+                        <div class="text-2xl font-bold text-blue-600 dark:text-blue-400" id="rain-prob-value">--</div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">%</span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <i data-lucide="droplets" class="w-5 h-5 text-teal-500 mb-1"></i>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">ความชื้นสัมพัทธ์</span>
+                        <div class="text-2xl font-bold" id="humidity-value">--</div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">%</span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default col-span-2 md:col-span-1">
+                        <div id="weather-icon-container" class="mb-1 text-gray-700 dark:text-gray-300"></div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">สภาพอากาศ</span>
+                        <div class="text-sm sm:text-base font-bold leading-tight" id="weather-desc">--</div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 text-center text-xs text-gray-500 dark:text-gray-400 bg-white/30 dark:bg-slate-800/30 rounded-lg p-2 inline-block w-full">
+                    <i data-lucide="clock" class="w-3 h-3 inline mr-1 -mt-0.5"></i>อัปเดตข้อมูลล่าสุด: <span id="prov-update-time">--</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Dashboard (Top 5) -->
+        <div id="view-dashboard" class="p-4 sm:p-6 md:p-8 hidden fade-in">
+            
+            <div id="loading-dash" class="flex flex-col items-center justify-center py-10">
+                <div class="loader mb-4"></div>
+                <p class="text-gray-500 dark:text-gray-400 text-center">กำลังประมวลผลข้อมูล<br>สภาพอากาศทั้ง 77 จังหวัด...</p>
+            </div>
+
+            <div id="content-dash" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    
+                    <!-- Top 5 AQI -->
+                    <div class="bg-white/60 dark:bg-slate-800/60 rounded-2xl p-5 shadow-sm border border-white/40 dark:border-slate-700/50 backdrop-blur-md">
+                        <div class="flex items-center gap-2 mb-4 border-b border-gray-200 dark:border-slate-700 pb-3">
+                            <div class="p-2 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                                <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-600 dark:text-orange-400"></i>
+                            </div>
+                            <h3 class="font-bold text-lg">TOP 5 ฝุ่นยอดแย่</h3>
+                        </div>
+                        <div id="top-aqi-list" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Top 5 Hottest -->
+                    <div class="bg-white/60 dark:bg-slate-800/60 rounded-2xl p-5 shadow-sm border border-white/40 dark:border-slate-700/50 backdrop-blur-md">
+                        <div class="flex items-center gap-2 mb-4 border-b border-gray-200 dark:border-slate-700 pb-3">
+                            <div class="p-2 bg-red-100 dark:bg-red-900/50 rounded-lg">
+                                <i data-lucide="thermometer-sun" class="w-5 h-5 text-red-600 dark:text-red-400"></i>
+                            </div>
+                            <h3 class="font-bold text-lg">TOP 5 ร้อนที่สุด</h3>
+                        </div>
+                        <div id="top-temp-list" class="space-y-3"></div>
+                    </div>
+
+                    <!-- Top 5 Rain -->
+                    <div class="bg-white/60 dark:bg-slate-800/60 rounded-2xl p-5 shadow-sm border border-white/40 dark:border-slate-700/50 backdrop-blur-md">
+                        <div class="flex items-center gap-2 mb-4 border-b border-gray-200 dark:border-slate-700 pb-3">
+                            <div class="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                                <i data-lucide="cloud-lightning" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
+                            </div>
+                            <h3 class="font-bold text-lg">TOP 5 โอกาสฝนตก</h3>
+                        </div>
+                        <div id="top-rain-list" class="space-y-3"></div>
+                    </div>
+
+                </div>
+                
+                <div class="mt-6 flex justify-center">
+                    <button onclick="fetchDashboardData()" class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl shadow-md transition text-sm">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> โหลดข้อมูลใหม่
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ข้อมูล 77 จังหวัด (เรียงตามตัวอักษร)
+        const provinces = [
+            { name: "กรุงเทพมหานคร", lat: 13.7563, lon: 100.5018 }, { name: "กระบี่", lat: 8.0863, lon: 98.9063 },
+            { name: "กาญจนบุรี", lat: 14.0228, lon: 99.5328 }, { name: "กาฬสินธุ์", lat: 16.4328, lon: 103.5065 },
+            { name: "กำแพงเพชร", lat: 16.4828, lon: 99.5227 }, { name: "ขอนแก่น", lat: 16.4322, lon: 102.8236 },
+            { name: "จันทบุรี", lat: 12.6114, lon: 102.1039 }, { name: "ฉะเชิงเทรา", lat: 13.6904, lon: 101.0719 },
+            { name: "ชลบุรี", lat: 13.3611, lon: 100.9850 }, { name: "ชัยนาท", lat: 15.1852, lon: 100.1251 },
+            { name: "ชัยภูมิ", lat: 15.8063, lon: 102.0315 }, { name: "ชุมพร", lat: 10.4930, lon: 99.1800 },
+            { name: "เชียงราย", lat: 19.9105, lon: 99.8406 }, { name: "เชียงใหม่", lat: 18.7883, lon: 98.9853 },
+            { name: "ตรัง", lat: 7.5563, lon: 99.6114 }, { name: "ตราด", lat: 12.2428, lon: 102.5175 },
+            { name: "ตาก", lat: 16.8840, lon: 99.1258 }, { name: "นครนายก", lat: 14.2069, lon: 101.2131 },
+            { name: "นครปฐม", lat: 13.8199, lon: 100.0443 }, { name: "นครพนม", lat: 17.4054, lon: 104.7874 },
+            { name: "นครราชสีมา", lat: 14.9799, lon: 102.0978 }, { name: "นครศรีธรรมราช", lat: 8.4333, lon: 99.9667 },
+            { name: "นครสวรรค์", lat: 15.6987, lon: 100.1251 }, { name: "นนทบุรี", lat: 13.8591, lon: 100.5217 },
+            { name: "นราธิวาส", lat: 6.4255, lon: 101.8253 }, { name: "น่าน", lat: 18.7825, lon: 100.7777 },
+            { name: "บึงกาฬ", lat: 18.3615, lon: 103.6508 }, { name: "บุรีรัมย์", lat: 14.9930, lon: 103.1029 },
+            { name: "ปทุมธานี", lat: 14.0208, lon: 100.5250 }, { name: "ประจวบคีรีขันธ์", lat: 11.8018, lon: 99.7967 },
+            { name: "ปราจีนบุรี", lat: 14.0510, lon: 101.3736 }, { name: "ปัตตานี", lat: 6.8674, lon: 101.2501 },
+            { name: "พระนครศรีอยุธยา", lat: 14.3516, lon: 100.5774 }, { name: "พะเยา", lat: 19.1664, lon: 99.9023 },
+            { name: "พังงา", lat: 8.4501, lon: 98.5283 }, { name: "พัทลุง", lat: 7.6167, lon: 100.0833 },
+            { name: "พิจิตร", lat: 16.4428, lon: 100.3488 }, { name: "พิษณุโลก", lat: 16.8211, lon: 100.2659 },
+            { name: "เพชรบุรี", lat: 13.1119, lon: 99.9430 }, { name: "เพชรบูรณ์", lat: 16.4184, lon: 101.1550 },
+            { name: "แพร่", lat: 18.1446, lon: 100.1403 }, { name: "ภูเก็ต", lat: 7.8804, lon: 98.3923 },
+            { name: "มหาสารคาม", lat: 16.1856, lon: 103.3020 }, { name: "มุกดาหาร", lat: 16.5443, lon: 104.7171 },
+            { name: "แม่ฮ่องสอน", lat: 19.3003, lon: 97.9654 }, { name: "ยโสธร", lat: 15.7926, lon: 104.1487 },
+            { name: "ยะลา", lat: 6.5411, lon: 101.2804 }, { name: "ร้อยเอ็ด", lat: 16.0538, lon: 103.6520 },
+            { name: "ระนอง", lat: 9.9658, lon: 98.6348 }, { name: "ระยอง", lat: 12.6814, lon: 101.2816 },
+            { name: "ราชบุรี", lat: 13.5283, lon: 99.8134 }, { name: "ลพบุรี", lat: 14.7995, lon: 100.6534 },
+            { name: "ลำปาง", lat: 18.2881, lon: 99.4925 }, { name: "ลำพูน", lat: 18.5745, lon: 99.0087 },
+            { name: "เลย", lat: 17.4860, lon: 101.7223 }, { name: "ศรีสะเกษ", lat: 15.1186, lon: 104.3220 },
+            { name: "สกลนคร", lat: 17.1612, lon: 104.1486 }, { name: "สงขลา", lat: 7.1898, lon: 100.5954 },
+            { name: "สตูล", lat: 6.6238, lon: 100.0674 }, { name: "สมุทรปราการ", lat: 13.5993, lon: 100.5968 },
+            { name: "สมุทรสงคราม", lat: 13.4098, lon: 100.0023 }, { name: "สมุทรสาคร", lat: 13.5475, lon: 100.2736 },
+            { name: "สระแก้ว", lat: 13.8240, lon: 102.0646 }, { name: "สระบุรี", lat: 14.5289, lon: 100.9101 },
+            { name: "สิงห์บุรี", lat: 14.8936, lon: 100.3967 }, { name: "สุโขทัย", lat: 17.0053, lon: 99.8228 },
+            { name: "สุพรรณบุรี", lat: 14.4742, lon: 100.1122 }, { name: "สุราษฎร์ธานี", lat: 9.1436, lon: 99.3306 },
+            { name: "สุรินทร์", lat: 14.8818, lon: 103.4936 }, { name: "หนองคาย", lat: 17.8783, lon: 102.7413 },
+            { name: "หนองบัวลำภู", lat: 17.2033, lon: 102.4407 }, { name: "อ่างทอง", lat: 14.5896, lon: 100.4550 },
+            { name: "อำนาจเจริญ", lat: 15.8654, lon: 104.6258 }, { name: "อุดรธานี", lat: 17.4138, lon: 102.7872 },
+            { name: "อุตรดิตถ์", lat: 17.6201, lon: 100.0993 }, { name: "อุทัยธานี", lat: 15.3835, lon: 100.0246 },
+            { name: "อุบลราชธานี", lat: 15.2287, lon: 104.8571 }
+        ];
+
+        let dashboardLoaded = false;
+
+        // Theme Management
+        function initTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('theme-icon');
+            const toggleBtn = document.getElementById('theme-toggle');
+            
+            const currentHour = new Date().getHours();
+            const isNight = currentHour >= 18 || currentHour < 6;
+            
+            const savedTheme = localStorage.getItem('theme');
+            let isDark = savedTheme === 'dark' || (!savedTheme && isNight);
+
+            const applyTheme = (dark) => {
+                if (dark) {
+                    html.classList.add('dark');
+                    themeIcon.setAttribute('data-lucide', 'sun');
+                } else {
+                    html.classList.remove('dark');
+                    themeIcon.setAttribute('data-lucide', 'moon');
+                }
+                lucide.createIcons();
+            };
+
+            applyTheme(isDark);
+
+            toggleBtn.addEventListener('click', () => {
+                isDark = !isDark;
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                applyTheme(isDark);
+            });
+        }
+
+        // Tab Navigation
+        window.switchTab = function(tabName) {
+            const vProv = document.getElementById('view-provincial');
+            const vDash = document.getElementById('view-dashboard');
+            const tProv = document.getElementById('tab-provincial');
+            const tDash = document.getElementById('tab-dashboard');
+
+            if(tabName === 'provincial') {
+                vProv.classList.remove('hidden');
+                vDash.classList.add('hidden');
+                tProv.className = "tab-active pb-3 px-4 transition-colors";
+                tDash.className = "text-gray-500 dark:text-gray-400 pb-3 px-4 hover:text-blue-500 transition-colors";
+            } else {
+                vProv.classList.add('hidden');
+                vDash.classList.remove('hidden');
+                tDash.className = "tab-active pb-3 px-4 transition-colors";
+                tProv.className = "text-gray-500 dark:text-gray-400 pb-3 px-4 hover:text-blue-500 transition-colors";
+                
+                if(!dashboardLoaded) fetchDashboardData();
+            }
+        }
+
+        // Helpers
+        function getAqiInfo(aqi) {
+            if (aqi <= 50) return { status: "คุณภาพอากาศดี", color: "bg-green-500", textCol: "text-green-500", bgCol: "bg-green-100 dark:bg-green-900/30", advice: "อากาศดีเยี่ยม เหมาะสำหรับการทำกิจกรรมกลางแจ้งทุกประเภท" };
+            if (aqi <= 100) return { status: "คุณภาพปานกลาง", color: "bg-yellow-500", textCol: "text-yellow-600 dark:text-yellow-400", bgCol: "bg-yellow-100 dark:bg-yellow-900/30", advice: "ผู้ที่ไวต่อมลพิษอาจมีอาการเล็กน้อย ควรลดระยะเวลาทำกิจกรรมกลางแจ้ง" };
+            if (aqi <= 150) return { status: "เริ่มมีผลกระทบ", color: "bg-orange-500", textCol: "text-orange-500", bgCol: "bg-orange-100 dark:bg-orange-900/30", advice: "เด็ก ผู้สูงอายุ และผู้มีโรคประจำตัว ควรลดกิจกรรมกลางแจ้ง" };
+            if (aqi <= 200) return { status: "มีผลกระทบต่อสุขภาพ", color: "bg-red-500", textCol: "text-red-500", bgCol: "bg-red-100 dark:bg-red-900/30", advice: "ทุกคนควรหลีกเลี่ยงกิจกรรมกลางแจ้งเป็นเวลานาน ควรสวมหน้ากากอนามัย" };
+            if (aqi <= 300) return { status: "มีผลกระทบมาก", color: "bg-purple-600", textCol: "text-purple-500", bgCol: "bg-purple-100 dark:bg-purple-900/30", advice: "อันตราย หลีกเลี่ยงกิจกรรมกลางแจ้งทุกชนิด ให้อยู่ภายในอาคาร" };
+            return { status: "อันตรายระดับวิกฤต", color: "bg-rose-900", textCol: "text-rose-600", bgCol: "bg-rose-200 dark:bg-rose-900/50", advice: "อันตรายสูงสุด! ห้ามออกนอกอาคารโดยเด็ดขาด" };
+        }
+
+        function getWeatherInfo(code) {
+            const map = {
+                0: { text: "ฟ้าใส", icon: "sun" },
+                1: { text: "มีเมฆบางส่วน", icon: "cloud-sun" },
+                2: { text: "มีเมฆส่วนมาก", icon: "cloud" },
+                3: { text: "มืดครึ้ม", icon: "cloud" },
+                45: { text: "มีหมอก", icon: "cloud-fog" }, 48: { text: "มีหมอกหนา", icon: "cloud-fog" },
+                51: { text: "ฝนปรอยๆ", icon: "cloud-drizzle" }, 61: { text: "ฝนตกเล็กน้อย", icon: "cloud-rain" },
+                63: { text: "ฝนตกปานกลาง", icon: "cloud-rain" }, 65: { text: "ฝนตกหนัก", icon: "cloud-rain" },
+                80: { text: "ฝนตกเป็นหย่อมๆ", icon: "cloud-rain" }, 95: { text: "พายุฝนฟ้าคะนอง", icon: "cloud-lightning" }
+            };
+            return map[code] || { text: "สภาพอากาศ", icon: "cloud" };
+        }
+
+        // Init App
+        function init() {
+            initTheme();
+            lucide.createIcons();
+
+            const select = document.getElementById('province-select');
+            provinces.forEach((prov, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = prov.name;
+                select.appendChild(option);
+            });
+
+            select.addEventListener('change', (e) => {
+                const p = provinces[e.target.value];
+                fetchProvinceData(p.lat, p.lon);
+            });
+
+            fetchProvinceData(provinces[0].lat, provinces[0].lon); // Load BKK first
+        }
+
+        // Fetch Single Province
+        async function fetchProvinceData(lat, lon) {
+            document.getElementById('loading-prov').classList.remove('hidden');
+            document.getElementById('content-prov').classList.add('hidden');
+
+            try {
+                // Get AQI
+                const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,us_aqi&timezone=Asia%2FBangkok`);
+                // Get Weather + Precipitation Probability (from daily forecast as current doesn't have prob)
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=precipitation_probability_max&timezone=Asia%2FBangkok&forecast_days=1`);
+                
+                const aqiData = await aqiRes.json();
+                const weatherData = await weatherRes.json();
+
+                updateProvincialUI(aqiData.current, weatherData.current, weatherData.daily);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        function updateProvincialUI(aqiCurrent, weatherCurrent, weatherDaily) {
+            // Update AQI
+            const aqiValue = aqiCurrent.us_aqi || 0;
+            const aqiInfo = getAqiInfo(aqiValue);
+            
+            const aqiCard = document.getElementById('aqi-card');
+            aqiCard.className = `rounded-2xl p-6 text-center text-white mb-6 shadow-lg transition-colors duration-500 relative overflow-hidden ${aqiInfo.color}`;
+            
+            document.getElementById('aqi-value').textContent = Math.round(aqiValue);
+            document.getElementById('aqi-status').textContent = aqiInfo.status;
+            document.getElementById('aqi-advice').textContent = aqiInfo.advice;
+            document.getElementById('pm25-value').textContent = Math.round(aqiCurrent.pm2_5 || 0);
+
+            // Update Weather
+            const wInfo = getWeatherInfo(weatherCurrent.weather_code);
+            const rainProb = weatherDaily.precipitation_probability_max[0] || 0;
+
+            document.getElementById('temp-value').textContent = Math.round(weatherCurrent.temperature_2m);
+            document.getElementById('humidity-value').textContent = Math.round(weatherCurrent.relative_humidity_2m);
+            document.getElementById('rain-prob-value').textContent = rainProb;
+            document.getElementById('weather-desc').textContent = wInfo.text;
+            document.getElementById('weather-icon-container').innerHTML = `<i data-lucide="${wInfo.icon}" class="w-7 h-7 mx-auto mb-1"></i>`;
+            
+            document.getElementById('prov-update-time').textContent = new Date().toLocaleTimeString('th-TH');
+
+            lucide.createIcons();
+            document.getElementById('loading-prov').classList.add('hidden');
+            document.getElementById('content-prov').classList.remove('hidden');
+        }
+
+        // Fetch Dashboard Data (Batch)
+        window.fetchDashboardData = async function() {
+            document.getElementById('loading-dash').classList.remove('hidden');
+            document.getElementById('content-dash').classList.add('hidden');
+
+            const lats = provinces.map(p => p.lat).join(',');
+            const lons = provinces.map(p => p.lon).join(',');
+
+            try {
+                // Batch Request (AQI + Temp + Rain Prob)
+                const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lats}&longitude=${lons}&current=us_aqi,pm2_5&timezone=Asia%2FBangkok`);
+                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m&daily=precipitation_probability_max&timezone=Asia%2FBangkok&forecast_days=1`);
+                
+                const aqiList = await aqiRes.json();
+                const weatherList = await weatherRes.json();
+
+                // Build Data Array
+                let dashData = provinces.map((p, i) => {
+                    return {
+                        name: p.name,
+                        aqi: aqiList[i].current.us_aqi || 0,
+                        pm25: aqiList[i].current.pm2_5 || 0,
+                        temp: weatherList[i].current.temperature_2m || 0,
+                        rain: weatherList[i].daily.precipitation_probability_max[0] || 0
+                    }
+                });
+
+                // Sorting
+                const topTemp = [...dashData].sort((a, b) => b.temp - a.temp).slice(0, 5);
+                const topAqi = [...dashData].sort((a, b) => b.aqi - a.aqi).slice(0, 5);
+                
+                // For rain, sort by rain prob, if equal, sort by highest temp to break ties
+                const topRain = [...dashData].sort((a, b) => b.rain - a.rain || b.temp - a.temp).slice(0, 5);
+
+                renderDashboard(topTemp, topAqi, topRain);
+                dashboardLoaded = true;
+
+            } catch (error) {
+                console.error("Dashboard error:", error);
+                document.getElementById('loading-dash').innerHTML = "<p class='text-red-500'>เกิดข้อผิดพลาดในการดึงข้อมูล กรุณาลองใหม่</p>";
+            }
+        }
+
+        function renderDashboard(topTemp, topAqi, topRain) {
+            const aqiListEl = document.getElementById('top-aqi-list');
+            const tempListEl = document.getElementById('top-temp-list');
+            const rainListEl = document.getElementById('top-rain-list');
+            
+            aqiListEl.innerHTML = tempListEl.innerHTML = rainListEl.innerHTML = '';
+
+            // Render AQI List
+            topAqi.forEach((item, index) => {
+                const info = getAqiInfo(item.aqi);
+                aqiListEl.innerHTML += `
+                    <div class="flex justify-between items-center bg-white/40 dark:bg-slate-700/40 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-600/50 hover:scale-[1.02] transition-transform">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-full ${info.bgCol} ${info.textCol} flex items-center justify-center text-sm font-bold shadow-sm">${index + 1}</span>
+                            <span class="font-medium text-[15px]">${item.name}</span>
+                        </div>
+                        <div class="text-right flex flex-col">
+                            <span class="font-bold text-lg leading-none ${info.textCol}">${Math.round(item.aqi)}</span>
+                            <span class="text-[10px] text-gray-500 font-semibold uppercase mt-1">PM2.5: ${Math.round(item.pm25)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Render Temp List
+            topTemp.forEach((item, index) => {
+                tempListEl.innerHTML += `
+                    <div class="flex justify-between items-center bg-white/40 dark:bg-slate-700/40 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-600/50 hover:scale-[1.02] transition-transform">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-sm font-bold shadow-sm">${index + 1}</span>
+                            <span class="font-medium text-[15px]">${item.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-lg text-red-500">${item.temp.toFixed(1)}°</span>
+                            <span class="text-[10px] text-red-400 font-semibold align-top">C</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Render Rain List
+            topRain.forEach((item, index) => {
+                const rainColor = item.rain > 50 ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400';
+                const rainBg = item.rain > 50 ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-slate-100 dark:bg-slate-700/50';
+
+                rainListEl.innerHTML += `
+                    <div class="flex justify-between items-center bg-white/40 dark:bg-slate-700/40 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-slate-600/50 hover:scale-[1.02] transition-transform">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-full ${rainBg} ${rainColor} flex items-center justify-center text-sm font-bold shadow-sm">${index + 1}</span>
+                            <span class="font-medium text-[15px]">${item.name}</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold text-lg ${rainColor}">${item.rain}</span>
+                            <span class="text-[10px] ${rainColor} font-semibold align-top">%</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            lucide.createIcons();
+            document.getElementById('loading-dash').classList.add('hidden');
+            document.getElementById('content-dash').classList.remove('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+
+    </script>
+</body>
+</html>
