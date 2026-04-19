@@ -157,7 +157,7 @@
                     </div>
                 </div>
 
-                <!-- Metrics Grid (5 Items) -->
+                <!-- Metrics Grid (10 Items) -->
                 <div class="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-4">
                     
                     <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
@@ -187,10 +187,51 @@
                         <span class="text-xs text-gray-500 dark:text-gray-400">%</span>
                     </div>
 
-                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default col-span-2 md:col-span-1">
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
                         <div id="weather-icon-container" class="mb-1 text-gray-700 dark:text-gray-300"></div>
                         <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">สภาพอากาศ</span>
                         <div class="text-sm sm:text-base font-bold leading-tight" id="weather-desc">--</div>
+                    </div>
+                    
+                    <!-- New 5 Items -->
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <i data-lucide="sun" class="w-5 h-5 text-orange-500 mb-1"></i>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">รังสียูวี (UV)</span>
+                        <div class="text-xl font-bold" id="uv-value">--</div>
+                        <span class="text-xs font-semibold mt-0.5" id="uv-level">--</span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <i data-lucide="wind" class="w-5 h-5 text-gray-500 dark:text-gray-300 mb-1"></i>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">แรงลม</span>
+                        <div class="text-xl font-bold" id="wind-speed">--</div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-0.5" id="wind-dir">--</span>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <div class="flex gap-2 mb-1">
+                            <i data-lucide="sunrise" class="w-5 h-5 text-yellow-500"></i>
+                            <i data-lucide="sunset" class="w-5 h-5 text-orange-600"></i>
+                        </div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">ดวงอาทิตย์</span>
+                        <div class="text-sm font-bold w-full flex justify-around mt-1">
+                            <span id="sunrise-time">--</span>
+                            <span id="sunset-time">--</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <div class="text-2xl mb-1" id="moon-icon">🌕</div>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">ข้างขึ้นข้างแรม</span>
+                        <div class="text-sm font-bold mt-1" id="moon-phase">--</div>
+                    </div>
+
+                    <div class="bg-white/60 dark:bg-slate-700/60 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:bg-white/80 dark:hover:bg-slate-600/80 transition cursor-default">
+                        <i data-lucide="waves" class="w-5 h-5 text-blue-500 mb-1"></i>
+                        <span class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-1">น้ำขึ้น-น้ำลง</span>
+                        <div class="text-xs font-bold mt-1 w-full flex flex-col gap-1" id="tide-info">
+                            <!-- Tide injected here -->
+                        </div>
                     </div>
                 </div>
                 
@@ -357,6 +398,48 @@
         }
 
         // Helpers
+        function getMoonPhase(date) {
+            let year = date.getFullYear();
+            let month = date.getMonth() + 1;
+            let day = date.getDate();
+            if (month < 3) { year--; month += 12; }
+            ++month;
+            let c = 365.25 * year;
+            let e = 30.6 * month;
+            let jd = c + e + day - 694039.09;
+            jd /= 29.5305882;
+            let b = parseInt(jd);
+            jd -= b;
+            let b2 = Math.round(jd * 8);
+            if (b2 >= 8) b2 = 0;
+
+            const phases = [
+                { name: "เดือนมืด", icon: "🌑" },
+                { name: "ข้างขึ้น", icon: "🌒" },
+                { name: "ขึ้น 8 ค่ำ", icon: "🌓" },
+                { name: "ข้างขึ้น", icon: "🌔" },
+                { name: "จันทร์เต็มดวง", icon: "🌕" },
+                { name: "ข้างแรม", icon: "🌖" },
+                { name: "แรม 8 ค่ำ", icon: "🌗" },
+                { name: "ข้างแรม", icon: "🌘" }
+            ];
+            return phases[b2];
+        }
+
+        function getWindDirection(deg) {
+            const arr = ["ทิศเหนือ", "ทิศน.อ.เหนือ", "ทิศต.อ.เหนือ", "ทิศต.อ.ต.อ.เหนือ", "ทิศตะวันออก", "ทิศต.อ.ต.อ.ใต้", "ทิศต.อ.ใต้", "ทิศใต้.ต.อ.ใต้", "ทิศใต้", "ทิศใต้.ต.ต.ใต้", "ทิศต.ต.ใต้", "ทิศต.ต.ต.ต.ใต้", "ทิศตะวันตก", "ทิศต.ต.ต.ต.เหนือ", "ทิศต.ต.เหนือ", "ทิศน.ต.ต.เหนือ"];
+            const val = Math.floor((deg / 22.5) + 0.5);
+            return arr[(val % 16)];
+        }
+
+        function getUVInfo(uv) {
+            if (uv <= 2) return { text: "ต่ำ", color: "text-green-500 dark:text-green-400" };
+            if (uv <= 5) return { text: "ปานกลาง", color: "text-yellow-500 dark:text-yellow-400" };
+            if (uv <= 7) return { text: "สูง", color: "text-orange-500 dark:text-orange-400" };
+            if (uv <= 10) return { text: "สูงมาก", color: "text-red-500 dark:text-red-400" };
+            return { text: "อันตราย", color: "text-purple-500 dark:text-purple-400" };
+        }
+
         function getAqiInfo(aqi) {
             if (aqi <= 50) return { status: "คุณภาพอากาศดี", color: "bg-green-500", textCol: "text-green-500", bgCol: "bg-green-100 dark:bg-green-900/30", advice: "อากาศดีเยี่ยม เหมาะสำหรับการทำกิจกรรมกลางแจ้งทุกประเภท" };
             if (aqi <= 100) return { status: "คุณภาพปานกลาง", color: "bg-yellow-500", textCol: "text-yellow-600 dark:text-yellow-400", bgCol: "bg-yellow-100 dark:bg-yellow-900/30", advice: "ผู้ที่ไวต่อมลพิษอาจมีอาการเล็กน้อย ควรลดระยะเวลาทำกิจกรรมกลางแจ้ง" };
@@ -408,20 +491,30 @@
 
             try {
                 // Get AQI
-                const aqiRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,us_aqi&timezone=Asia%2FBangkok`);
-                // Get Weather + Precipitation Probability (from daily forecast as current doesn't have prob)
-                const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code&daily=precipitation_probability_max&timezone=Asia%2FBangkok&forecast_days=1`);
+                const aqiPromise = fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=pm2_5,us_aqi&timezone=Asia%2FBangkok`);
+                // Get Weather + Precipitation Probability + UV + Wind + Sun
+                const weatherPromise = fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m&daily=precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=Asia%2FBangkok&forecast_days=1`);
+                // Get Marine Tide (Might fail for inland, so we catch error softly)
+                const marinePromise = fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&hourly=ocean_height&timezone=Asia%2FBangkok`).catch(() => null);
                 
+                // Fetch All in Parallel to save time
+                const [aqiRes, weatherRes, marineRes] = await Promise.all([aqiPromise, weatherPromise, marinePromise]);
+
                 const aqiData = await aqiRes.json();
                 const weatherData = await weatherRes.json();
+                
+                let marineData = null;
+                if (marineRes && marineRes.ok) {
+                    marineData = await marineRes.json();
+                }
 
-                updateProvincialUI(aqiData.current, weatherData.current, weatherData.daily);
+                updateProvincialUI(aqiData.current, weatherData.current, weatherData.daily, marineData);
             } catch (error) {
                 console.error(error);
             }
         }
 
-        function updateProvincialUI(aqiCurrent, weatherCurrent, weatherDaily) {
+        function updateProvincialUI(aqiCurrent, weatherCurrent, weatherDaily, marineData) {
             // Update AQI
             const aqiValue = aqiCurrent.us_aqi || 0;
             const aqiInfo = getAqiInfo(aqiValue);
@@ -434,7 +527,7 @@
             document.getElementById('aqi-advice').textContent = aqiInfo.advice;
             document.getElementById('pm25-value').textContent = Math.round(aqiCurrent.pm2_5 || 0);
 
-            // Update Weather
+            // Update Weather Standard
             const wInfo = getWeatherInfo(weatherCurrent.weather_code);
             const rainProb = weatherDaily.precipitation_probability_max[0] || 0;
 
@@ -444,6 +537,55 @@
             document.getElementById('weather-desc').textContent = wInfo.text;
             document.getElementById('weather-icon-container').innerHTML = `<i data-lucide="${wInfo.icon}" class="w-7 h-7 mx-auto mb-1"></i>`;
             
+            // New Features Updates
+            // 1. UV Index
+            const uvVal = weatherDaily.uv_index_max[0] || 0;
+            const uvInfo = getUVInfo(uvVal);
+            document.getElementById('uv-value').textContent = uvVal.toFixed(1);
+            document.getElementById('uv-level').textContent = uvInfo.text;
+            document.getElementById('uv-level').className = `text-xs font-semibold mt-0.5 ${uvInfo.color}`;
+
+            // 2. Wind Speed & Direction
+            document.getElementById('wind-speed').textContent = Math.round(weatherCurrent.wind_speed_10m) + " km/h";
+            document.getElementById('wind-dir').textContent = getWindDirection(weatherCurrent.wind_direction_10m);
+
+            // 3. Sunrise & Sunset
+            const formatTime = (isoString) => {
+                if (!isoString) return "--:--";
+                return new Date(isoString).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'});
+            };
+            document.getElementById('sunrise-time').textContent = formatTime(weatherDaily.sunrise[0]);
+            document.getElementById('sunset-time').textContent = formatTime(weatherDaily.sunset[0]);
+
+            // 4. Moon Phase (Calculated locally to ensure precision)
+            const moonInfo = getMoonPhase(new Date());
+            document.getElementById('moon-icon').textContent = moonInfo.icon;
+            document.getElementById('moon-phase').textContent = moonInfo.name;
+
+            // 5. Marine / Tide calculation
+            const tideContainer = document.getElementById('tide-info');
+            if (marineData && !marineData.error && marineData.hourly && marineData.hourly.ocean_height) {
+                const heights = marineData.hourly.ocean_height.slice(0, 24); // Focus on today
+                const times = marineData.hourly.time.slice(0, 24);
+                
+                const validHeights = heights.filter(h => h !== null);
+                if (validHeights.length > 0) {
+                    const maxH = Math.max(...validHeights);
+                    const minH = Math.min(...validHeights);
+                    const maxTime = formatTime(times[heights.indexOf(maxH)]);
+                    const minTime = formatTime(times[heights.indexOf(minH)]);
+                    
+                    tideContainer.innerHTML = `
+                        <div class="flex justify-between w-full px-1"><span class="text-gray-500 dark:text-gray-400">ขึ้น:</span> <span class="text-blue-600 dark:text-blue-400">${maxTime}</span></div>
+                        <div class="flex justify-between w-full px-1"><span class="text-gray-500 dark:text-gray-400">ลง:</span> <span class="text-teal-600 dark:text-teal-400">${minTime}</span></div>
+                    `;
+                } else {
+                    tideContainer.innerHTML = `<span class="text-gray-400 font-normal mt-1 text-center">ไม่มีข้อมูล<br>(ไม่ติดทะเล)</span>`;
+                }
+            } else {
+                tideContainer.innerHTML = `<span class="text-gray-400 font-normal mt-1 text-center">ไม่มีข้อมูล<br>(ไม่ติดทะเล)</span>`;
+            }
+
             document.getElementById('prov-update-time').textContent = new Date().toLocaleTimeString('th-TH');
 
             lucide.createIcons();
