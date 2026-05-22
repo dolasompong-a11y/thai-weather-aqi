@@ -470,10 +470,25 @@
             }).join('');
         }
 
+        // ทริกเกอร์การคลิกรูปโปรดแบบ Snapshot จากหน้าแรกหรือหน้าโปรด
         function handleCardClick(id, url, thumb, title, isSnapshot, parentId, snapshotIndex) {
             if (isSnapshot) {
-                currentImages = [thumb];
-                openFullImgModal(0);
+                // 🚀 แก้ไขบักสไลด์โชว์ในหน้า "รูปภาพโปรด"
+                // กวาดรูปภาพโปรดประเภท Snapshot ทั้งหมดมาทำเป็นอัลบั้มสไลด์โชว์
+                const sortedFavs = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp);
+                const favSnapshots = sortedFavs.filter(f => f.isSnapshot);
+                
+                currentImages = favSnapshots.map(f => f.thumb);
+                
+                // ค้นหาตำแหน่งรูปที่คลิกเพื่อไปเริ่มแสดงผลใน Slide Show สไลด์อย่างต่อเนื่อง
+                const clickedIndex = favSnapshots.findIndex(f => f.parentId === parentId && f.snapshotIndex === snapshotIndex);
+                
+                if (clickedIndex > -1) {
+                    openFullImgModal(clickedIndex);
+                } else {
+                    currentImages = [thumb];
+                    openFullImgModal(0);
+                }
             } else {
                 openModal(id, url, thumb, title);
             }
@@ -896,12 +911,16 @@
             }
         }
 
+        // เลื่อนรูปถัดไป
         function nextFullImg() {
+            if (!currentImages.length) return;
             slideshowActiveIndex = (slideshowActiveIndex + 1) % currentImages.length;
             updateFullImgView();
         }
 
+        // เลื่อนรูปก่อนหน้า
         function prevFullImg() {
+            if (!currentImages.length) return;
             slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length;
             updateFullImgView();
         }
