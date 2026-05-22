@@ -57,9 +57,15 @@
                         <i class="fas fa-fire text-xl md:text-2xl"></i>
                     </button>
                     
-                    <!-- ปุ่มเปิดตัั้งค่า Google Sheet -->
+                    <!-- ปุ่มเปิดตั้งค่า Google Sheet -->
                     <button onclick="openConfigModal()" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 active:scale-95 transition-transform" title="ตั้งค่าคลาวด์ Google Sheet">
                         <i class="fas fa-cloud text-xl"></i>
+                    </button>
+
+                    <!-- ปุ่มแสดงรายการ Bookmark ทั้งหมด -->
+                    <button onclick="toggleBookmarkPanel()" class="p-2 text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300 active:scale-95 transition-transform relative" title="ลิงก์ที่บันทึกไว้">
+                        <i class="fas fa-bookmark text-xl"></i>
+                        <span id="bookmark-badge" class="absolute -top-1 -right-1 bg-yellow-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
                 
@@ -91,21 +97,37 @@
             </button>
         </div>
 
-        <!-- URL Bar -->
-        <div class="bg-gray-50 border-t border-gray-200 py-1.5 px-3 text-center dark:bg-gray-900 dark:border-gray-700 flex flex-col sm:flex-row justify-center items-center gap-1">
-            <span class="text-[10px] sm:text-[11px] uppercase font-bold text-gray-400">Current Link:</span>
-            <a href="#" id="display-active-url" target="_blank" class="text-[10px] sm:text-[11px] text-blue-500 hover:underline truncate max-w-full px-2">https://www.jav321.com/</a>
+        <!-- URL Bar & Bookmark Action -->
+        <div class="bg-gray-50 border-t border-gray-200 py-1.5 px-3 text-center dark:bg-gray-900 dark:border-gray-700 flex flex-col sm:flex-row justify-center items-center gap-2">
+            <div class="flex items-center justify-center gap-1 overflow-hidden max-w-full">
+                <span class="text-[10px] sm:text-[11px] uppercase font-bold text-gray-400 shrink-0">Current Link:</span>
+                <a href="#" id="display-active-url" target="_blank" class="text-[10px] sm:text-[11px] text-blue-500 hover:underline truncate max-w-full px-2">https://www.jav321.com/</a>
+            </div>
+            <!-- ปุ่มเพิ่ม/ลด Bookmark หน้าเว็บปัจจุบัน -->
+            <button onclick="toggleCurrentPageBookmark()" id="btn-bookmark-current" class="text-[10px] sm:text-[11px] bg-yellow-50 dark:bg-gray-800 border border-yellow-200 dark:border-gray-700 px-2.5 py-1 rounded-full font-bold text-yellow-600 hover:bg-yellow-100 dark:hover:bg-gray-700 transition-colors shrink-0 flex items-center gap-1">
+                <i id="bookmark-current-icon" class="far fa-star"></i> บันทึกหน้านี้
+            </button>
         </div>
     </header>
 
     <main class="container mx-auto px-3 py-5">
         <!-- Control Bar -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
-            <div class="flex items-center justify-between w-full sm:w-auto gap-4">
+            <div class="flex flex-wrap items-center justify-between w-full sm:w-auto gap-3">
                 <nav class="flex text-xs md:text-sm text-gray-500 dark:text-gray-400 gap-1.5 items-center">
                     <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" id="status-dot"></span>
                     <span id="status-text" class="font-bold text-gray-700 dark:text-gray-300">สแตนด์บาย</span>
                 </nav>
+
+                <!-- ปุ่มประวัติย้อนกลับและไปข้างหน้า (Back / Forward Navigation Stack) -->
+                <div class="flex bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 shadow-sm text-xs">
+                    <button id="btn-nav-back" onclick="navigateHistoryBack()" class="px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed" disabled title="หน้าก่อนหน้า">
+                        <i class="fas fa-arrow-left"></i> ย้อนกลับ
+                    </button>
+                    <button id="btn-nav-forward" onclick="navigateHistoryForward()" class="px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed" disabled title="หน้าถัดไป">
+                        ไปข้างหน้า <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
 
                 <!-- Navigation Tabs -->
                 <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1 text-xs">
@@ -142,6 +164,23 @@
             </button>
         </div>
     </main>
+
+    <!-- Drawer Panel รายการ Bookmark ลิงก์โปรด -->
+    <div id="bookmark-panel" class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl z-[90] transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700 flex flex-col">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+            <h3 class="font-bold text-sm text-gray-700 dark:text-gray-200 uppercase tracking-wider"><i class="fas fa-bookmark text-yellow-500 mr-2"></i>ลิงก์ที่บันทึกไว้</h3>
+            <button onclick="toggleBookmarkPanel()" class="text-gray-500 hover:text-red-500 p-1 transition-colors"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <!-- รายการลิงก์บุ๊กมาร์ก -->
+        <div id="bookmark-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+            <!-- Dynamic Content -->
+        </div>
+        <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+            <p class="text-[10px] text-gray-400 dark:text-gray-500 text-center leading-normal">
+                กดบันทึกหน้าดารา ค่ายหนัง หรือหน้าค้นหาไว้เพื่อเรียกเปิดดูอย่างรวดเร็ว
+            </p>
+        </div>
+    </div>
 
     <!-- Modal รายละเอียด -->
     <div id="modal" class="fixed inset-0 z-[100] bg-black/95 hidden items-center justify-center p-0 md:p-4 transition-opacity duration-300">
@@ -278,6 +317,14 @@
         let slideshowActiveIndex = 0;
         let slideshowSpeed = 3000;
 
+        // --- 🧭 Navigation History Stack (ระบบย้อนกลับประวัติการท่องเว็บจำลอง) ---
+        let historyStack = [currentUrl]; // คิวเก็บประวัติลิงก์ย้อนหลัง
+        let historyIndex = 0;            // ตัวระบุตำแหน่งปัจจุบันใน Stack
+        let isNavigatingHistory = false; // แฟล็กป้องกันการบันทึกประวัติซ้อนขณะกดย้อนกลับ/ไปข้างหน้า
+
+        // --- 📌 Bookmark System (ระบบบันทึกลิงก์โปรด) ---
+        let bookmarkList = [];
+
         // --- Theme System ---
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
@@ -378,10 +425,22 @@
 
         // --- Main Grid Data Loader ---
         async function loadPage(url) {
+            // ดักระบบจดจำประวัติย้อนหลัง/ไปข้างหน้า
+            if (!isNavigatingHistory) {
+                // หากมีการท่องเว็บไปหน้าใหม่ ให้ตัด Stack ฝั่งขวา (Forward) ที่ค้างอยู่ออกทั้งหมด
+                historyStack = historyStack.slice(0, historyIndex + 1);
+                historyStack.push(url);
+                historyIndex = historyStack.length - 1;
+            }
+            updateNavigationButtonsUI();
+
             currentUrl = url;
             document.getElementById('display-active-url').innerText = url;
             document.getElementById('display-active-url').href = url;
             
+            // อัพเดทสถานะปุ่ม Bookmark หน้านี้ปัจจุบัน
+            updateCurrentPageBookmarkButtonUI();
+
             const pageMatch = url.match(/\/(\d+)\/?$/);
             if (pageMatch && !url.includes('/video/')) {
                 currentPage = parseInt(pageMatch[1]);
@@ -473,14 +532,11 @@
         // ทริกเกอร์การคลิกรูปโปรดแบบ Snapshot จากหน้าแรกหรือหน้าโปรด
         function handleCardClick(id, url, thumb, title, isSnapshot, parentId, snapshotIndex) {
             if (isSnapshot) {
-                // 🚀 แก้ไขบักสไลด์โชว์ในหน้า "รูปภาพโปรด"
-                // กวาดรูปภาพโปรดประเภท Snapshot ทั้งหมดมาทำเป็นอัลบั้มสไลด์โชว์
                 const sortedFavs = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp);
                 const favSnapshots = sortedFavs.filter(f => f.isSnapshot);
                 
                 currentImages = favSnapshots.map(f => f.thumb);
                 
-                // ค้นหาตำแหน่งรูปที่คลิกเพื่อไปเริ่มแสดงผลใน Slide Show สไลด์อย่างต่อเนื่อง
                 const clickedIndex = favSnapshots.findIndex(f => f.parentId === parentId && f.snapshotIndex === snapshotIndex);
                 
                 if (clickedIndex > -1) {
@@ -566,6 +622,183 @@
                 pag.classList.add('hidden');
                 renderFavoritesPage();
             }
+        }
+
+        // --- 🧭 Navigation History Stack Logic (การกดย้อนกลับประวัติการท่องหน้าเว็บ) ---
+        function navigateHistoryBack() {
+            if (historyIndex > 0) {
+                isNavigatingHistory = true;
+                historyIndex--;
+                const prevUrl = historyStack[historyIndex];
+                loadPage(prevUrl).then(() => {
+                    isNavigatingHistory = false;
+                });
+            }
+        }
+
+        function navigateHistoryForward() {
+            if (historyIndex < historyStack.length - 1) {
+                isNavigatingHistory = true;
+                historyIndex++;
+                const nextUrl = historyStack[historyIndex];
+                loadPage(nextUrl).then(() => {
+                    isNavigatingHistory = false;
+                });
+            }
+        }
+
+        function updateNavigationButtonsUI() {
+            const btnBack = document.getElementById('btn-nav-back');
+            const btnForward = document.getElementById('btn-nav-forward');
+
+            if (!btnBack || !btnForward) return;
+
+            // ปุ่มย้อนกลับ
+            if (historyIndex > 0) {
+                btnBack.disabled = false;
+                btnBack.className = "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95";
+            } else {
+                btnBack.disabled = true;
+                btnBack.className = "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
+            }
+
+            // ปุ่มไปข้างหน้า
+            if (historyIndex < historyStack.length - 1) {
+                btnForward.disabled = false;
+                btnForward.className = "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95";
+            } else {
+                btnForward.disabled = true;
+                btnForward.className = "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
+            }
+        }
+
+        // --- 📌 Bookmark System Logic (ระบบบุ๊กมาร์กลิงก์โปรด) ---
+        function loadBookmarks() {
+            try {
+                bookmarkList = JSON.parse(localStorage.getItem('jav_bookmarks')) || [];
+                updateBookmarkBadgeUI();
+                renderBookmarkListUI();
+            } catch(e) {
+                bookmarkList = [];
+            }
+        }
+
+        function updateBookmarkBadgeUI() {
+            const badge = document.getElementById('bookmark-badge');
+            if (bookmarkList.length > 0) {
+                badge.innerText = bookmarkList.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        // แก้ไขปัญหาระบบ Null Pointer Error ป้องกันการพยายามเขียนทับ className ของ ID ที่ยังไม่สร้างตัวตน
+        function updateCurrentPageBookmarkButtonUI() {
+            const btn = document.getElementById('btn-bookmark-current');
+            const icon = document.getElementById('bookmark-current-icon');
+            
+            // เพิ่มการตรวจสอบ Null-Safe Check ป้องกันระบบเบรกการทำงานในหน้าจอที่เพิ่งเรนเดอร์ใหม่
+            if (!btn || !icon) return; 
+
+            const isBookmarked = bookmarkList.some(b => b.url === currentUrl);
+
+            if (isBookmarked) {
+                icon.className = "fas fa-star text-yellow-500";
+                btn.className = "text-[10px] sm:text-[11px] bg-yellow-100 dark:bg-yellow-950 border border-yellow-300 dark:border-yellow-700 px-2.5 py-1 rounded-full font-bold text-yellow-700 dark:text-yellow-400 transition-colors shrink-0 flex items-center gap-1";
+                btn.innerHTML = `<i class="fas fa-star text-yellow-500"></i> บันทึกแล้ว`;
+            } else {
+                icon.className = "far fa-star";
+                btn.className = "text-[10px] sm:text-[11px] bg-yellow-55 dark:bg-gray-800 border border-yellow-200 dark:border-gray-700 px-2.5 py-1 rounded-full font-bold text-yellow-600 hover:bg-yellow-100 dark:hover:bg-gray-700 transition-colors shrink-0 flex items-center gap-1";
+                btn.innerHTML = `<i class="far fa-star"></i> บันทึกหน้านี้`;
+            }
+        }
+
+        function toggleCurrentPageBookmark() {
+            const existingIndex = bookmarkList.findIndex(b => b.url === currentUrl);
+            
+            if (existingIndex > -1) {
+                // ลบบุ๊กมาร์กออก
+                bookmarkList.splice(existingIndex, 1);
+            } else {
+                // เพิ่มบุ๊กมาร์กใหม่
+                let title = "หน้าเว็บค้นหาผลงาน";
+                
+                // ถอดรหัสคำค้นหาหรือนักแสดงมาใช้ตั้งชื่อบุ๊กมาร์กให้สวยงาม
+                if (currentUrl.includes('/star/')) {
+                    const decoded = decodeURIComponent(currentUrl);
+                    const match = decoded.match(/\/star\/([^\/]+)/);
+                    if (match) title = `นักแสดง: ${match[1]}`;
+                } else if (currentUrl.includes('/company/')) {
+                    const decoded = decodeURIComponent(currentUrl);
+                    const match = decoded.match(/\/company\/([^\/]+)/);
+                    if (match) title = `ค่าย: ${match[1]}`;
+                } else if (currentUrl.includes('search?sn=')) {
+                    const decoded = decodeURIComponent(currentUrl);
+                    const match = decoded.match(/sn=([^&]+)/);
+                    if (match) title = `ค้นหารหัส: ${match[1]}`;
+                } else if (currentUrl === TARGET_URL || currentUrl === `${TARGET_URL}list/release_date/1`) {
+                    title = "หน้าแรกอัพเดทล่าสุด";
+                }
+                
+                bookmarkList.push({
+                    title: title,
+                    url: currentUrl,
+                    timestamp: new Date().getTime()
+                });
+            }
+
+            localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList));
+            updateBookmarkBadgeUI();
+            updateCurrentPageBookmarkButtonUI();
+            renderBookmarkListUI();
+        }
+
+        function toggleBookmarkPanel() {
+            const panel = document.getElementById('bookmark-panel');
+            panel.classList.toggle('translate-x-full');
+        }
+
+        function renderBookmarkListUI() {
+            const listEl = document.getElementById('bookmark-list');
+            if (bookmarkList.length === 0) {
+                listEl.innerHTML = `
+                    <div class="py-12 text-center text-gray-400">
+                        <i class="far fa-star text-4xl mb-3 text-gray-300"></i>
+                        <p class="text-xs font-semibold">ยังไม่มีลิงก์โปรดที่บันทึกไว้</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // เรียงลำดับบุ๊กมาร์กล่าสุดขึ้นก่อน
+            const sortedBookmarks = [...bookmarkList].sort((a,b) => b.timestamp - a.timestamp);
+
+            listEl.innerHTML = sortedBookmarks.map(b => `
+                <div class="flex items-center justify-between gap-2 p-2.5 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-yellow-300 transition-colors group">
+                    <div onclick="openBookmarkLink('${b.url}')" class="flex-1 overflow-hidden cursor-pointer">
+                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate group-hover:text-yellow-600 transition-colors">${b.title}</p>
+                        <p class="text-[9px] text-gray-400 dark:text-gray-500 truncate mt-0.5">${b.url}</p>
+                    </div>
+                    <button onclick="deleteBookmark('${b.url}')" class="text-gray-400 hover:text-red-500 p-1.5 transition-colors" title="ลบออกจากรายการ">
+                        <i class="fas fa-trash-alt text-xs"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function openBookmarkLink(url) {
+            toggleBookmarkPanel();
+            switchMainTab('home');
+            loadPage(url);
+        }
+
+        function deleteBookmark(url) {
+            bookmarkList = bookmarkList.filter(b => b.url !== url);
+            localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList));
+            updateBookmarkBadgeUI();
+            updateCurrentPageBookmarkButtonUI();
+            renderBookmarkListUI();
         }
 
         // --- Database & Google Sheets Logic ---
@@ -880,6 +1113,7 @@
             updateFullImgView();
         }
 
+        // ปิดสไลด์โชว์
         function closeFullImgModal() {
             stopSlideshow();
             document.getElementById('full-img-modal').classList.add('hidden');
@@ -892,6 +1126,8 @@
             const infoText = document.getElementById('slideshow-info');
             const currentSrc = currentImages[slideshowActiveIndex];
             
+            if (!targetImg) return;
+
             targetImg.style.opacity = '0';
             targetImg.style.transform = 'scale(0.95)';
             
@@ -901,7 +1137,7 @@
                     targetImg.style.opacity = '1';
                     targetImg.style.transform = 'scale(1)';
                 };
-                infoText.innerText = `${slideshowActiveIndex + 1} / ${currentImages.length}`;
+                if (infoText) infoText.innerText = `${slideshowActiveIndex + 1} / ${currentImages.length}`;
             }, 150);
         }
 
@@ -939,8 +1175,8 @@
             
             slideshowSpeed = parseInt(document.getElementById('slideshow-speed').value);
             
-            icon.className = "fas fa-pause";
-            playBtn.className = "text-yellow-400 hover:text-yellow-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
+            if (icon) icon.className = "fas fa-pause";
+            if (playBtn) playBtn.className = "text-yellow-400 hover:text-yellow-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
             
             slideshowInterval = setInterval(() => {
                 nextFullImg();
@@ -951,8 +1187,8 @@
             const playBtn = document.getElementById('btn-play-slideshow');
             const icon = document.getElementById('play-icon');
             
-            icon.className = "fas fa-play";
-            playBtn.className = "text-green-400 hover:text-green-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
+            if (icon) icon.className = "fas fa-play";
+            if (playBtn) playBtn.className = "text-green-400 hover:text-green-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
             
             if (slideshowInterval) {
                 clearInterval(slideshowInterval);
@@ -1104,6 +1340,7 @@
         // Start
         window.onload = () => {
             initFavorites();   
+            loadBookmarks();   // โหลดรายการลิงก์โปรดที่เก็บไว้
             changeGridSize(6); 
             loadLatest();      
         };
