@@ -311,7 +311,9 @@
         
         let activeMainTab = 'home'; 
         let favoriteList = [];      
-        let gasEndpoint = localStorage.getItem('gas_url') || ''; // โหลดค่า GAS จาก LocalStorage ทันทีตั้งแต่เริ่ม
+        
+        // 🚀 ฝังลิงก์ Google Apps Script URL เป็นค่าเริ่มต้นแบบคงตัวและปลอดภัย
+        let gasEndpoint = localStorage.getItem('gas_url') || 'https://script.google.com/macros/s/AKfycbw7P7lijJeFfv4ChzKaRUAy30g5jmD_0fKOq0yd43Lq1IdC8VgQBqlAYXXoBL8IE0n1/exec';
 
         let slideshowInterval = null;
         let slideshowActiveIndex = 0;
@@ -766,6 +768,7 @@
             if (panel) panel.classList.toggle('translate-x-full');
         }
 
+        // แสดงผลรายการบุ๊กมาร์กลิงก์
         function renderBookmarkListUI() {
             const listEl = document.getElementById('bookmark-list');
             if (!listEl) return;
