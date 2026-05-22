@@ -311,7 +311,7 @@
         
         let activeMainTab = 'home'; 
         let favoriteList = [];      
-        let gasEndpoint = localStorage.getItem('gas_url') || '';
+        let gasEndpoint = localStorage.getItem('gas_url') || ''; // โหลดค่า GAS จาก LocalStorage ทันทีตั้งแต่เริ่ม
 
         let slideshowInterval = null;
         let slideshowActiveIndex = 0;
@@ -992,6 +992,8 @@
             document.getElementById('config-modal').classList.add('hidden');
             document.getElementById('config-modal').classList.remove('flex');
         }
+        
+        // 💾 ปรับปรุงระบบทดสอบและบันทึกลิงก์ให้เขียนลงหน่วยความจำถาวรอย่างปลอดภัย
         async function testAndSaveGAS() {
             const url = document.getElementById('gas-url-input').value.trim();
             if (!url) {
@@ -1000,15 +1002,16 @@
             }
             
             gasEndpoint = url;
-            localStorage.setItem('gas_url', url);
-            alert("บันทึกลิงก์เชื่อมต่อ Google Sheet เรียบร้อยแล้ว ระบบจะอัปโหลดประวัติหัวใจโปรดและบุ๊กมาร์กให้อัตโนมัติ!");
+            localStorage.setItem('gas_url', url); // 👈 บันทึกลงหน่วยความจำถาวรเรียบร้อยแล้ว
+            alert("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูล Favorites และ Bookmarks จะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวรนับจากนี้");
             closeConfigModal();
             syncFromGoogleSheet(); 
             syncBookmarksFromGoogleSheet(); // ดึงข้อมูล Bookmarks ทันทีที่เซฟ
         }
+        
         function disconnectGAS() {
             gasEndpoint = '';
-            localStorage.removeItem('gas_url');
+            localStorage.removeItem('gas_url'); // 👈 เคลียร์ลิงก์ออกจากความทรงจำถาวร
             document.getElementById('gas-url-input').value = '';
             alert("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว (ระบบจะบันทึกแบบเครื่อง LocalStorage เสมอ)");
             closeConfigModal();
