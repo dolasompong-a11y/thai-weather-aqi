@@ -282,7 +282,7 @@
             </div>
             
             <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
-                เชื่อมต่อระบบกดหัวใจ (Favorites) ไปเก็บไว้บน Google Sheet ของคุณเพื่อสำรองข้อมูลคลาวด์ ป้องกันข้อมูลหายเมื่อเปลี่ยนเบราว์เซอร์
+                เชื่อมต่อระบบกดหัวใจ (Favorites) และบุ๊กมาร์ก (Bookmarks) ไปเก็บไว้บน Google Sheet ของคุณเพื่อสำรองข้อมูลคลาวด์ ป้องกันข้อมูลหายเมื่อเปลี่ยนเบราว์เซอร์
             </p>
 
             <div class="space-y-4">
@@ -681,10 +681,14 @@
             } catch(e) {
                 bookmarkList = [];
             }
+            if (gasEndpoint) {
+                syncBookmarksFromGoogleSheet(); // ซิงค์รายการ Bookmark ทั้งหมดลงมาจาก Sheets ตอนเปิดแอป
+            }
         }
 
         function updateBookmarkBadgeUI() {
             const badge = document.getElementById('bookmark-badge');
+            if (!badge) return;
             if (bookmarkList.length > 0) {
                 badge.innerText = bookmarkList.length;
                 badge.classList.remove('hidden');
@@ -693,12 +697,11 @@
             }
         }
 
-        // แก้ไขปัญหาระบบ Null Pointer Error ป้องกันการพยายามเขียนทับ className ของ ID ที่ยังไม่สร้างตัวตน
+        // อัปเดตไอคอนดาวบันทึกและปุ่ม Bookmark
         function updateCurrentPageBookmarkButtonUI() {
             const btn = document.getElementById('btn-bookmark-current');
             const icon = document.getElementById('bookmark-current-icon');
             
-            // เพิ่มการตรวจสอบ Null-Safe Check ป้องกันระบบเบรกการทำงานในหน้าจอที่เพิ่งเรนเดอร์ใหม่
             if (!btn || !icon) return; 
 
             const isBookmarked = bookmarkList.some(b => b.url === currentUrl);
@@ -716,31 +719,30 @@
 
         function toggleCurrentPageBookmark() {
             const existingIndex = bookmarkList.findIndex(b => b.url === currentUrl);
+            let actionType = 'add';
+            let title = "หน้าเว็บค้นหาผลงาน";
             
+            // ถอดรหัสคำค้นหาหรือนักแสดงมาใช้ตั้งชื่อบุ๊กมาร์กให้สวยงาม
+            if (currentUrl.includes('/star/')) {
+                const decoded = decodeURIComponent(currentUrl);
+                const match = decoded.match(/\/star\/([^\/]+)/);
+                if (match) title = `นักแสดง: ${match[1]}`;
+            } else if (currentUrl.includes('/company/')) {
+                const decoded = decodeURIComponent(currentUrl);
+                const match = decoded.match(/\/company\/([^\/]+)/);
+                if (match) title = `ค่าย: ${match[1]}`;
+            } else if (currentUrl.includes('search?sn=')) {
+                const decoded = decodeURIComponent(currentUrl);
+                const match = decoded.match(/sn=([^&]+)/);
+                if (match) title = `ค้นหารหัส: ${match[1]}`;
+            } else if (currentUrl === TARGET_URL || currentUrl === `${TARGET_URL}list/release_date/1`) {
+                title = "หน้าแรกอัพเดทล่าสุด";
+            }
+
             if (existingIndex > -1) {
-                // ลบบุ๊กมาร์กออก
                 bookmarkList.splice(existingIndex, 1);
+                actionType = 'remove';
             } else {
-                // เพิ่มบุ๊กมาร์กใหม่
-                let title = "หน้าเว็บค้นหาผลงาน";
-                
-                // ถอดรหัสคำค้นหาหรือนักแสดงมาใช้ตั้งชื่อบุ๊กมาร์กให้สวยงาม
-                if (currentUrl.includes('/star/')) {
-                    const decoded = decodeURIComponent(currentUrl);
-                    const match = decoded.match(/\/star\/([^\/]+)/);
-                    if (match) title = `นักแสดง: ${match[1]}`;
-                } else if (currentUrl.includes('/company/')) {
-                    const decoded = decodeURIComponent(currentUrl);
-                    const match = decoded.match(/\/company\/([^\/]+)/);
-                    if (match) title = `ค่าย: ${match[1]}`;
-                } else if (currentUrl.includes('search?sn=')) {
-                    const decoded = decodeURIComponent(currentUrl);
-                    const match = decoded.match(/sn=([^&]+)/);
-                    if (match) title = `ค้นหารหัส: ${match[1]}`;
-                } else if (currentUrl === TARGET_URL || currentUrl === `${TARGET_URL}list/release_date/1`) {
-                    title = "หน้าแรกอัพเดทล่าสุด";
-                }
-                
                 bookmarkList.push({
                     title: title,
                     url: currentUrl,
@@ -752,15 +754,21 @@
             updateBookmarkBadgeUI();
             updateCurrentPageBookmarkButtonUI();
             renderBookmarkListUI();
+
+            // ส่งข้อมูลความคืบหน้าซิงค์ไปเก็บไว้บน Google Sheet ถาวร
+            if (gasEndpoint) {
+                syncBookmarkToGoogleSheet(title, currentUrl, actionType);
+            }
         }
 
         function toggleBookmarkPanel() {
             const panel = document.getElementById('bookmark-panel');
-            panel.classList.toggle('translate-x-full');
+            if (panel) panel.classList.toggle('translate-x-full');
         }
 
         function renderBookmarkListUI() {
             const listEl = document.getElementById('bookmark-list');
+            if (!listEl) return;
             if (bookmarkList.length === 0) {
                 listEl.innerHTML = `
                     <div class="py-12 text-center text-gray-400">
@@ -771,7 +779,6 @@
                 return;
             }
 
-            // เรียงลำดับบุ๊กมาร์กล่าสุดขึ้นก่อน
             const sortedBookmarks = [...bookmarkList].sort((a,b) => b.timestamp - a.timestamp);
 
             listEl.innerHTML = sortedBookmarks.map(b => `
@@ -799,6 +806,45 @@
             updateBookmarkBadgeUI();
             updateCurrentPageBookmarkButtonUI();
             renderBookmarkListUI();
+
+            // ซิงค์การลบข้อมูลลิงก์ขึ้น Sheets ถาวร
+            if (gasEndpoint) {
+                syncBookmarkToGoogleSheet('', url, 'remove');
+            }
+        }
+
+        // --- ซิงค์ส่งออก Bookmark ไป Google Sheets ---
+        async function syncBookmarkToGoogleSheet(title, url, action) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'syncBookmark',
+                    title: title,
+                    url: url,
+                    status: action,
+                    timestamp: new Date().getTime()
+                });
+                fetch(`${gasEndpoint}?${params.toString()}`, { mode: 'no-cors' });
+            } catch(e) {
+                console.error("Sync Bookmark to Sheets Error:", e);
+            }
+        }
+
+        // --- ซิงค์ดึงประวัติ Bookmark ทั้งหมดจาก Google Sheets มาอัปเดตลงหน้าบ้าน ---
+        async function syncBookmarksFromGoogleSheet() {
+            if (!gasEndpoint) return;
+            try {
+                const res = await fetch(`${gasEndpoint}?action=getBookmarks`);
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.bookmarks)) {
+                    bookmarkList = data.bookmarks;
+                    localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList));
+                    updateBookmarkBadgeUI();
+                    updateCurrentPageBookmarkButtonUI();
+                    renderBookmarkListUI();
+                }
+            } catch(e) {
+                console.warn("Sync Bookmarks from Sheets failed:", e);
+            }
         }
 
         // --- Database & Google Sheets Logic ---
@@ -816,7 +862,8 @@
 
         // อัปเดตตัวนับไอคอนหัวใจ
         function updateFavCountBadge() {
-            document.getElementById('fav-count').innerText = favoriteList.length;
+            const countEl = document.getElementById('fav-count');
+            if (countEl) countEl.innerText = favoriteList.length;
         }
 
         async function toggleFavorite(event, id, title, thumb, url, isSnapshot = false, parentId = '', snapshotIndex = 0) {
@@ -954,9 +1001,10 @@
             
             gasEndpoint = url;
             localStorage.setItem('gas_url', url);
-            alert("บันทึกลิงก์เชื่อมต่อ Google Sheet เรียบร้อยแล้ว ระบบจะอัปโหลดประวัติหัวใจโปรดให้อัตโนมัติเมื่อกดโปรดปราน!");
+            alert("บันทึกลิงก์เชื่อมต่อ Google Sheet เรียบร้อยแล้ว ระบบจะอัปโหลดประวัติหัวใจโปรดและบุ๊กมาร์กให้อัตโนมัติ!");
             closeConfigModal();
             syncFromGoogleSheet(); 
+            syncBookmarksFromGoogleSheet(); // ดึงข้อมูล Bookmarks ทันทีที่เซฟ
         }
         function disconnectGAS() {
             gasEndpoint = '';
