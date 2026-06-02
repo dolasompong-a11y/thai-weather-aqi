@@ -57,7 +57,7 @@
                         <i class="fas fa-fire text-xl md:text-2xl"></i>
                     </button>
                     
-                    <!-- ปุ่มเปิดตั้งค่า Google Sheet -->
+                    <!-- /ปุ่มเปิดตั้งค่า Google Sheet -->
                     <button onclick="openConfigModal()" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 active:scale-95 transition-transform" title="ตั้งค่าคลาวด์ Google Sheet">
                         <i class="fas fa-cloud text-xl"></i>
                     </button>
@@ -147,6 +147,60 @@
                 <button onclick="changeGridSize(4)" class="size-btn px-2.5 py-1 text-[10px] sm:text-xs rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 active:bg-gray-200" id="btn-grid-4">กลาง</button>
                 <button onclick="changeGridSize(6)" class="size-btn px-2.5 py-1 text-[10px] sm:text-xs rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 active:bg-gray-200" id="btn-grid-6">เล็ก</button>
                 <button onclick="changeGridSize(8)" class="size-btn px-2.5 py-1 text-[10px] sm:text-xs rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 active:bg-gray-200" id="btn-grid-8">จิ๋ว</button>
+            </div>
+        </div>
+
+        <!-- ระบบกรองรายการโปรดแบบละเอียด (มีช่องกรองค้นหารหัสหนัง/คีย์เวิร์ด, Dropdown หมวดรหัสหนัง, Dropdown วันที่โปรดปราน และ ตัวเลือกจัดลำดับ) -->
+        <div id="favorites-filter-container" class="hidden mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center transition-all">
+            <div class="flex-grow flex items-center gap-2 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 pb-2 lg:pb-0 lg:pr-3">
+                <i class="fas fa-filter text-gray-400 ml-1"></i>
+                <input type="text" id="fav-search-input" oninput="filterFavorites()" placeholder="กรองด้วยรหัสหนัง หรือ คีย์เวิร์ดในรายการโปรด..." class="w-full bg-transparent border-none focus:outline-none text-sm dark:text-white py-1">
+                <button onclick="document.getElementById('fav-search-input').value=''; filterFavorites();" class="text-gray-400 hover:text-red-500 px-2 py-1 transition-colors"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center shrink-0">
+                <!-- Dropdown สแกนคัดแยกตามหมวดหมู่รหัสหนัง (เช่น MIDE, SSIS, IPX) -->
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-barcode mr-1"></i>หมวดรหัส:</span>
+                    <select id="fav-code-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[110px] focus:ring-1 focus:ring-primary">
+                        <option value="all">ทั้งหมด</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown สแกนคัดแยกตามวันที่เพิ่มเป็นรายการโปรด -->
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-calendar-alt mr-1"></i>วันที่ถูกใจ:</span>
+                    <select id="fav-date-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[120px] focus:ring-1 focus:ring-primary">
+                        <option value="all">ทั้งหมด</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown เลือกการเรียงลำดับการแสดงผลของแกลเลอรีโปรด -->
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-sort mr-1"></i>เรียงตาม:</span>
+                    <select id="fav-sort-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[110px] focus:ring-1 focus:ring-primary">
+                        <option value="newest" selected>บันทึกใหม่สุด</option>
+                        <option value="oldest">บันทึกเก่าสุด</option>
+                        <option value="id-asc">รหัสหนัง (A-Z)</option>
+                        <option value="id-desc">รหัสหนัง (Z-A)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- แถบปฏิบัติการดาวน์โหลดเป็นกลุ่มสำหรับรูปภาพที่โปรดปราน (Bulk Action Bar) ปรากฏอัตโนมัติเมื่อคัดกรองข้อมูลสำเร็จ -->
+        <div id="fav-bulk-action-bar" class="hidden mb-5 p-3.5 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3 shadow-sm transition-all duration-300">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-folder-open text-yellow-600 dark:text-yellow-400 text-base"></i>
+                <span id="fav-bulk-info-text" class="text-xs font-bold text-yellow-800 dark:text-yellow-300 leading-normal"></span>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto shrink-0">
+                <button onclick="downloadFilteredFavoritesIndividually()" id="btn-dl-bulk-individual" class="flex-1 sm:flex-none text-xs bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i> โหลดทีละรูป
+                </button>
+                <button onclick="downloadFilteredFavoritesZip()" id="btn-dl-bulk-zip" class="flex-1 sm:flex-none text-xs bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center gap-2">
+                    <i class="fas fa-file-archive"></i> โหลดรวมไฟล์ (.ZIP)
+                </button>
             </div>
         </div>
 
@@ -326,6 +380,9 @@
 
         // --- 📌 Bookmark System (ระบบบันทึกลิงก์โปรด) ---
         let bookmarkList = [];
+        
+        // --- 📂 Bulk Download Storage (ตัวแปรเก็บรายการรูปภาพที่กรองล่าสุดเพื่อการดาวน์โหลดแบบกลุ่ม) ---
+        let currentlyRenderedFavs = [];
 
         // --- Theme System ---
         function toggleTheme() {
@@ -609,19 +666,24 @@
 
         // --- Tab switching system ---
         function switchMainTab(tab) {
-            activeMainTab = tab;
             const tabHome = document.getElementById('tab-home');
             const tabFav = document.getElementById('tab-fav');
             const pag = document.getElementById('pagination');
+            const favFilter = document.getElementById('favorites-filter-container');
+            const bulkBar = document.getElementById('fav-bulk-action-bar');
+
+            activeMainTab = tab;
 
             if (tab === 'home') {
-                tabHome.className = "px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white";
-                tabFav.className = "px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300";
+                if (tabHome) tabHome.className = "px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white";
+                if (tabFav) tabFav.className = "px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300";
+                if (favFilter) favFilter.classList.add('hidden');
+                if (bulkBar) bulkBar.classList.add('hidden');
                 loadPage(currentUrl);
             } else if (tab === 'favorites') {
-                tabHome.className = "px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300";
-                tabFav.className = "px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white";
-                pag.classList.add('hidden');
+                if (tabHome) tabHome.className = "px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300";
+                if (tabFav) tabFav.className = "px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white";
+                if (pag) pag.classList.add('hidden');
                 renderFavoritesPage();
             }
         }
@@ -638,6 +700,7 @@
             }
         }
 
+        // ไปข้างหน้า
         function navigateHistoryForward() {
             if (historyIndex < historyStack.length - 1) {
                 isNavigatingHistory = true;
@@ -840,7 +903,6 @@
                 const data = await res.json();
                 if (data && data.success && Array.isArray(data.bookmarks)) {
                     bookmarkList = data.bookmarks;
-                    localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList));
                     updateBookmarkBadgeUI();
                     updateCurrentPageBookmarkButtonUI();
                     renderBookmarkListUI();
@@ -926,9 +988,89 @@
             }
         }
 
+        // 🔍 สแกนดึงหมวดหมู่รหัสหนังทั้งหมดในรายการโปรด (เช่น MIDE, SSIS, IPX, ABS) ออกมาจัดทำตัวเลือก
+        function scanAndPopulateMovieCodesDropdown() {
+            const codeSelect = document.getElementById('fav-code-filter');
+            if (!codeSelect) return;
+
+            const currentSelectedValue = codeSelect.value;
+            codeSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+
+            const codePrefixSet = new Set();
+            favoriteList.forEach(item => {
+                const rawId = item.isSnapshot ? item.parentId : item.id;
+                if (rawId) {
+                    const strId = String(rawId);
+                    const match = strId.match(/^([A-Z0-9]+)-?/i);
+                    if (match && match[1]) {
+                        const prefix = match[1].toUpperCase();
+                        if (isNaN(prefix) && prefix.length >= 2) {
+                            codePrefixSet.add(prefix);
+                        }
+                    }
+                }
+            });
+
+            const sortedPrefixes = Array.from(codePrefixSet).sort((a, b) => a.localeCompare(b));
+            
+            sortedPrefixes.forEach(prefix => {
+                const opt = document.createElement('option');
+                opt.value = prefix;
+                opt.innerText = prefix;
+                codeSelect.appendChild(opt);
+            });
+
+            if (Array.from(codeSelect.options).some(opt => opt.value === currentSelectedValue)) {
+                codeSelect.value = currentSelectedValue;
+            }
+        }
+
+        // 📅 สแกนดึงรายการ "วันที่โปรดปราน" ทั้งหมดออกมาเพื่อสร้างเป็นตัวเลือกใน Dropdown คัดกรอง
+        function scanAndPopulateDatesDropdown() {
+            const dateSelect = document.getElementById('fav-date-filter');
+            if (!dateSelect) return;
+
+            const currentSelectedValue = dateSelect.value;
+            dateSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+
+            const dateSet = new Set();
+            favoriteList.forEach(item => {
+                if (item.timestamp) {
+                    // แปลง timestamp เป็นวันที่สตริงของโลเคชันไทย (พ.ศ. เช่น 2/6/2569)
+                    const dateStr = new Date(item.timestamp).toLocaleDateString('th-TH');
+                    dateSet.add(dateStr);
+                }
+            });
+
+            // เรียงลำดับวันที่จากอนาคตลงไปอดีต (ล่าสุดไปหาเก่าสุด)
+            const sortedDates = Array.from(dateSet).sort((a, b) => {
+                const parseDate = (dStr) => {
+                    const parts = dStr.split('/');
+                    // th-TH คืนค่าปีเป็น พ.ศ. ให้แปลงกลับเป็น ค.ศ. ก่อนเพื่อทำการ Parse
+                    return new Date(parseInt(parts[2]) - 543, parseInt(parts[1]) - 1, parseInt(parts[0]));
+                };
+                return parseDate(b) - parseDate(a);
+            });
+
+            sortedDates.forEach(dStr => {
+                const opt = document.createElement('option');
+                opt.value = dStr;
+                opt.innerText = dStr;
+                dateSelect.appendChild(opt);
+            });
+
+            if (Array.from(dateSelect.options).some(opt => opt.value === currentSelectedValue)) {
+                dateSelect.value = currentSelectedValue;
+            }
+        }
+
         function renderFavoritesPage() {
             const grid = document.getElementById('gallery-grid');
+            const favFilter = document.getElementById('favorites-filter-container');
+            
             if (favoriteList.length === 0) {
+                if(favFilter) favFilter.classList.add('hidden');
+                document.getElementById('fav-bulk-action-bar').classList.add('hidden');
                 grid.innerHTML = `
                     <div class="col-span-full py-20 text-center dark:text-gray-400">
                         <i class="far fa-heart text-5xl text-gray-300 mb-4 block"></i>
@@ -938,8 +1080,219 @@
                 `;
                 return;
             }
-            const sortedFavs = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp);
-            renderGrid(sortedFavs);
+            
+            if(activeMainTab === 'favorites' && favFilter) {
+                favFilter.classList.remove('hidden');
+                scanAndPopulateMovieCodesDropdown(); // สแกนหมวดหมู่รหัสหนังทุกครั้ง
+                scanAndPopulateDatesDropdown();      // สแกนวันที่บันทึกรูปโปรดทุกครั้ง
+            }
+            
+            filterFavorites();
+        }
+
+        // ระบบกรองรายการโปรดแบบละเอียด (กรองตามช่องค้นหา, Dropdown หมวดรหัสหนัง, Dropdown วันที่โปรดปราน และ ตัวเลือกเรียงลำดับ)
+        function filterFavorites() {
+            if (activeMainTab !== 'favorites') return;
+            const query = document.getElementById('fav-search-input').value.toLowerCase().trim();
+            const selectedCode = document.getElementById('fav-code-filter').value;
+            const selectedDate = document.getElementById('fav-date-filter').value;
+            const selectedSort = document.getElementById('fav-sort-filter').value;
+            
+            let filteredList = [...favoriteList];
+
+            // 1. กรองคีย์เวิร์ดรหัสและชื่อเรื่อง (Query Filter)
+            if (query) {
+                filteredList = filteredList.filter(f => {
+                    const idMatch = f.id && String(f.id).toLowerCase().includes(query);
+                    const titleMatch = f.title && String(f.title).toLowerCase().includes(query);
+                    
+                    // 🛡️ เพิ่มเงื่อนไขตรวจสอบแบบปลอดภัย (Null-Safe Check) ป้องกันปัญหารูปปกที่ไม่มีฟิลด์ parentId เด้งพัง
+                    const parentIdMatch = f.parentId && String(f.parentId).toLowerCase().includes(query);
+                    return idMatch || titleMatch || parentIdMatch;
+                });
+            }
+
+            // 2. กรองเฉพาะหมวดรหัสหนังที่เลือกจาก Dropdown
+            if (selectedCode !== 'all') {
+                filteredList = filteredList.filter(f => {
+                    const rawId = f.isSnapshot ? f.parentId : f.id;
+                    if (rawId) {
+                        return String(rawId).toUpperCase().startsWith(selectedCode + '-') || String(rawId).toUpperCase() === selectedCode;
+                    }
+                    return false;
+                });
+            }
+
+            // 3. กรองตามวันที่ที่เลือกโปรดปราน (Date Filter)
+            if (selectedDate !== 'all') {
+                filteredList = filteredList.filter(f => {
+                    if (f.timestamp) {
+                        const dateStr = new Date(f.timestamp).toLocaleDateString('th-TH');
+                        return dateStr === selectedDate;
+                    }
+                    return false;
+                });
+            }
+
+            // 4. จัดระบบเรียงลำดับรูปภาพโปรด (Sorting)
+            if (selectedSort === 'newest') {
+                filteredList.sort((a, b) => b.timestamp - a.timestamp); // ใหม่ -> เก่า
+            } else if (selectedSort === 'oldest') {
+                filteredList.sort((a, b) => a.timestamp - b.timestamp); // เก่า -> ใหม่
+            } else if (selectedSort === 'id-asc') {
+                filteredList.sort((a, b) => {
+                    const idA = String(a.isSnapshot ? a.parentId : (a.id || ''));
+                    const idB = String(b.isSnapshot ? b.parentId : (b.id || ''));
+                    return idA.localeCompare(idB); // A -> Z
+                });
+            } else if (selectedSort === 'id-desc') {
+                filteredList.sort((a, b) => {
+                    const idA = String(a.isSnapshot ? a.parentId : (a.id || ''));
+                    const idB = String(b.isSnapshot ? b.parentId : (b.id || ''));
+                    return idB.localeCompare(idA); // Z -> A
+                });
+            }
+
+            // บันทึกผลลัพธ์การกรองเพื่อใช้ดาวน์โหลดแบบกลุ่ม
+            currentlyRenderedFavs = filteredList;
+
+            // ตรวจสอบและแสดงผลตัวคัดกรองแถบดาวน์โหลดพิเศษ (Bulk Download Bar)
+            const bulkBar = document.getElementById('fav-bulk-action-bar');
+            const bulkInfoText = document.getElementById('fav-bulk-info-text');
+
+            if (filteredList.length > 0 && (selectedDate !== 'all' || query !== '' || selectedCode !== 'all')) {
+                if (bulkBar) {
+                    bulkBar.classList.remove('hidden');
+                    bulkBar.classList.add('flex');
+                }
+                
+                let detailsLabel = `คัดกรองพบรูปทั้งหมด <strong class="text-primary">${filteredList.length}</strong> รูป`;
+                if (selectedDate !== 'all') {
+                    detailsLabel += ` ประจำวันที่บันทึก <strong class="text-green-600 dark:text-green-400">${selectedDate}</strong>`;
+                }
+                if (bulkInfoText) bulkInfoText.innerHTML = detailsLabel;
+            } else {
+                if (bulkBar) {
+                    bulkBar.classList.add('hidden');
+                    bulkBar.classList.remove('flex');
+                }
+            }
+
+            // แสดงผลผลลัพธ์
+            if (filteredList.length === 0) {
+                const grid = document.getElementById('gallery-grid');
+                if (grid) {
+                    grid.innerHTML = `
+                        <div class="col-span-full py-20 text-center dark:text-gray-400">
+                            <i class="fas fa-search text-5xl text-gray-300 mb-4 block"></i>
+                            <p class="font-bold text-gray-500 dark:text-gray-400">ไม่พบรายการโปรดที่ตรงกับการกรองในขณะนี้</p>
+                        </div>
+                    `;
+                }
+            } else {
+                renderGrid(filteredList);
+            }
+        }
+
+        // --- 🚀 ดาวน์โหลดแบบกลุ่ม: ดาวน์โหลดรวดเดียวแยกทีละรูป (ไม่บีบอัด) ---
+        async function downloadFilteredFavoritesIndividually() {
+            if (!currentlyRenderedFavs.length) return;
+            const btn = document.getElementById('btn-dl-bulk-individual');
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> เตรียมไฟล์...`;
+            }
+            
+            try {
+                let completed = 0;
+                // ดึงข้อมูลภาพในกลุ่มเข้าหน่วยความจำพร้อมกันความเร็วสูง
+                const blobPromises = currentlyRenderedFavs.map(async (item, i) => {
+                    const blob = await fetchBlobRacing(item.thumb);
+                    completed++;
+                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> โหลดสำเร็จ (${completed}/${currentlyRenderedFavs.length})`;
+                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
+                    return { blob, filename };
+                });
+                
+                const results = await Promise.all(blobPromises);
+                if (btn) btn.innerHTML = `<i class="fas fa-save mr-1"></i> กำลังเซฟลงเครื่อง...`;
+                
+                for (const res of results) {
+                    const objUrl = URL.createObjectURL(res.blob);
+                    const link = document.createElement('a');
+                    link.href = objUrl;
+                    link.download = res.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 100);
+                    await new Promise(r => setTimeout(r, 200)); 
+                }
+                
+                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
+            } catch(e) {
+                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ล้มเหลว`;
+            } finally {
+                setTimeout(() => {
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                }, 3000);
+            }
+        }
+
+        // --- 🚀 ดาวน์โหลดแบบกลุ่ม: โหลดบีบอัดเป็นไฟล์ ZIP เดียวกันรวดเดียว ---
+        async function downloadFilteredFavoritesZip() {
+            if (!currentlyRenderedFavs.length) return;
+            const btn = document.getElementById('btn-dl-bulk-zip');
+            const zip = new JSZip();
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังแพ็ค...`;
+            }
+            
+            try {
+                let completed = 0;
+                
+                // ดึงข้อมูลภาพพร้อมกัน (Parallel Fetch) 
+                const promises = currentlyRenderedFavs.map(async (item, i) => {
+                    const blob = await fetchBlobRacing(item.thumb);
+                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
+                    zip.file(filename, blob);
+                    completed++;
+                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> โหลดแล้ว (${completed}/${currentlyRenderedFavs.length})...`;
+                });
+                
+                await Promise.all(promises);
+                
+                if (btn) btn.innerHTML = `<i class="fas fa-cog fa-spin mr-1"></i> กำลังสร้าง ZIP...`;
+                const content = await zip.generateAsync({type:"blob"});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                
+                // ตั้งชื่อไฟล์ ZIP เป็นชื่อเก๋ๆ ตามหมวดที่เลือก หรือรวบรวมของวันนี้
+                const selectedDate = document.getElementById('fav-date-filter').value;
+                const dateTag = selectedDate !== 'all' ? selectedDate.replace(/\//g, '_') : 'custom';
+                link.download = `Favorites_${dateTag}_Gallery.zip`;
+                
+                link.click();
+                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> บันทึกแล้ว!`;
+            } catch(e) {
+                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> โหลดผิดพลาด`;
+                alert('เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง');
+            } finally {
+                setTimeout(() => {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                }, 3000);
+            }
         }
 
         async function syncToGoogleSheet(id, title, thumb, url, action, isSnapshot, parentId, snapshotIndex) {
@@ -1005,7 +1358,7 @@
             }
             
             gasEndpoint = url;
-            localStorage.setItem('gas_url', url); // 👈 บันทึกลงหน่วยความจำถาวรเรียบร้อยแล้ว
+            localStorage.setItem('gas_url', url); 
             alert("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูล Favorites และ Bookmarks จะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวรนับจากนี้");
             closeConfigModal();
             syncFromGoogleSheet(); 
@@ -1014,7 +1367,7 @@
         
         function disconnectGAS() {
             gasEndpoint = '';
-            localStorage.removeItem('gas_url'); // 👈 เคลียร์ลิงก์ออกจากความทรงจำถาวร
+            localStorage.removeItem('gas_url'); 
             document.getElementById('gas-url-input').value = '';
             alert("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว (ระบบจะบันทึกแบบเครื่อง LocalStorage เสมอ)");
             closeConfigModal();
@@ -1168,10 +1521,14 @@
         }
 
         // ปิดสไลด์โชว์
-        function closeFullImgModal() {
+        function closeModalAndReset() {
             stopSlideshow();
             document.getElementById('full-img-modal').classList.add('hidden');
             document.getElementById('full-img-modal').classList.remove('flex');
+        }
+        
+        function closeFullImgModal() {
+            closeModalAndReset();
         }
 
         // แสดงผล Slide Show พร้อมเอฟเฟกต์เฟด
@@ -1237,6 +1594,7 @@
             }, slideshowSpeed);
         }
 
+        // หยุดสไลด์โชว์
         function stopSlideshow() {
             const playBtn = document.getElementById('btn-play-slideshow');
             const icon = document.getElementById('play-icon');
