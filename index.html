@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
-    <title>JAV321 Gallery Hub - Master Edition</title>
+    <title>JAV321 & JVR Gallery Hub - Master Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -25,7 +25,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght=300;400;600&display=swap');
         body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
         .gallery-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         @media (hover: hover) {
@@ -41,13 +41,12 @@
 </head>
 <body class="bg-gray-100 transition-colors duration-200">
 
-    <!-- Header -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-colors duration-200 dark:bg-gray-800 dark:border-gray-700">
         <div class="container mx-auto px-3 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
             
             <div class="flex items-center justify-between w-full md:w-auto">
                 <div class="flex items-center space-x-3">
-                    <div class="bg-primary text-white px-3 py-1.5 rounded font-bold text-lg md:text-xl cursor-pointer shadow-sm active:scale-95 transition-transform" onclick="goHome()" title="กลับสู่หน้าแรก">JAV321</div>
+                    <div class="bg-primary text-white px-3 py-1.5 rounded font-bold text-lg md:text-xl cursor-pointer shadow-sm active:scale-95 transition-transform" onclick="goHome()" title="กลับสู่หน้าแรก">JAV HUB</div>
                     
                     <button onclick="toggleTheme()" class="p-2 rounded-full active:bg-gray-100 hover:bg-gray-100 dark:active:bg-gray-700 dark:hover:bg-gray-700 transition-colors text-gray-600 dark:text-yellow-400" title="สลับโหมดมืด/สว่าง">
                         <i id="theme-icon" class="fas fa-moon text-[1.2rem]"></i>
@@ -57,12 +56,10 @@
                         <i class="fas fa-fire text-xl md:text-2xl"></i>
                     </button>
                     
-                    <!-- /ปุ่มเปิดตั้งค่า Google Sheet -->
                     <button onclick="openConfigModal()" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 active:scale-95 transition-transform" title="ตั้งค่าคลาวด์ Google Sheet">
                         <i class="fas fa-cloud text-xl"></i>
                     </button>
 
-                    <!-- ปุ่มแสดงรายการ Bookmark ทั้งหมด -->
                     <button onclick="toggleBookmarkPanel()" class="p-2 text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300 active:scale-95 transition-transform relative" title="ลิงก์ที่บันทึกไว้">
                         <i class="fas fa-bookmark text-xl"></i>
                         <span id="bookmark-badge" class="absolute -top-1 -right-1 bg-yellow-600 text-white text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold hidden">0</span>
@@ -74,7 +71,6 @@
                 </button>
             </div>
 
-            <!-- Search & URL inputs -->
             <div class="flex-1 w-full flex flex-col md:flex-row gap-2 max-w-5xl mt-1 md:mt-0">
                 <div class="flex flex-1 shadow-sm rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-colors">
                     <input type="text" id="search-input" placeholder="ค้นหารหัสหนัง (เช่น SSIS-123)..." 
@@ -84,7 +80,7 @@
                     </button>
                 </div>
                 <div class="flex flex-1 shadow-sm rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 focus-within:ring-1 focus-within:ring-gray-500 transition-colors">
-                    <input type="text" id="url-input" placeholder="วางลิงก์ JAV321 ที่นี่..." 
+                    <input type="text" id="url-input" placeholder="วางลิงก์เป้าหมาย ที่นี่..." 
                         class="w-full bg-gray-50 py-2.5 px-3 focus:outline-none dark:bg-gray-700 dark:text-white text-base md:text-sm">
                     <button onclick="handleUrlInput()" class="bg-gray-700 text-white px-4 active:bg-gray-900 hover:bg-gray-800 dark:bg-gray-600 font-bold text-sm transition-colors">
                         Go
@@ -97,13 +93,11 @@
             </button>
         </div>
 
-        <!-- URL Bar & Bookmark Action -->
         <div class="bg-gray-50 border-t border-gray-200 py-1.5 px-3 text-center dark:bg-gray-900 dark:border-gray-700 flex flex-col sm:flex-row justify-center items-center gap-2">
             <div class="flex items-center justify-center gap-1 overflow-hidden max-w-full">
                 <span class="text-[10px] sm:text-[11px] uppercase font-bold text-gray-400 shrink-0">Current Link:</span>
                 <a href="#" id="display-active-url" target="_blank" class="text-[10px] sm:text-[11px] text-blue-500 hover:underline truncate max-w-full px-2">https://www.jav321.com/</a>
             </div>
-            <!-- ปุ่มเพิ่ม/ลด Bookmark หน้าเว็บปัจจุบัน -->
             <button onclick="toggleCurrentPageBookmark()" id="btn-bookmark-current" class="text-[10px] sm:text-[11px] bg-yellow-50 dark:bg-gray-800 border border-yellow-200 dark:border-gray-700 px-2.5 py-1 rounded-full font-bold text-yellow-600 hover:bg-yellow-100 dark:hover:bg-gray-700 transition-colors shrink-0 flex items-center gap-1">
                 <i id="bookmark-current-icon" class="far fa-star"></i> บันทึกหน้านี้
             </button>
@@ -111,7 +105,6 @@
     </header>
 
     <main class="container mx-auto px-3 py-5">
-        <!-- Control Bar -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-3">
             <div class="flex flex-wrap items-center justify-between w-full sm:w-auto gap-3">
                 <nav class="flex text-xs md:text-sm text-gray-500 dark:text-gray-400 gap-1.5 items-center">
@@ -119,7 +112,6 @@
                     <span id="status-text" class="font-bold text-gray-700 dark:text-gray-300">สแตนด์บาย</span>
                 </nav>
 
-                <!-- ปุ่มประวัติย้อนกลับและไปข้างหน้า (Back / Forward Navigation Stack) -->
                 <div class="flex bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 shadow-sm text-xs">
                     <button id="btn-nav-back" onclick="navigateHistoryBack()" class="px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed" disabled title="หน้าก่อนหน้า">
                         <i class="fas fa-arrow-left"></i> ย้อนกลับ
@@ -129,7 +121,6 @@
                     </button>
                 </div>
 
-                <!-- Navigation Tabs -->
                 <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1 text-xs">
                     <button id="tab-home" onclick="switchMainTab('home')" class="px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white">
                         <i class="fas fa-home mr-1"></i> หน้าแรก
@@ -140,7 +131,6 @@
                 </div>
             </div>
             
-            <!-- Grid Size Controller -->
             <div class="flex items-center bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md p-1 shadow-sm overflow-x-auto w-full sm:w-auto justify-center sm:justify-start">
                 <span class="text-[9px] font-bold text-gray-400 dark:text-gray-500 px-1.5 border-r border-gray-200 dark:border-gray-700 mr-1 uppercase">ขนาด</span>
                 <button onclick="changeGridSize(2)" class="size-btn px-2.5 py-1 text-[10px] sm:text-xs rounded hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 active:bg-gray-200" id="btn-grid-2">ใหญ่</button>
@@ -150,16 +140,14 @@
             </div>
         </div>
 
-        <!-- ระบบกรองรายการโปรดแบบละเอียด (มีช่องกรองค้นหารหัสหนัง/คีย์เวิร์ด, Dropdown หมวดรหัสหนัง, Dropdown วันที่โปรดปราน และ ตัวเลือกจัดลำดับ) -->
-        <div id="favorites-filter-container" class="hidden mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center transition-all">
-            <div class="flex-grow flex items-center gap-2 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 pb-2 lg:pb-0 lg:pr-3">
+        <div id="favorites-filter-container" class="hidden mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 shadow-sm flex flex-col xl:flex-row gap-3 items-stretch xl:items-center transition-all">
+            <div class="flex-grow flex items-center gap-2 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-700 pb-2 xl:pb-0 xl:pr-3">
                 <i class="fas fa-filter text-gray-400 ml-1"></i>
                 <input type="text" id="fav-search-input" oninput="filterFavorites()" placeholder="กรองด้วยรหัสหนัง หรือ คีย์เวิร์ดในรายการโปรด..." class="w-full bg-transparent border-none focus:outline-none text-sm dark:text-white py-1">
                 <button onclick="document.getElementById('fav-search-input').value=''; filterFavorites();" class="text-gray-400 hover:text-red-500 px-2 py-1 transition-colors"><i class="fas fa-times"></i></button>
             </div>
             
             <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center shrink-0">
-                <!-- Dropdown สแกนคัดแยกตามหมวดหมู่รหัสหนัง (เช่น MIDE, SSIS, IPX) -->
                 <div class="flex items-center gap-1.5">
                     <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-barcode mr-1"></i>หมวดรหัส:</span>
                     <select id="fav-code-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[110px] focus:ring-1 focus:ring-primary">
@@ -167,7 +155,6 @@
                     </select>
                 </div>
 
-                <!-- Dropdown สแกนคัดแยกตามวันที่เพิ่มเป็นรายการโปรด -->
                 <div class="flex items-center gap-1.5">
                     <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-calendar-alt mr-1"></i>วันที่ถูกใจ:</span>
                     <select id="fav-date-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[120px] focus:ring-1 focus:ring-primary">
@@ -175,7 +162,6 @@
                     </select>
                 </div>
 
-                <!-- Dropdown เลือกการเรียงลำดับการแสดงผลของแกลเลอรีโปรด -->
                 <div class="flex items-center gap-1.5">
                     <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-sort mr-1"></i>เรียงตาม:</span>
                     <select id="fav-sort-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[110px] focus:ring-1 focus:ring-primary">
@@ -188,7 +174,6 @@
             </div>
         </div>
 
-        <!-- แถบปฏิบัติการดาวน์โหลดเป็นกลุ่มสำหรับรูปภาพที่โปรดปราน (Bulk Action Bar) ปรากฏอัตโนมัติเมื่อคัดกรองข้อมูลสำเร็จ -->
         <div id="fav-bulk-action-bar" class="hidden mb-5 p-3.5 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3 shadow-sm transition-all duration-300">
             <div class="flex items-center gap-2">
                 <i class="fas fa-folder-open text-yellow-600 dark:text-yellow-400 text-base"></i>
@@ -204,10 +189,8 @@
             </div>
         </div>
 
-        <!-- Gallery Grid -->
         <div id="gallery-grid" class="grid gap-3 md:gap-4"></div>
 
-        <!-- Pagination -->
         <div id="pagination" class="mt-8 mb-16 flex justify-center items-center gap-2 md:gap-4 hidden">
             <button onclick="navPage(-1)" id="btn-prev" class="px-3 md:px-5 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm active:bg-gray-100 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 font-bold dark:text-white text-sm md:text-base">
                 <i class="fas fa-chevron-left md:mr-2"></i> <span class="hidden md:inline">ก่อนหน้า</span>
@@ -219,16 +202,13 @@
         </div>
     </main>
 
-    <!-- Drawer Panel รายการ Bookmark ลิงก์โปรด -->
     <div id="bookmark-panel" class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl z-[90] transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700 flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
             <h3 class="font-bold text-sm text-gray-700 dark:text-gray-200 uppercase tracking-wider"><i class="fas fa-bookmark text-yellow-500 mr-2"></i>ลิงก์ที่บันทึกไว้</h3>
             <button onclick="toggleBookmarkPanel()" class="text-gray-500 hover:text-red-500 p-1 transition-colors"><i class="fas fa-times text-lg"></i></button>
         </div>
-        <!-- รายการลิงก์บุ๊กมาร์ก -->
         <div id="bookmark-list" class="flex-1 overflow-y-auto p-3 space-y-2">
-            <!-- Dynamic Content -->
-        </div>
+            </div>
         <div class="p-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <p class="text-[10px] text-gray-400 dark:text-gray-500 text-center leading-normal">
                 กดบันทึกหน้าดารา ค่ายหนัง หรือหน้าค้นหาไว้เพื่อเรียกเปิดดูอย่างรวดเร็ว
@@ -236,7 +216,6 @@
         </div>
     </div>
 
-    <!-- Modal รายละเอียด -->
     <div id="modal" class="fixed inset-0 z-[100] bg-black/95 hidden items-center justify-center p-0 md:p-4 transition-opacity duration-300">
         <button onclick="closeModal()" class="absolute top-3 right-3 md:top-6 md:right-6 bg-black/60 md:bg-black/80 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl z-[110] hover:bg-red-500 active:bg-red-600 transition-colors shadow-lg backdrop-blur-sm border border-gray-600">
             <i class="fas fa-times"></i>
@@ -244,18 +223,16 @@
 
         <div class="bg-white dark:bg-gray-800 w-full h-[100dvh] md:max-w-6xl md:h-[90vh] md:rounded-xl overflow-y-auto md:overflow-hidden flex flex-col md:flex-row relative modal-mobile-scroll">
             
-            <!-- Snapshot Images Area -->
             <div id="modal-images" class="w-full md:w-2/3 h-auto md:h-full md:overflow-y-auto p-3 md:p-5 bg-gray-100 dark:bg-gray-900 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
-                <!-- รูปเนื้อเรื่องจะมาโชว์ที่นี่ -->
-            </div>
+                </div>
 
-            <!-- Details Area -->
             <div class="w-full md:w-1/3 p-4 md:p-6 h-auto md:h-full md:overflow-y-auto flex flex-col bg-white dark:bg-gray-800">
                 <span id="m-id" class="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold w-fit mb-3 shadow-sm tracking-wide"></span>
                 <h2 id="m-title" class="font-bold text-base md:text-lg mb-4 dark:text-white leading-snug"></h2>
                 
                 <div class="text-xs md:text-sm space-y-3 dark:text-gray-300 mb-6 bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-100 dark:border-gray-600">
                     <p id="m-star"><strong><i class="fas fa-user-circle text-pink-500 mr-2 text-base"></i> นักแสดง:</strong> กำลังสแกน...</p>
+                    <p id="m-genre"><strong><i class="fas fa-tags text-blue-500 mr-2 text-base"></i> แนวหนัง:</strong> กำลังสแกน...</p>
                     <p id="m-maker"><strong><i class="fas fa-building text-purple-500 mr-2 text-base"></i> ค่าย:</strong> กำลังสแกน...</p>
                     <p id="m-count"><strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> กำลังสแกน...</p>
                 </div>
@@ -275,19 +252,15 @@
         </div>
     </div>
 
-    <!-- Modal สำหรับแสดงภาพเต็มจอและปุ่มสไลด์โชว์ -->
     <div id="full-img-modal" class="fixed inset-0 z-[120] bg-black hidden flex-col items-center justify-center p-4">
-        <!-- แผงควบคุมบนสุด -->
         <div class="absolute top-4 left-0 right-0 flex justify-between items-center px-6 z-30">
             <span id="slideshow-info" class="text-white text-xs md:text-sm bg-black/60 px-3 py-1.5 rounded-full font-bold">1/1</span>
             
             <div class="flex items-center gap-2 bg-black/60 p-1.5 rounded-full border border-white/20">
-                <!-- ปุ่มสไลด์โชว์ เล่น/หยุด -->
                 <button id="btn-play-slideshow" onclick="toggleSlideshow()" class="text-green-400 hover:text-green-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all">
                     <i id="play-icon" class="fas fa-play"></i> <span class="hidden sm:inline">เล่นสไลด์โชว์</span>
                 </button>
                 
-                <!-- ตัวปรับระดับความเร็ว -->
                 <div class="flex items-center gap-1 border-l border-white/20 pl-2 text-white text-xs">
                     <span class="text-gray-400">ความเร็ว:</span>
                     <select id="slideshow-speed" class="bg-gray-800 text-white rounded border border-gray-600 px-1.5 py-0.5 outline-none font-bold" onchange="changeSlideshowSpeed()">
@@ -299,7 +272,6 @@
                 </div>
             </div>
 
-            <!-- เพิ่มปุ่มเปิดภาพต้นทางในสไลด์โชว์ -->
             <div class="flex gap-2">
                 <button id="btn-open-src-slideshow" onclick="openCurrentImageSource()" class="text-white bg-blue-600/80 hover:bg-blue-600 w-10 h-10 rounded-full flex items-center justify-center transition-colors" title="เปิดดูภาพจริงจากเว็บต้นทาง">
                     <i class="fas fa-external-link-alt text-sm"></i>
@@ -310,24 +282,19 @@
             </div>
         </div>
 
-        <!-- หน้าต่างแแสดงผลรูปและปุ่มควบคุมทิศทาง -->
         <div class="relative w-full max-w-5xl h-[80vh] flex items-center justify-center">
-            <!-- ปุ่มก่อนหน้า -->
             <button onclick="prevFullImg()" class="absolute left-2 md:left-4 z-20 text-white bg-black/50 hover:bg-black/80 w-12 h-12 rounded-full flex items-center justify-center transition-all">
                 <i class="fas fa-chevron-left text-xl"></i>
             </button>
 
-            <!-- ตัวภาพขนาดเต็ม -->
             <img id="full-modal-target-img" src="" alt="Full Screen" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-all duration-300">
 
-            <!-- ปุ่มถัดไป -->
             <button onclick="nextFullImg()" class="absolute right-2 md:right-4 z-20 text-white bg-black/50 hover:bg-black/80 w-12 h-12 rounded-full flex items-center justify-center transition-all">
                 <i class="fas fa-chevron-right text-xl"></i>
             </button>
         </div>
     </div>
 
-    <!-- Modal ตั้งค่า Google Sheet -->
     <div id="config-modal" class="fixed inset-0 z-[100] bg-black/80 hidden items-center justify-center p-4">
         <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-xl p-5 md:p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-4">
@@ -366,25 +333,27 @@
         let activeMainTab = 'home'; 
         let favoriteList = [];      
         
-        // 🚀 ฝังลิงก์ Google Apps Script URL เป็นค่าเริ่มต้นแบบคงตัวและปลอดภัย
         let gasEndpoint = localStorage.getItem('gas_url') || 'https://script.google.com/macros/s/AKfycbw7P7lijJeFfv4ChzKaRUAy30g5jmD_0fKOq0yd43Lq1IdC8VgQBqlAYXXoBL8IE0n1/exec';
 
         let slideshowInterval = null;
         let slideshowActiveIndex = 0;
         let slideshowSpeed = 3000;
 
-        // --- 🧭 Navigation History Stack (ระบบย้อนกลับประวัติการท่องเว็บจำลอง) ---
-        let historyStack = [currentUrl]; // คิวเก็บประวัติลิงก์ย้อนหลัง
-        let historyIndex = 0;            // ตัวระบุตำแหน่งปัจจุบันใน Stack
-        let isNavigatingHistory = false; // แฟล็กป้องกันการบันทึกประวัติซ้อนขณะกดย้อนกลับ/ไปข้างหน้า
+        let historyStack = [currentUrl]; 
+        let historyIndex = 0;            
+        let isNavigatingHistory = false; 
 
-        // --- 📌 Bookmark System (ระบบบันทึกลิงก์โปรด) ---
         let bookmarkList = [];
-        
-        // --- 📂 Bulk Download Storage (ตัวแปรเก็บรายการรูปภาพที่กรองล่าสุดเพื่อการดาวน์โหลดแบบกลุ่ม) ---
         let currentlyRenderedFavs = [];
 
-        // --- Theme System ---
+        // 🛡️ ฟังก์ชันสากลเพื่อการหลบหลีกการตัดสัญลักษณ์ในเครื่องหมายคำพูดอย่างปลอดภัยสูงสุด ป้องกัน SyntaxError 
+        function escapeQuotes(str) {
+            return String(str || '')
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '\\"');
+        }
+
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -399,7 +368,6 @@
         }
         updateThemeUI();
 
-        // --- Layout Grid System ---
         function changeGridSize(cols) {
             const grid = document.getElementById('gallery-grid');
             grid.className = 'grid gap-3 md:gap-4'; 
@@ -413,16 +381,25 @@
             if(activeBtn) activeBtn.classList.add('active', 'bg-primary', 'text-white', 'dark:bg-primary');
         }
 
-        // --- URL Resolver ---
-        function resolveUrl(path) {
+        function resolveUrl(path, base = TARGET_URL) {
             if (!path) return '';
+            
+            if (path.includes('/static/digital/')) {
+                return path.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
+            }
+
             if (path.startsWith('http')) return path;
             if (path.startsWith('//')) return 'https:' + path;
-            if (path.startsWith('/')) return TARGET_URL.replace(/\/$/, '') + path;
-            return TARGET_URL.replace(/\/$/, '') + '/' + path;
+            
+            let origin = TARGET_URL.replace(/\/$/, '');
+            try {
+                if (base) origin = new URL(base).origin;
+            } catch(e) {}
+            
+            if (path.startsWith('/')) return origin + path;
+            return origin + '/' + path;
         }
 
-        // --- 🚀 FAST Fetch System (Anti-Cloudflare & Anti-Cache) ---
         async function fetchHtml(url) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 15000); 
@@ -468,6 +445,11 @@
 
         function getRobustImgTag(url, classNames) {
             if (!url) return `<div class="${classNames} bg-gray-300 flex items-center justify-center text-xs">No Image</div>`;
+            
+            if (url.includes('/static/digital/')) {
+                url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
+            }
+
             const pList = [
                 url, 
                 `https://wsrv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}`, 
@@ -476,17 +458,14 @@
             ];
             const firstSrc = pList.shift();
             const fallback = `https://placehold.co/400x600?text=Blocked`;
-            const pStr = JSON.stringify(pList).replace(/'/g, "\\'");
+            const pStr = escapeQuotes(JSON.stringify(pList));
             const onErrorHandler = `try{let p=JSON.parse(this.getAttribute('data-p'));if(p.length>0){this.src=p.shift();this.setAttribute('data-p',JSON.stringify(p));}else{this.onerror=null;this.src='${fallback}';}}catch(e){this.onerror=null;this.src='${fallback}';}`;
             
             return `<img src="${firstSrc}" data-p='${pStr}' referrerpolicy="no-referrer" class="${classNames}" loading="lazy" decoding="async" onerror="${onErrorHandler}">`;
         }
 
-        // --- Main Grid Data Loader ---
         async function loadPage(url) {
-            // ดักระบบจดจำประวัติย้อนหลัง/ไปข้างหน้า
             if (!isNavigatingHistory) {
-                // หากมีการท่องเว็บไปหน้าใหม่ ให้ตัด Stack ฝั่งขวา (Forward) ที่ค้างอยู่ออกทั้งหมด
                 historyStack = historyStack.slice(0, historyIndex + 1);
                 historyStack.push(url);
                 historyIndex = historyStack.length - 1;
@@ -497,7 +476,6 @@
             document.getElementById('display-active-url').innerText = url;
             document.getElementById('display-active-url').href = url;
             
-            // อัพเดทสถานะปุ่ม Bookmark หน้านี้ปัจจุบัน
             updateCurrentPageBookmarkButtonUI();
 
             const pageMatch = url.match(/\/(\d+)\/?$/);
@@ -526,11 +504,11 @@
                     let rawSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
                     if (!rawSrc || rawSrc.includes('logo') || rawSrc.includes('banner')) return;
                     
-                    let src = resolveUrl(rawSrc);
+                    let src = resolveUrl(rawSrc, url);
                     let title = img.getAttribute('title') || img.getAttribute('alt') || a.innerText.trim() || 'Untitled';
                     
                     let rawHref = a.getAttribute('href');
-                    let href = resolveUrl(rawHref);
+                    let href = resolveUrl(rawHref, url);
                     
                     const idMatch = title.match(/[A-Z0-9]{2,8}-?[0-9]{2,6}/i);
                     const id = idMatch ? idMatch[0].toUpperCase() : null;
@@ -548,7 +526,6 @@
             }
         }
 
-        // ฟังชันแสดงผลตาราง Grid การ์ดรูปภาพ
         function renderGrid(items) {
             const grid = document.getElementById('gallery-grid');
             grid.innerHTML = items.map(item => {
@@ -563,13 +540,13 @@
                 return `
                     <div class="gallery-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm cursor-pointer border border-transparent dark:border-gray-700 relative flex flex-col justify-between" id="item-card-${uniqueKey}">
                         
-                        <div onclick="handleCardClick('${item.id}', '${item.url}', '${item.thumb}', '${item.title.replace(/'/g, "\\'")}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="bg-gray-200 dark:bg-gray-700 relative pb-[150%]">
+                        <div onclick="handleCardClick('${item.id}', '${item.url}', '${item.thumb}', '${escapeQuotes(item.title)}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="bg-gray-200 dark:bg-gray-700 relative pb-[150%]">
                             <div class="absolute inset-0">
                                 ${getRobustImgTag(item.thumb, "w-full h-full object-cover")}
                             </div>
                         </div>
 
-                        <button onclick="toggleFavorite(event, '${item.id}', '${item.title.replace(/'/g, "\\'")}', '${item.thumb}', '${item.url}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                        <button onclick="toggleFavorite(event, '${item.id}', '${escapeQuotes(item.title)}', '${item.thumb}', '${item.url}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
                             <i class="${isFav ? 'fas text-red-500' : 'far'} fa-heart text-base"></i>
                         </button>
 
@@ -588,7 +565,6 @@
             }).join('');
         }
 
-        // ทริกเกอร์การคลิกรูปโปรดแบบ Snapshot จากหน้าแรกหรือหน้าโปรด
         function handleCardClick(id, url, thumb, title, isSnapshot, parentId, snapshotIndex) {
             if (isSnapshot) {
                 const sortedFavs = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp);
@@ -624,7 +600,6 @@
             }
         }
 
-        // Search & Navigation Triggers
         function goHome() { 
             switchMainTab('home');
             document.getElementById('search-input').value = '';
@@ -647,6 +622,7 @@
             const v = document.getElementById('search-input').value.trim(); 
             if(v) { document.getElementById('search-input').blur(); loadPage(`${TARGET_URL}search?sn=${encodeURIComponent(v)}`); }
         }
+
         function triggerDirectSearch(name, url) {
             closeModal();
             let safeUrl = resolveUrl(url);
@@ -664,7 +640,6 @@
         }
         function clearHistory() { if(confirm('คุณต้องการล้างประวัติการเข้าชมทั้งหมดหรือไม่?')) { localStorage.removeItem('javGalleryVisited'); location.reload(); } }
 
-        // --- Tab switching system ---
         function switchMainTab(tab) {
             const tabHome = document.getElementById('tab-home');
             const tabFav = document.getElementById('tab-fav');
@@ -688,7 +663,6 @@
             }
         }
 
-        // --- 🧭 Navigation History Stack Logic (การกดย้อนกลับประวัติการท่องหน้าเว็บ) ---
         function navigateHistoryBack() {
             if (historyIndex > 0) {
                 isNavigatingHistory = true;
@@ -700,7 +674,6 @@
             }
         }
 
-        // ไปข้างหน้า
         function navigateHistoryForward() {
             if (historyIndex < historyStack.length - 1) {
                 isNavigatingHistory = true;
@@ -718,7 +691,6 @@
 
             if (!btnBack || !btnForward) return;
 
-            // ปุ่มย้อนกลับ
             if (historyIndex > 0) {
                 btnBack.disabled = false;
                 btnBack.className = "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95";
@@ -727,7 +699,6 @@
                 btnBack.className = "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
             }
 
-            // ปุ่มไปข้างหน้า
             if (historyIndex < historyStack.length - 1) {
                 btnForward.disabled = false;
                 btnForward.className = "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95";
@@ -737,7 +708,6 @@
             }
         }
 
-        // --- 📌 Bookmark System Logic (ระบบบุ๊กมาร์กลิงก์โปรด) ---
         function loadBookmarks() {
             try {
                 bookmarkList = JSON.parse(localStorage.getItem('jav_bookmarks')) || [];
@@ -747,7 +717,7 @@
                 bookmarkList = [];
             }
             if (gasEndpoint) {
-                syncBookmarksFromGoogleSheet(); // ซิงค์รายการ Bookmark ทั้งหมดลงมาจาก Sheets ตอนเปิดแอป
+                syncBookmarksFromGoogleSheet(); 
             }
         }
 
@@ -762,7 +732,6 @@
             }
         }
 
-        // อัปเดตไอคอนดาวบันทึกและปุ่ม Bookmark
         function updateCurrentPageBookmarkButtonUI() {
             const btn = document.getElementById('btn-bookmark-current');
             const icon = document.getElementById('bookmark-current-icon');
@@ -785,9 +754,8 @@
         function toggleCurrentPageBookmark() {
             const existingIndex = bookmarkList.findIndex(b => b.url === currentUrl);
             let actionType = 'add';
-            let title = "หน้าเว็บค้นหาผลงาน";
+            let title = "หน้าเว็บเป้าหมาย";
             
-            // ถอดรหัสคำค้นหาหรือนักแสดงมาใช้ตั้งชื่อบุ๊กมาร์กให้สวยงาม
             if (currentUrl.includes('/star/')) {
                 const decoded = decodeURIComponent(currentUrl);
                 const match = decoded.match(/\/star\/([^\/]+)/);
@@ -820,7 +788,6 @@
             updateCurrentPageBookmarkButtonUI();
             renderBookmarkListUI();
 
-            // ส่งข้อมูลความคืบหน้าซิงค์ไปเก็บไว้บน Google Sheet ถาวร
             if (gasEndpoint) {
                 syncBookmarkToGoogleSheet(title, currentUrl, actionType);
             }
@@ -831,7 +798,6 @@
             if (panel) panel.classList.toggle('translate-x-full');
         }
 
-        // แสดงผลรายการบุ๊กมาร์กลิงก์
         function renderBookmarkListUI() {
             const listEl = document.getElementById('bookmark-list');
             if (!listEl) return;
@@ -873,13 +839,11 @@
             updateCurrentPageBookmarkButtonUI();
             renderBookmarkListUI();
 
-            // ซิงค์การลบข้อมูลลิงก์ขึ้น Sheets ถาวร
             if (gasEndpoint) {
                 syncBookmarkToGoogleSheet('', url, 'remove');
             }
         }
 
-        // --- ซิงค์ส่งออก Bookmark ไป Google Sheets ---
         async function syncBookmarkToGoogleSheet(title, url, action) {
             try {
                 const params = new URLSearchParams({
@@ -895,7 +859,6 @@
             }
         }
 
-        // --- ซิงค์ดึงประวัติ Bookmark ทั้งหมดจาก Google Sheets มาอัปเดตลงหน้าบ้าน ---
         async function syncBookmarksFromGoogleSheet() {
             if (!gasEndpoint) return;
             try {
@@ -912,7 +875,49 @@
             }
         }
 
-        // --- Database & Google Sheets Logic ---
+        async function syncToGoogleSheet(id, title, thumb, url, action, isSnapshot, parentId, snapshotIndex) {
+            try {
+                const params = new URLSearchParams({
+                    action: 'sync',
+                    id: id,
+                    title: title,
+                    thumb: thumb,
+                    url: url,
+                    status: action,
+                    isSnapshot: isSnapshot ? 'true' : 'false',
+                    parentId: parentId,
+                    snapshotIndex: snapshotIndex,
+                    timestamp: new Date().getTime()
+                });
+                
+                fetch(`${gasEndpoint}?${params.toString()}`, { mode: 'no-cors' });
+            } catch(e) {
+                console.error("Sync to Sheets Error:", e);
+            }
+        }
+
+        async function syncFromGoogleSheet() {
+            if (!gasEndpoint) return;
+            try {
+                const res = await fetch(`${gasEndpoint}?action=getFavorites`);
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.favorites)) {
+                    favoriteList = data.favorites.map(f => {
+                        return {
+                            ...f,
+                            isSnapshot: f.isSnapshot === 'true' || f.isSnapshot === true,
+                            snapshotIndex: parseInt(f.snapshotIndex) || 0
+                        }
+                    });
+                    localStorage.setItem('jav_favorites', JSON.stringify(favoriteList));
+                    updateFavCountBadge();
+                    if (activeMainTab === 'favorites') renderFavoritesPage();
+                }
+            } catch(e) {
+                console.warn("Sync from Sheets failed:", e);
+            }
+        }
+
         function initFavorites() {
             try {
                 favoriteList = JSON.parse(localStorage.getItem('jav_favorites')) || [];
@@ -925,7 +930,6 @@
             }
         }
 
-        // อัปเดตตัวนับไอคอนหัวใจ
         function updateFavCountBadge() {
             const countEl = document.getElementById('fav-count');
             if (countEl) countEl.innerText = favoriteList.length;
@@ -988,7 +992,6 @@
             }
         }
 
-        // 🔍 สแกนดึงหมวดหมู่รหัสหนังทั้งหมดในรายการโปรด (เช่น MIDE, SSIS, IPX, ABS) ออกมาจัดทำตัวเลือก
         function scanAndPopulateMovieCodesDropdown() {
             const codeSelect = document.getElementById('fav-code-filter');
             if (!codeSelect) return;
@@ -1025,7 +1028,6 @@
             }
         }
 
-        // 📅 สแกนดึงรายการ "วันที่โปรดปราน" ทั้งหมดออกมาเพื่อสร้างเป็นตัวเลือกใน Dropdown คัดกรอง
         function scanAndPopulateDatesDropdown() {
             const dateSelect = document.getElementById('fav-date-filter');
             if (!dateSelect) return;
@@ -1036,17 +1038,14 @@
             const dateSet = new Set();
             favoriteList.forEach(item => {
                 if (item.timestamp) {
-                    // แปลง timestamp เป็นวันที่สตริงของโลเคชันไทย (พ.ศ. เช่น 2/6/2569)
                     const dateStr = new Date(item.timestamp).toLocaleDateString('th-TH');
                     dateSet.add(dateStr);
                 }
             });
 
-            // เรียงลำดับวันที่จากอนาคตลงไปอดีต (ล่าสุดไปหาเก่าสุด)
             const sortedDates = Array.from(dateSet).sort((a, b) => {
                 const parseDate = (dStr) => {
                     const parts = dStr.split('/');
-                    // th-TH คืนค่าปีเป็น พ.ศ. ให้แปลงกลับเป็น ค.ศ. ก่อนเพื่อทำการ Parse
                     return new Date(parseInt(parts[2]) - 543, parseInt(parts[1]) - 1, parseInt(parts[0]));
                 };
                 return parseDate(b) - parseDate(a);
@@ -1067,10 +1066,11 @@
         function renderFavoritesPage() {
             const grid = document.getElementById('gallery-grid');
             const favFilter = document.getElementById('favorites-filter-container');
+            const bulkBar = document.getElementById('fav-bulk-action-bar');
             
             if (favoriteList.length === 0) {
                 if(favFilter) favFilter.classList.add('hidden');
-                document.getElementById('fav-bulk-action-bar').classList.add('hidden');
+                if(bulkBar) bulkBar.classList.add('hidden');
                 grid.innerHTML = `
                     <div class="col-span-full py-20 text-center dark:text-gray-400">
                         <i class="far fa-heart text-5xl text-gray-300 mb-4 block"></i>
@@ -1083,36 +1083,36 @@
             
             if(activeMainTab === 'favorites' && favFilter) {
                 favFilter.classList.remove('hidden');
-                scanAndPopulateMovieCodesDropdown(); // สแกนหมวดหมู่รหัสหนังทุกครั้ง
-                scanAndPopulateDatesDropdown();      // สแกนวันที่บันทึกรูปโปรดทุกครั้ง
+                scanAndPopulateMovieCodesDropdown(); 
+                scanAndPopulateDatesDropdown();      
             }
             
             filterFavorites();
         }
 
-        // ระบบกรองรายการโปรดแบบละเอียด (กรองตามช่องค้นหา, Dropdown หมวดรหัสหนัง, Dropdown วันที่โปรดปราน และ ตัวเลือกเรียงลำดับ)
         function filterFavorites() {
             if (activeMainTab !== 'favorites') return;
-            const query = document.getElementById('fav-search-input').value.toLowerCase().trim();
-            const selectedCode = document.getElementById('fav-code-filter').value;
-            const selectedDate = document.getElementById('fav-date-filter').value;
-            const selectedSort = document.getElementById('fav-sort-filter').value;
+            const queryInput = document.getElementById('fav-search-input');
+            const codeFilter = document.getElementById('fav-code-filter');
+            const dateFilter = document.getElementById('fav-date-filter');
+            const sortFilter = document.getElementById('fav-sort-filter');
+            
+            const query = queryInput ? queryInput.value.toLowerCase().trim() : '';
+            const selectedCode = codeFilter ? codeFilter.value : 'all';
+            const selectedDate = dateFilter ? dateFilter.value : 'all';
+            const selectedSort = sortFilter ? sortFilter.value : 'newest';
             
             let filteredList = [...favoriteList];
 
-            // 1. กรองคีย์เวิร์ดรหัสและชื่อเรื่อง (Query Filter)
             if (query) {
                 filteredList = filteredList.filter(f => {
                     const idMatch = f.id && String(f.id).toLowerCase().includes(query);
                     const titleMatch = f.title && String(f.title).toLowerCase().includes(query);
-                    
-                    // 🛡️ เพิ่มเงื่อนไขตรวจสอบแบบปลอดภัย (Null-Safe Check) ป้องกันปัญหารูปปกที่ไม่มีฟิลด์ parentId เด้งพัง
                     const parentIdMatch = f.parentId && String(f.parentId).toLowerCase().includes(query);
                     return idMatch || titleMatch || parentIdMatch;
                 });
             }
 
-            // 2. กรองเฉพาะหมวดรหัสหนังที่เลือกจาก Dropdown
             if (selectedCode !== 'all') {
                 filteredList = filteredList.filter(f => {
                     const rawId = f.isSnapshot ? f.parentId : f.id;
@@ -1123,7 +1123,6 @@
                 });
             }
 
-            // 3. กรองตามวันที่ที่เลือกโปรดปราน (Date Filter)
             if (selectedDate !== 'all') {
                 filteredList = filteredList.filter(f => {
                     if (f.timestamp) {
@@ -1134,29 +1133,26 @@
                 });
             }
 
-            // 4. จัดระบบเรียงลำดับรูปภาพโปรด (Sorting)
             if (selectedSort === 'newest') {
-                filteredList.sort((a, b) => b.timestamp - a.timestamp); // ใหม่ -> เก่า
+                filteredList.sort((a, b) => b.timestamp - a.timestamp); 
             } else if (selectedSort === 'oldest') {
-                filteredList.sort((a, b) => a.timestamp - b.timestamp); // เก่า -> ใหม่
+                filteredList.sort((a, b) => a.timestamp - b.timestamp); 
             } else if (selectedSort === 'id-asc') {
                 filteredList.sort((a, b) => {
                     const idA = String(a.isSnapshot ? a.parentId : (a.id || ''));
                     const idB = String(b.isSnapshot ? b.parentId : (b.id || ''));
-                    return idA.localeCompare(idB); // A -> Z
+                    return idA.localeCompare(idB); 
                 });
             } else if (selectedSort === 'id-desc') {
                 filteredList.sort((a, b) => {
                     const idA = String(a.isSnapshot ? a.parentId : (a.id || ''));
                     const idB = String(b.isSnapshot ? b.parentId : (b.id || ''));
-                    return idB.localeCompare(idA); // Z -> A
+                    return idB.localeCompare(idA); 
                 });
             }
 
-            // บันทึกผลลัพธ์การกรองเพื่อใช้ดาวน์โหลดแบบกลุ่ม
             currentlyRenderedFavs = filteredList;
 
-            // ตรวจสอบและแสดงผลตัวคัดกรองแถบดาวน์โหลดพิเศษ (Bulk Download Bar)
             const bulkBar = document.getElementById('fav-bulk-action-bar');
             const bulkInfoText = document.getElementById('fav-bulk-info-text');
 
@@ -1178,7 +1174,6 @@
                 }
             }
 
-            // แสดงผลผลลัพธ์
             if (filteredList.length === 0) {
                 const grid = document.getElementById('gallery-grid');
                 if (grid) {
@@ -1196,7 +1191,7 @@
 
         // --- 🚀 ดาวน์โหลดแบบกลุ่ม: ดาวน์โหลดรวดเดียวแยกทีละรูป (ไม่บีบอัด) ---
         async function downloadFilteredFavoritesIndividually() {
-            if (!currentlyRenderedFavs.length) return;
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
             const btn = document.getElementById('btn-dl-bulk-individual');
             const originalText = btn ? btn.innerHTML : '';
             
@@ -1246,7 +1241,7 @@
 
         // --- 🚀 ดาวน์โหลดแบบกลุ่ม: โหลดบีบอัดเป็นไฟล์ ZIP เดียวกันรวดเดียว ---
         async function downloadFilteredFavoritesZip() {
-            if (!currentlyRenderedFavs.length) return;
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
             const btn = document.getElementById('btn-dl-bulk-zip');
             const zip = new JSZip();
             const originalText = btn ? btn.innerHTML : '';
@@ -1259,7 +1254,6 @@
             try {
                 let completed = 0;
                 
-                // ดึงข้อมูลภาพพร้อมกัน (Parallel Fetch) 
                 const promises = currentlyRenderedFavs.map(async (item, i) => {
                     const blob = await fetchBlobRacing(item.thumb);
                     const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
@@ -1275,8 +1269,8 @@
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(content);
                 
-                // ตั้งชื่อไฟล์ ZIP เป็นชื่อเก๋ๆ ตามหมวดที่เลือก หรือรวบรวมของวันนี้
-                const selectedDate = document.getElementById('fav-date-filter').value;
+                const dateFilter = document.getElementById('fav-date-filter');
+                const selectedDate = dateFilter ? dateFilter.value : 'all';
                 const dateTag = selectedDate !== 'all' ? selectedDate.replace(/\//g, '_') : 'custom';
                 link.download = `Favorites_${dateTag}_Gallery.zip`;
                 
@@ -1295,49 +1289,6 @@
             }
         }
 
-        async function syncToGoogleSheet(id, title, thumb, url, action, isSnapshot, parentId, snapshotIndex) {
-            try {
-                const params = new URLSearchParams({
-                    action: 'sync',
-                    id: id,
-                    title: title,
-                    thumb: thumb,
-                    url: url,
-                    status: action,
-                    isSnapshot: isSnapshot ? 'true' : 'false',
-                    parentId: parentId,
-                    snapshotIndex: snapshotIndex,
-                    timestamp: new Date().getTime()
-                });
-                
-                fetch(`${gasEndpoint}?${params.toString()}`, { mode: 'no-cors' });
-            } catch(e) {
-                console.error("Sync to Sheets Error:", e);
-            }
-        }
-
-        async function syncFromGoogleSheet() {
-            if (!gasEndpoint) return;
-            try {
-                const res = await fetch(`${gasEndpoint}?action=getFavorites`);
-                const data = await res.json();
-                if (data && data.success && Array.isArray(data.favorites)) {
-                    favoriteList = data.favorites.map(f => {
-                        return {
-                            ...f,
-                            isSnapshot: f.isSnapshot === 'true' || f.isSnapshot === true,
-                            snapshotIndex: parseInt(f.snapshotIndex) || 0
-                        }
-                    });
-                    localStorage.setItem('jav_favorites', JSON.stringify(favoriteList));
-                    updateFavCountBadge();
-                    if (activeMainTab === 'favorites') renderFavoritesPage();
-                }
-            } catch(e) {
-                console.warn("Sync from Sheets failed:", e);
-            }
-        }
-
         // --- Google Sheet GAS Modal Config ---
         function openConfigModal() {
             document.getElementById('gas-url-input').value = gasEndpoint;
@@ -1349,7 +1300,6 @@
             document.getElementById('config-modal').classList.remove('flex');
         }
         
-        // 💾 ปรับปรุงระบบทดสอบและบันทึกลิงก์ให้เขียนลงหน่วยความจำถาวรอย่างปลอดภัย
         async function testAndSaveGAS() {
             const url = document.getElementById('gas-url-input').value.trim();
             if (!url) {
@@ -1362,7 +1312,7 @@
             alert("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูล Favorites และ Bookmarks จะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวรนับจากนี้");
             closeConfigModal();
             syncFromGoogleSheet(); 
-            syncBookmarksFromGoogleSheet(); // ดึงข้อมูล Bookmarks ทันทีที่เซฟ
+            syncBookmarksFromGoogleSheet(); 
         }
         
         function disconnectGAS() {
@@ -1380,9 +1330,11 @@
             modal.classList.add('flex');
             document.body.style.overflow = 'hidden'; 
             
+            // รีเซ็ตค่าการสแกนเริ่มต้น
             document.getElementById('m-id').innerText = id;
             document.getElementById('m-title').innerText = title || id;
             document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-base"></i> นักแสดง:</strong> กำลังสแกน...`;
+            document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-base"></i> แนวหนัง:</strong> กำลังสแกน...`;
             document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-base"></i> ค่าย:</strong> กำลังสแกน...`;
             document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> โหลด...`;
             document.getElementById('btn-dl').disabled = true;
@@ -1400,56 +1352,170 @@
                 const html = await fetchHtml(itemUrl);
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 
-                // Clickable Links นักแสดงและค่าย
-                const stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"]')).map(a => {
+                // --- 1. สแกนหาคำนำหน้ารหัส (Code Scanner) ---
+                let scannedCode = id;
+                const allTextNodes = Array.from(doc.querySelectorAll('strong, b, span, div, li, p, th, td'));
+                for(const el of allTextNodes) {
+                    const txt = el.innerText.trim();
+                    if(txt.match(/^(Code|รหัส|品番)\s*:/i)) {
+                        let parentText = el.parentElement ? el.parentElement.innerText.trim() : txt;
+                        let val = parentText.replace(/^(Code|รหัส|品番)\s*:/i, '').trim();
+                        if(!val && el.nextElementSibling) val = el.nextElementSibling.innerText.trim(); 
+                        if(val && val.length > 2 && val.length < 30) {
+                            scannedCode = val.split('\n')[0].trim();
+                            break;
+                        }
+                    }
+                }
+                document.getElementById('m-id').innerText = scannedCode;
+
+                // --- 2. สแกนหานักแสดง (Casts/Cast/Actress/Idol/Star Scanner) ---
+                // อัปเดต Selector ของแท็ก `a` ให้สแกนคำและพารามิเตอร์ลิงก์แบบ `cast?cast=` ของ JVR Library ได้อย่างเฉียบคม
+                let stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"], a[href*="/idol"], a[href*="actress="], a[href*="star="], a[href*="idol="], a[href*="/cast?"], a[href*="cast="]')).map(a => {
                     let name = a.innerText.trim();
-                    let href = resolveUrl(a.getAttribute('href'));
-                    return name ? `<a href="#" onclick="triggerDirectSearch('${name.replace(/'/g, "\\'")}', '${href}'); return false;" class="text-pink-600 dark:text-pink-400 hover:underline font-semibold">${name}</a>` : null;
+                    if(a.querySelector('img') && !name) return null;
+                    let href = resolveUrl(a.getAttribute('href'), itemUrl);
+                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-pink-600 dark:text-pink-400 hover:underline font-semibold">${name}</a>` : null;
                 }).filter(Boolean))];
                 
-                const makers = [...new Set(Array.from(doc.querySelectorAll('a[href*="/company/"]')).map(a => {
+                if(stars.length === 0) {
+                    for(const el of allTextNodes) {
+                        if(el.innerText.trim().match(/^(Casts?|Cast|นักแสดง|出演者)\s*:/i)) {
+                            let parent = el.parentElement;
+                            if(parent && parent.querySelectorAll('a').length === 0) parent = parent.parentElement;
+                            if(parent) {
+                                const links = Array.from(parent.querySelectorAll('a')).map(a => {
+                                    let name = a.innerText.trim();
+                                    if(a.querySelector('img') && !name) return null;
+                                    let href = resolveUrl(a.getAttribute('href'), itemUrl);
+                                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-pink-600 dark:text-pink-400 hover:underline font-semibold">${name}</a>` : null;
+                                }).filter(Boolean);
+                                if(links.length > 0) stars = [...new Set(links)];
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // --- 3. สแกนหาแนวหนัง (Genre Scanner) ---
+                let genres = [...new Set(Array.from(doc.querySelectorAll('a[href*="/genre/"], a[href*="/category/"], a[href*="genre="], a[href*="category="]')).map(a => {
                     let name = a.innerText.trim();
-                    let href = resolveUrl(a.getAttribute('href'));
-                    return name ? `<a href="#" onclick="triggerDirectSearch('${name.replace(/'/g, "\\'")}', '${href}'); return false;" class="text-purple-600 dark:text-purple-400 hover:underline font-semibold">${name}</a>` : null;
+                    if(a.querySelector('img') && !name) return null;
+                    let href = resolveUrl(a.getAttribute('href'), itemUrl);
+                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold">${name}</a>` : null;
                 }).filter(Boolean))];
+
+                if(genres.length === 0) {
+                    for(const el of allTextNodes) {
+                        if(el.innerText.trim().match(/^(Genres?|แนวหนัง|ジャンล)\s*:/i)) {
+                            let parent = el.parentElement;
+                            if(parent && parent.querySelectorAll('a').length === 0) parent = parent.parentElement;
+                            if(parent) {
+                                const links = Array.from(parent.querySelectorAll('a')).map(a => {
+                                    let name = a.innerText.trim();
+                                    if(a.querySelector('img') && !name) return null;
+                                    let href = resolveUrl(a.getAttribute('href'), itemUrl);
+                                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-blue-600 dark:text-blue-400 hover:underline font-semibold">${name}</a>` : null;
+                                }).filter(Boolean);
+                                if(links.length > 0) genres = [...new Set(links)];
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                // --- 4. สแกนหาค่ายหนัง (Maker Scanner) ---
+                let makers = [...new Set(Array.from(doc.querySelectorAll('a[href*="/company/"], a[href*="/maker"], a[href*="/studio"], a[href*="maker="], a[href*="company="], a[href*="studio="]')).map(a => {
+                    let name = a.innerText.trim();
+                    if(a.querySelector('img') && !name) return null;
+                    let href = resolveUrl(a.getAttribute('href'), itemUrl);
+                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-purple-600 dark:text-purple-400 hover:underline font-semibold">${name}</a>` : null;
+                }).filter(Boolean))];
+                
+                if(makers.length === 0) {
+                    for(const el of allTextNodes) {
+                        if(el.innerText.trim().match(/^(Maker|Studio|ค่าย|สตูดิโอ|メーカー)\s*:/i)) {
+                            let parent = el.parentElement;
+                            if(parent && parent.querySelectorAll('a').length === 0) parent = parent.parentElement;
+                            if(parent) {
+                                const links = Array.from(parent.querySelectorAll('a')).map(a => {
+                                    let name = a.innerText.trim();
+                                    if(a.querySelector('img') && !name) return null;
+                                    let href = resolveUrl(a.getAttribute('href'), itemUrl);
+                                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-purple-600 dark:text-purple-400 hover:underline font-semibold">${name}</a>` : null;
+                                }).filter(Boolean);
+                                if(links.length > 0) makers = [...new Set(links)];
+                            }
+                            break;
+                        }
+                    }
+                }
                 
                 document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-base"></i> นักแสดง:</strong> ${stars.length ? stars.join(', ') : '<span class="text-gray-400">-</span>'}`;
+                document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-base"></i> แนวหนัง:</strong> ${genres.length ? genres.join(', ') : '<span class="text-gray-400">-</span>'}`;
                 document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-base"></i> ค่าย:</strong> ${makers.length ? makers.join(', ') : '<span class="text-gray-400">-</span>'}`;
 
+                // --- 5. สแกนรูปภาพ (Cover & Screenshots) แบบกรองเฉพาะเรื่องที่ดู ---
                 const snapshotSet = new Set();
                 if(highResCover) snapshotSet.add(highResCover);
 
-                doc.querySelectorAll('a[href*="/snapshot/"]').forEach(a => {
-                    let rawS = a.getAttribute('href');
-                    let s = resolveUrl(rawS);
-                    let img = a.querySelector('img');
-                    if (img) {
-                        let rawImgSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
-                        if (rawImgSrc && !rawImgSrc.includes('logo')) s = resolveUrl(rawImgSrc);
+                // แยกคำนำหน้า (Prefix) และตัวเลข (Number) เพื่อใช้ตรวจสอบรูปภาพว่าตรงกับเรื่องนี้หรือไม่
+                const idParts = id.toLowerCase().split('-');
+                const idPrefix = idParts[0] || '';
+                const idNum = idParts[1] ? idParts[1].replace(/^0+/, '') : ''; // ตัดเลข 0 ข้างหน้าออกเพื่อให้เทียบได้แม่นยำ
+
+                doc.querySelectorAll('img').forEach(img => {
+                    let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
+                    if (!rawS || rawS.includes('logo') || rawS.includes('avatar') || rawS.includes('banner') || rawS.includes('now_printing')) return;
+                    
+                    let s = resolveUrl(rawS, itemUrl);
+                    let altText = (img.getAttribute('alt')||'').toLowerCase();
+                    
+                    // 🛡️ ป้องกันรูปปกหนังแนะนำเรื่องอื่น: เช็คว่า URL หรือ Alt ของรูปมีรหัสหนังเรื่องปัจจุบันอยู่หรือไม่
+                    let isCurrentMovie = false;
+                    if (idPrefix && idNum) {
+                        if (s.toLowerCase().includes(idPrefix) && s.toLowerCase().includes(idNum)) isCurrentMovie = true;
+                        else if (altText.includes(id.toLowerCase())) isCurrentMovie = true;
+                    } else if (s.toLowerCase().includes(id.toLowerCase()) || altText.includes(id.toLowerCase())) {
+                        isCurrentMovie = true;
                     }
-                    if (s) {
+
+                    // ข้ามการประมวลผลทันทีถ้ารูปนี้ไม่ใช่ของหนังเรื่องที่เรากำลังดู
+                    if (!isCurrentMovie) return;
+                    
+                    if (img.classList.contains('cover') || altText.includes('cover')) {
+                        let largeCover = s.replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg');
+                        const currentSnaps = Array.from(snapshotSet);
+                        snapshotSet.clear();
+                        snapshotSet.add(largeCover);
+                        currentSnaps.forEach(snap => snapshotSet.add(snap));
+                    }
+
+                    let isThumb = s.includes('pics.dmm.co.jp') || 
+                                  s.includes('/snapshot/') || 
+                                  s.match(/-\d+\.jpg/i) || 
+                                  s.match(/-\d+t\.jpg/i) || 
+                                  s.includes('jp-') || 
+                                  altText.includes('thumb image') ||
+                                  altText.includes('screenshot');
+                                  
+                    if (isThumb) {
                         let large = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg');
-                        snapshotSet.add(large);
+                        // ป้องกันไม่ให้นำปก (pl.jpg) มาเพิ่มซ้ำในฐานะสแนปช็อต ยกเว้นว่ามันจะเป็นชื่อเฉพาะของสแนปช็อตจริงๆ
+                        if (!large.includes('pl.jpg') || large.match(/jp-\d+\.jpg/i) || large.match(/-\d+\.jpg/i)) {
+                            snapshotSet.add(large);
+                        }
                     }
                 });
 
-                if (snapshotSet.size <= 1) {
-                    doc.querySelectorAll('img').forEach(img => {
-                        let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
-                        if (!rawS || rawS.includes('logo') || rawS.includes('avatar') || rawS.includes('banner') || rawS.includes('now_printing')) return;
-                        
-                        let s = resolveUrl(rawS);
-                        if (s.includes('pics.dmm.co.jp') || s.includes('/snapshot/') || s.match(/-\d+\.jpg/i) || s.match(/-\d+t\.jpg/i) || s.includes('jp-')) {
-                            let large = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg');
-                            snapshotSet.add(large);
-                        }
-                    });
+                if (snapshotSet.size === 0 && highResCover) {
+                    snapshotSet.add(highResCover);
                 }
 
                 currentImages = Array.from(snapshotSet);
                 document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> <span class="text-gray-800 dark:text-gray-200 font-bold">${currentImages.length}</span> รูป`;
                 
-                renderModalImages(currentImages, id, title || id);
+                renderModalImages(currentImages, scannedCode, title || scannedCode);
                 
                 document.getElementById('btn-dl').disabled = false;
                 document.getElementById('btn-dl-individual').disabled = false;
@@ -1462,7 +1528,6 @@
             }
         }
 
-        // Layout จัดเรียงรูปใน Modal (นำแผงโฮเวอร์หน้าจอดำโปร่งแสงตรงกลางและข้อความออก คลีน 100%)
         function renderModalImages(images, id, title) {
             const container = document.getElementById('modal-images');
             container.innerHTML = `
@@ -1483,7 +1548,7 @@
                                 ${i === 0 ? 'COVER' : 'SNAPSHOT #' + i}
                             </div>
                             
-                            <button id="modal-heart-${uniqueKey}" onclick="event.stopPropagation(); toggleFavorite(null, '${id}', '${title.replace(/'/g, "\\'")}', '${src}', '${currentUrl}', ${isSnapshot}, '${id}', ${i})" class="absolute top-2.5 right-2.5 z-30 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                            <button id="modal-heart-${uniqueKey}" onclick="event.stopPropagation(); toggleFavorite(null, '${id}', '${escapeQuotes(title)}', '${src}', '${currentUrl}', ${isSnapshot}, '${id}', ${i})" class="absolute top-2.5 right-2.5 z-30 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
                                 <i class="${isFav ? 'fas text-red-500' : 'far text-white'} fa-heart text-base"></i>
                             </button>
 
@@ -1491,7 +1556,6 @@
                                 ${getRobustImgTag(src, `w-full h-auto object-contain block ${i === 0 ? 'max-h-[50vh] md:max-h-[600px]' : ''}`)}
                             </div>
                             
-                            <!-- ปุ่มควบคุมดาวน์โหลด และปุ่มเปิดรูปภาพต้นทางแบบกลมไม่มีข้อความ แสดงคงตัวที่มุมขวาล่างเพื่อความโปร่งใสและคลีน -->
                             <div class="absolute bottom-2 right-2 flex gap-1.5 z-30">
                                 <a href="${src}" target="_blank" onclick="event.stopPropagation();" class="bg-blue-600/90 hover:bg-blue-600 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform" title="เปิดดูลิงก์รูปต้นทาง">
                                     <i class="fas fa-external-link-alt text-xs"></i>
@@ -1512,7 +1576,6 @@
             document.body.style.overflow = 'auto'; 
         }
 
-        // --- 📽️ Slide Show & Full Image View Logic ---
         function openFullImgModal(index) {
             slideshowActiveIndex = index;
             document.getElementById('full-img-modal').classList.remove('hidden');
@@ -1520,7 +1583,6 @@
             updateFullImgView();
         }
 
-        // ปิดสไลด์โชว์
         function closeModalAndReset() {
             stopSlideshow();
             document.getElementById('full-img-modal').classList.add('hidden');
@@ -1531,7 +1593,6 @@
             closeModalAndReset();
         }
 
-        // แสดงผล Slide Show พร้อมเอฟเฟกต์เฟด
         function updateFullImgView() {
             const targetImg = document.getElementById('full-modal-target-img');
             const infoText = document.getElementById('slideshow-info');
@@ -1558,14 +1619,12 @@
             }
         }
 
-        // เลื่อนรูปถัดไป
         function nextFullImg() {
             if (!currentImages.length) return;
             slideshowActiveIndex = (slideshowActiveIndex + 1) % currentImages.length;
             updateFullImgView();
         }
 
-        // เลื่อนรูปก่อนหน้า
         function prevFullImg() {
             if (!currentImages.length) return;
             slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length;
@@ -1594,7 +1653,6 @@
             }, slideshowSpeed);
         }
 
-        // หยุดสไลด์โชว์
         function stopSlideshow() {
             const playBtn = document.getElementById('btn-play-slideshow');
             const icon = document.getElementById('play-icon');
@@ -1623,8 +1681,6 @@
                 else if (e.key === 'Escape') closeFullImgModal();
             }
         });
-
-        // --- Download Systems ---
         
         async function fetchBlobRacing(url) {
             const controller = new AbortController();
@@ -1665,7 +1721,104 @@
             }
         }
 
-        async function downloadAllIndividually() {
+        async function downloadFilteredFavoritesIndividually() {
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
+            const btn = document.getElementById('btn-dl-bulk-individual');
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> เตรียมไฟล์...`;
+            }
+            
+            try {
+                let completed = 0;
+                const blobPromises = currentlyRenderedFavs.map(async (item, i) => {
+                    const blob = await fetchBlobRacing(item.thumb);
+                    completed++;
+                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> โหลดสำเร็จ (${completed}/${currentlyRenderedFavs.length})`;
+                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
+                    return { blob, filename };
+                });
+                
+                const results = await Promise.all(blobPromises);
+                if (btn) btn.innerHTML = `<i class="fas fa-save mr-1"></i> กำลังเซฟลงเครื่อง...`;
+                
+                for (const res of results) {
+                    const objUrl = URL.createObjectURL(res.blob);
+                    const link = document.createElement('a');
+                    link.href = objUrl;
+                    link.download = res.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 100);
+                    await new Promise(r => setTimeout(r, 200)); 
+                }
+                
+                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
+            } catch(e) {
+                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ล้มเหลว`;
+            } finally {
+                setTimeout(() => {
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                }, 3000);
+            }
+        }
+
+        async function downloadFilteredFavoritesZip() {
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
+            const btn = document.getElementById('btn-dl-bulk-zip');
+            const zip = new JSZip();
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังแพ็ค...`;
+            }
+            
+            try {
+                let completed = 0;
+                
+                const promises = currentlyRenderedFavs.map(async (item, i) => {
+                    const blob = await fetchBlobRacing(item.thumb);
+                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
+                    zip.file(filename, blob);
+                    completed++;
+                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> โหลดแล้ว (${completed}/${currentlyRenderedFavs.length})...`;
+                });
+                
+                await Promise.all(promises);
+                
+                if (btn) btn.innerHTML = `<i class="fas fa-cog fa-spin mr-1"></i> กำลังสร้าง ZIP...`;
+                const content = await zip.generateAsync({type:"blob"});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                
+                const dateFilter = document.getElementById('fav-date-filter');
+                const selectedDate = dateFilter ? dateFilter.value : 'all';
+                const dateTag = selectedDate !== 'all' ? selectedDate.replace(/\//g, '_') : 'custom';
+                link.download = `Favorites_${dateTag}_Gallery.zip`;
+                
+                link.click();
+                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> บันทึกแล้ว!`;
+            } catch(e) {
+                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> โหลดผิดพลาด`;
+                alert('เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง');
+            } finally {
+                setTimeout(() => {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                }, 3000);
+            }
+        }
+
+        async function downloadAllIndividuallyModal() {
             if (!currentImages.length) return;
             const btn = document.getElementById('btn-dl-individual');
             const id = document.getElementById('m-id').innerText;
@@ -1709,7 +1862,7 @@
             }
         }
 
-        async function downloadAll() {
+        async function downloadAllModal() {
             if (!currentImages.length) return;
             const btn = document.getElementById('btn-dl');
             const status = document.getElementById('dl-status');
@@ -1749,7 +1902,10 @@
             }
         }
 
-        // Start
+        // Mapping function for Modal downloads
+        function downloadAllIndividually() { downloadAllIndividuallyModal(); }
+        function downloadAll() { downloadAllModal(); }
+
         window.onload = () => {
             initFavorites();   
             loadBookmarks();   // โหลดรายการลิงก์โปรดที่เก็บไว้
