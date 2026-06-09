@@ -346,7 +346,6 @@
         let bookmarkList = [];
         let currentlyRenderedFavs = [];
 
-        // 🛡️ ฟังก์ชันสากลเพื่อการหลบหลีกการตัดสัญลักษณ์ในเครื่องหมายคำพูดอย่างปลอดภัยสูงสุด ป้องกัน SyntaxError 
         function escapeQuotes(str) {
             return String(str || '')
                 .replace(/\\/g, '\\\\')
@@ -478,7 +477,6 @@
             
             updateCurrentPageBookmarkButtonUI();
 
-            // 🌟 อัปเกรดระบบตรวจสอบหน้า (Pagination) ให้รองรับ JVR Library และ Query Params อัตโนมัติ
             let showPagination = false;
             try {
                 let urlObj = new URL(url);
@@ -534,7 +532,7 @@
                     let rawHref = a.getAttribute('href');
                     let href = resolveUrl(rawHref, url);
                     
-                    const idMatch = title.match(/[A-Z0-9]{2,8}-?[0-9]{2,6}/i);
+                    const idMatch = title.match(/([a-zA-Z]{2,8}-?\d{2,6}|\d{2,4}[a-zA-Z]{2,8}-?\d{2,6}|fc2-?[a-zA-Z]+-?\d{2,7})/i);
                     const id = idMatch ? idMatch[0].toUpperCase() : null;
 
                     if (id && !seen.has(id)) {
@@ -553,10 +551,12 @@
         function renderGrid(items) {
             const grid = document.getElementById('gallery-grid');
             grid.innerHTML = items.map(item => {
-                const uniqueKey = item.isSnapshot ? `snapshot_${item.parentId}_${item.snapshotIndex}` : item.id;
+                const safeId = String(item.id || '').replace(/\s+/g, '_');
+                const uniqueKey = item.isSnapshot ? `snapshot_${item.parentId}_${item.snapshotIndex}` : safeId;
+                
                 const isFav = favoriteList.some(f => {
                     if (item.isSnapshot) {
-                        return f.isSnapshot && f.parentId === item.parentId && f.snapshotIndex === item.snapshotIndex;
+                        return f.isSnapshot && f.parentId === item.parentId && f.thumb === item.thumb;
                     }
                     return !f.isSnapshot && f.id === item.id;
                 });
@@ -596,7 +596,7 @@
                 
                 currentImages = favSnapshots.map(f => f.thumb);
                 
-                const clickedIndex = favSnapshots.findIndex(f => f.parentId === parentId && f.snapshotIndex === snapshotIndex);
+                const clickedIndex = favSnapshots.findIndex(f => f.parentId === parentId && f.thumb === thumb);
                 
                 if (clickedIndex > -1) {
                     openFullImgModal(clickedIndex);
@@ -613,12 +613,10 @@
             openModal(id, url, '', '');
         }
 
-        // 🌟 อัปเกรดระบบเปลี่ยนหน้า (Next/Prev) ให้ปรับลิงก์ได้อย่างถูกต้องตามเว็บไซต์
         function navPage(direction) {
             try {
                 let urlObj = new URL(currentUrl);
                 
-                // สำหรับ JVR Library หรือ URL ที่มีพารามิเตอร์ page= อยู่แล้ว
                 if (urlObj.hostname.includes('jvrlibrary.com') || urlObj.searchParams.has('page')) {
                     let newPage = parseInt(urlObj.searchParams.get('page') || "1") + direction;
                     if (newPage < 1) newPage = 1;
@@ -628,7 +626,6 @@
                     return;
                 }
                 
-                // สำหรับรูปแบบ JAV321 (.../list/release_date/2)
                 const pageMatch = currentUrl.match(/\/(\d+)\/?$/);
                 if (pageMatch) {
                     let newPage = parseInt(pageMatch[1]) + direction;
@@ -639,7 +636,6 @@
                     return;
                 }
                 
-                // กรณีอยู่หน้าแรกสุดของ JAV321 
                 if (currentUrl === TARGET_URL || currentUrl === TARGET_URL.replace(/\/$/, '')) {
                     if (direction > 0) {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -727,7 +723,6 @@
             }
         }
 
-        // ไปข้างหน้า
         function navigateHistoryForward() {
             if (historyIndex < historyStack.length - 1) {
                 isNavigatingHistory = true;
@@ -972,6 +967,49 @@
             }
         }
 
+        // --- Google Sheet GAS Modal Config ---
+        function openConfigModal() {
+            const input = document.getElementById('gas-url-input');
+            if (input) input.value = gasEndpoint;
+            const modal = document.getElementById('config-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+        function closeConfigModal() {
+            const modal = document.getElementById('config-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+        
+        async function testAndSaveGAS() {
+            const urlInput = document.getElementById('gas-url-input');
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (!url) {
+                alert("กรุณากรอกลิงก์ Web App URL ก่อนครับ");
+                return;
+            }
+            
+            gasEndpoint = url;
+            localStorage.setItem('gas_url', url); 
+            alert("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูล Favorites และ Bookmarks จะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวรนับจากนี้");
+            closeConfigModal();
+            syncFromGoogleSheet(); 
+            syncBookmarksFromGoogleSheet(); 
+        }
+        
+        function disconnectGAS() {
+            gasEndpoint = '';
+            localStorage.removeItem('gas_url'); 
+            const urlInput = document.getElementById('gas-url-input');
+            if (urlInput) urlInput.value = '';
+            alert("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว (ระบบจะบันทึกแบบเครื่อง LocalStorage เสมอ)");
+            closeConfigModal();
+        }
+
         function initFavorites() {
             try {
                 favoriteList = JSON.parse(localStorage.getItem('jav_favorites')) || [];
@@ -992,11 +1030,12 @@
         async function toggleFavorite(event, id, title, thumb, url, isSnapshot = false, parentId = '', snapshotIndex = 0) {
             if (event) event.stopPropagation();
             
-            const uniqueKey = isSnapshot ? `snapshot_${parentId}_${snapshotIndex}` : id;
+            const safeId = String(id || '').replace(/\s+/g, '_');
+            const uniqueKey = isSnapshot ? `snapshot_${parentId}_${snapshotIndex}` : safeId;
             
             const existingIndex = favoriteList.findIndex(f => {
                 if (isSnapshot) {
-                    return f.isSnapshot && f.parentId === parentId && f.snapshotIndex === snapshotIndex;
+                    return f.isSnapshot && f.parentId === parentId && f.thumb === thumb;
                 }
                 return !f.isSnapshot && f.id === id;
             });
@@ -1082,6 +1121,7 @@
             }
         }
 
+        // สแกนดึงวันที่ถูกใจ
         function scanAndPopulateDatesDropdown() {
             const dateSelect = document.getElementById('fav-date-filter');
             if (!dateSelect) return;
@@ -1243,141 +1283,7 @@
             }
         }
 
-        // --- 🚀 ดาวน์โหลดแบบกลุ่ม: ดาวน์โหลดรวดเดียวแยกทีละรูป (ไม่บีบอัด) ---
-        async function downloadFilteredFavoritesIndividually() {
-            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
-            const btn = document.getElementById('btn-dl-bulk-individual');
-            const originalText = btn ? btn.innerHTML : '';
-            
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> เตรียมไฟล์...`;
-            }
-            
-            try {
-                let completed = 0;
-                // ดึงข้อมูลภาพในกลุ่มเข้าหน่วยความจำพร้อมกันความเร็วสูง
-                const blobPromises = currentlyRenderedFavs.map(async (item, i) => {
-                    const blob = await fetchBlobRacing(item.thumb);
-                    completed++;
-                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> โหลดสำเร็จ (${completed}/${currentlyRenderedFavs.length})`;
-                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
-                    return { blob, filename };
-                });
-                
-                const results = await Promise.all(blobPromises);
-                if (btn) btn.innerHTML = `<i class="fas fa-save mr-1"></i> กำลังเซฟลงเครื่อง...`;
-                
-                for (const res of results) {
-                    const objUrl = URL.createObjectURL(res.blob);
-                    const link = document.createElement('a');
-                    link.href = objUrl;
-                    link.download = res.filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-                    await new Promise(r => setTimeout(r, 200)); 
-                }
-                
-                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
-            } catch(e) {
-                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ล้มเหลว`;
-            } finally {
-                setTimeout(() => {
-                    if (btn) {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                }, 3000);
-            }
-        }
-
-        // --- 🚀 ดาวน์โหลดแบบกลุ่ม: โหลดบีบอัดเป็นไฟล์ ZIP เดียวกันรวดเดียว ---
-        async function downloadFilteredFavoritesZip() {
-            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
-            const btn = document.getElementById('btn-dl-bulk-zip');
-            const zip = new JSZip();
-            const originalText = btn ? btn.innerHTML : '';
-            
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังแพ็ค...`;
-            }
-            
-            try {
-                let completed = 0;
-                
-                const promises = currentlyRenderedFavs.map(async (item, i) => {
-                    const blob = await fetchBlobRacing(item.thumb);
-                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
-                    zip.file(filename, blob);
-                    completed++;
-                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> โหลดแล้ว (${completed}/${currentlyRenderedFavs.length})...`;
-                });
-                
-                await Promise.all(promises);
-                
-                if (btn) btn.innerHTML = `<i class="fas fa-cog fa-spin mr-1"></i> กำลังสร้าง ZIP...`;
-                const content = await zip.generateAsync({type:"blob"});
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                
-                const dateFilter = document.getElementById('fav-date-filter');
-                const selectedDate = dateFilter ? dateFilter.value : 'all';
-                const dateTag = selectedDate !== 'all' ? selectedDate.replace(/\//g, '_') : 'custom';
-                link.download = `Favorites_${dateTag}_Gallery.zip`;
-                
-                link.click();
-                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> บันทึกแล้ว!`;
-            } catch(e) {
-                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> โหลดผิดพลาด`;
-                alert('เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง');
-            } finally {
-                setTimeout(() => {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                    }
-                }, 3000);
-            }
-        }
-
-        // --- Google Sheet GAS Modal Config ---
-        function openConfigModal() {
-            document.getElementById('gas-url-input').value = gasEndpoint;
-            document.getElementById('config-modal').classList.remove('hidden');
-            document.getElementById('config-modal').classList.add('flex');
-        }
-        function closeConfigModal() {
-            document.getElementById('config-modal').classList.add('hidden');
-            document.getElementById('config-modal').classList.remove('flex');
-        }
-        
-        async function testAndSaveGAS() {
-            const url = document.getElementById('gas-url-input').value.trim();
-            if (!url) {
-                alert("กรุณากรอกลิงก์ Web App URL ก่อนครับ");
-                return;
-            }
-            
-            gasEndpoint = url;
-            localStorage.setItem('gas_url', url); 
-            alert("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูล Favorites และ Bookmarks จะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวรนับจากนี้");
-            closeConfigModal();
-            syncFromGoogleSheet(); 
-            syncBookmarksFromGoogleSheet(); 
-        }
-        
-        function disconnectGAS() {
-            gasEndpoint = '';
-            localStorage.removeItem('gas_url'); 
-            document.getElementById('gas-url-input').value = '';
-            alert("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว (ระบบจะบันทึกแบบเครื่อง LocalStorage เสมอ)");
-            closeConfigModal();
-        }
-
-        // --- Modal & High-Res Snapshot Logic ---
+        // --- 🚀 เปิด Modal ดึงรูปภาพ Multi-Site พร้อมระบบวิเคราะห์ Label อัจฉริยะ ---
         async function openModal(id, url, thumbUrl, title) {
             const modal = document.getElementById('modal');
             modal.classList.remove('hidden');
@@ -1423,7 +1329,7 @@
                 }
                 document.getElementById('m-id').innerText = scannedCode;
 
-                // --- 2. สแกนหานักแสดง (Casts/Cast/Actress/Idol/Star Scanner) ---
+                // --- 2. สแกนหานักแสดง ---
                 let stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"], a[href*="/idol"], a[href*="actress="], a[href*="star="], a[href*="idol="], a[href*="/cast?"], a[href*="cast="]')).map(a => {
                     let name = a.innerText.trim();
                     if(a.querySelector('img') && !name) return null;
@@ -1512,10 +1418,9 @@
                 const snapshotSet = new Set();
                 if(highResCover) snapshotSet.add(highResCover);
 
-                // แยกคำนำหน้า (Prefix) และตัวเลข (Number) เพื่อใช้ตรวจสอบรูปภาพว่าตรงกับเรื่องนี้หรือไม่
                 const idParts = id.toLowerCase().split('-');
                 const idPrefix = idParts[0] || '';
-                const idNum = idParts[1] ? idParts[1].replace(/^0+/, '') : ''; // ตัดเลข 0 ข้างหน้าออกเพื่อให้เทียบได้แม่นยำ
+                const idNum = idParts[1] ? idParts[1].replace(/^0+/, '') : ''; 
 
                 doc.querySelectorAll('img').forEach(img => {
                     let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
@@ -1524,7 +1429,6 @@
                     let s = resolveUrl(rawS, itemUrl);
                     let altText = (img.getAttribute('alt')||'').toLowerCase();
                     
-                    // 🛡️ ป้องกันรูปปกหนังแนะนำเรื่องอื่น: เช็คว่า URL หรือ Alt ของรูปมีรหัสหนังเรื่องปัจจุบันอยู่หรือไม่
                     let isCurrentMovie = false;
                     if (idPrefix && idNum) {
                         if (s.toLowerCase().includes(idPrefix) && s.toLowerCase().includes(idNum)) isCurrentMovie = true;
@@ -1533,7 +1437,6 @@
                         isCurrentMovie = true;
                     }
 
-                    // ข้ามการประมวลผลทันทีถ้ารูปนี้ไม่ใช่ของหนังเรื่องที่เรากำลังดู
                     if (!isCurrentMovie) return;
                     
                     if (img.classList.contains('cover') || altText.includes('cover')) {
@@ -1554,7 +1457,6 @@
                                   
                     if (isThumb) {
                         let large = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg');
-                        // ป้องกันไม่ให้นำปก (pl.jpg) มาเพิ่มซ้ำในฐานะสแนปช็อต ยกเว้นว่ามันจะเป็นชื่อเฉพาะของสแนปช็อตจริงๆ
                         if (!large.includes('pl.jpg') || large.match(/jp-\d+\.jpg/i) || large.match(/-\d+\.jpg/i)) {
                             snapshotSet.add(large);
                         }
@@ -1583,14 +1485,17 @@
 
         function renderModalImages(images, id, title) {
             const container = document.getElementById('modal-images');
+            const safeId = String(id || '').replace(/\s+/g, '_');
+            
             container.innerHTML = `
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pb-4 md:pb-10">
                     ${images.map((src, i) => {
                         const isSnapshot = i > 0;
-                        const uniqueKey = isSnapshot ? `snapshot_${id}_${i}` : id;
+                        const uniqueKey = isSnapshot ? `snapshot_${safeId}_${i}` : safeId;
+                        
                         const isFav = favoriteList.some(f => {
                             if (isSnapshot) {
-                                return f.isSnapshot && f.parentId === id && f.snapshotIndex === i;
+                                return f.isSnapshot && f.parentId === id && f.thumb === src;
                             }
                             return !f.isSnapshot && f.id === id;
                         });
@@ -1646,7 +1551,6 @@
             closeModalAndReset();
         }
 
-        // แสดงผลภาพเต็มจอ
         function updateFullImgView() {
             const targetImg = document.getElementById('full-modal-target-img');
             const infoText = document.getElementById('slideshow-info');
@@ -1679,6 +1583,7 @@
             updateFullImgView();
         }
 
+        // เลื่อนรูปก่อนหน้า
         function prevFullImg() {
             if (!currentImages.length) return;
             slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length;
@@ -1727,18 +1632,14 @@
             }
         }
 
-        // 🌟 ปรับปรุงระบบตรวจจับปุ่ม Esc บนคีย์บอร์ดเพื่อให้ออกจาก Modal ได้อย่างรวดเร็วเป็นธรรมชาติ
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 const fullImgModal = document.getElementById('full-img-modal');
                 const detailModal = document.getElementById('modal');
                 
-                // ตรวจเช็คว่าสไลด์โชว์/ภาพเต็มจอเปิดอยู่หรือไม่ ถ้าเปิดอยู่ให้ปิดส่วนนี้ก่อน
                 if (fullImgModal && !fullImgModal.classList.contains('hidden')) {
                     closeFullImgModal();
-                } 
-                // หากไม่มีสไลด์โชว์ แต่มีหน้าต่างรายละเอียด (Modal) เปิดอยู่ ให้ปิดหน้าต่างรายละเอียดทันที
-                else if (detailModal && !detailModal.classList.contains('hidden')) {
+                } else if (detailModal && !detailModal.classList.contains('hidden')) {
                     closeModal();
                 }
             }
@@ -1970,13 +1871,12 @@
             }
         }
 
-        // Mapping function for Modal downloads
         function downloadAllIndividually() { downloadAllIndividuallyModal(); }
         function downloadAll() { downloadAllModal(); }
 
         window.onload = () => {
             initFavorites();   
-            loadBookmarks();   // โหลดรายการลิงก์โปรดที่เก็บไว้
+            loadBookmarks();   
             changeGridSize(6); 
             loadLatest();      
         };
