@@ -478,9 +478,33 @@
             
             updateCurrentPageBookmarkButtonUI();
 
-            const pageMatch = url.match(/\/(\d+)\/?$/);
-            if (pageMatch && !url.includes('/video/')) {
-                currentPage = parseInt(pageMatch[1]);
+            // 🌟 อัปเกรดระบบตรวจสอบหน้า (Pagination) ให้รองรับ JVR Library และ Query Params อัตโนมัติ
+            let showPagination = false;
+            try {
+                let urlObj = new URL(url);
+                let isDetail = urlObj.pathname.includes('/video/') || urlObj.searchParams.has('id');
+                
+                if (!isDetail) {
+                    if (urlObj.searchParams.has('page')) {
+                        currentPage = parseInt(urlObj.searchParams.get('page')) || 1;
+                        showPagination = true;
+                    } else if (urlObj.hostname.includes('jvrlibrary.com')) {
+                        currentPage = 1;
+                        showPagination = true;
+                    } else {
+                        const pageMatch = url.match(/\/(\d+)\/?$/);
+                        if (pageMatch) {
+                            currentPage = parseInt(pageMatch[1]);
+                            showPagination = true;
+                        } else if (url === TARGET_URL || url === TARGET_URL.replace(/\/$/, '')) {
+                            currentPage = 1;
+                            showPagination = true;
+                        }
+                    }
+                }
+            } catch(e) {}
+
+            if (showPagination) {
                 document.getElementById('pagination').classList.remove('hidden');
                 document.getElementById('page-number').innerText = `หน้า ${currentPage}`;
                 document.getElementById('btn-prev').disabled = (currentPage <= 1);
@@ -589,14 +613,43 @@
             openModal(id, url, '', '');
         }
 
+        // 🌟 อัปเกรดระบบเปลี่ยนหน้า (Next/Prev) ให้ปรับลิงก์ได้อย่างถูกต้องตามเว็บไซต์
         function navPage(direction) {
-            const pageMatch = currentUrl.match(/\/(\d+)\/?$/);
-            if (pageMatch) {
-                let newPage = parseInt(pageMatch[1]) + direction;
-                if (newPage < 1) newPage = 1;
-                const newUrl = currentUrl.replace(/\/\d+\/?$/, `/${newPage}`);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                loadPage(newUrl);
+            try {
+                let urlObj = new URL(currentUrl);
+                
+                // สำหรับ JVR Library หรือ URL ที่มีพารามิเตอร์ page= อยู่แล้ว
+                if (urlObj.hostname.includes('jvrlibrary.com') || urlObj.searchParams.has('page')) {
+                    let newPage = parseInt(urlObj.searchParams.get('page') || "1") + direction;
+                    if (newPage < 1) newPage = 1;
+                    urlObj.searchParams.set('page', newPage);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    loadPage(urlObj.toString());
+                    return;
+                }
+                
+                // สำหรับรูปแบบ JAV321 (.../list/release_date/2)
+                const pageMatch = currentUrl.match(/\/(\d+)\/?$/);
+                if (pageMatch) {
+                    let newPage = parseInt(pageMatch[1]) + direction;
+                    if (newPage < 1) newPage = 1;
+                    const newUrl = currentUrl.replace(/\/\d+\/?$/, `/${newPage}`);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    loadPage(newUrl);
+                    return;
+                }
+                
+                // กรณีอยู่หน้าแรกสุดของ JAV321 
+                if (currentUrl === TARGET_URL || currentUrl === TARGET_URL.replace(/\/$/, '')) {
+                    if (direction > 0) {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        loadPage(`${TARGET_URL}list/release_date/2`);
+                    }
+                    return;
+                }
+
+            } catch(e) {
+                console.error("Navigation error: ", e);
             }
         }
 
