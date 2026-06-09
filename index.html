@@ -25,7 +25,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght=300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
         body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
         .gallery-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         @media (hover: hover) {
@@ -196,7 +196,7 @@
                 <i class="fas fa-chevron-left md:mr-2"></i> <span class="hidden md:inline">ก่อนหน้า</span>
             </button>
             <span id="page-number" class="font-bold text-sm md:text-lg dark:text-white bg-gray-200 dark:bg-gray-700 px-4 py-2 rounded-lg">หน้า 1</span>
-            <button onclick="navPage(1)" id="btn-next" class="px-3 md:px-5 py-2.5 bg-primary text-white rounded-lg shadow-sm active:bg-red-800 hover:bg-red-700 font-bold text-sm md:text-base">
+            <button onclick="navPage(1)" id="btn-next" class="bg-primary text-white px-3 md:px-5 py-2.5 rounded-lg shadow-sm active:bg-red-800 hover:bg-red-700 font-bold text-sm md:text-base">
                 <span class="hidden md:inline">ถัดไป</span> <i class="fas fa-chevron-right md:ml-2"></i>
             </button>
         </div>
@@ -727,6 +727,7 @@
             }
         }
 
+        // ไปข้างหน้า
         function navigateHistoryForward() {
             if (historyIndex < historyStack.length - 1) {
                 isNavigatingHistory = true;
@@ -1423,7 +1424,6 @@
                 document.getElementById('m-id').innerText = scannedCode;
 
                 // --- 2. สแกนหานักแสดง (Casts/Cast/Actress/Idol/Star Scanner) ---
-                // อัปเดต Selector ของแท็ก `a` ให้สแกนคำและพารามิเตอร์ลิงก์แบบ `cast?cast=` ของ JVR Library ได้อย่างเฉียบคม
                 let stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"], a[href*="/idol"], a[href*="actress="], a[href*="star="], a[href*="idol="], a[href*="/cast?"], a[href*="cast="]')).map(a => {
                     let name = a.innerText.trim();
                     if(a.querySelector('img') && !name) return null;
@@ -1646,6 +1646,7 @@
             closeModalAndReset();
         }
 
+        // แสดงผลภาพเต็มจอ
         function updateFullImgView() {
             const targetImg = document.getElementById('full-modal-target-img');
             const infoText = document.getElementById('slideshow-info');
@@ -1726,12 +1727,26 @@
             }
         }
 
+        // 🌟 ปรับปรุงระบบตรวจจับปุ่ม Esc บนคีย์บอร์ดเพื่อให้ออกจาก Modal ได้อย่างรวดเร็วเป็นธรรมชาติ
         document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const fullImgModal = document.getElementById('full-img-modal');
+                const detailModal = document.getElementById('modal');
+                
+                // ตรวจเช็คว่าสไลด์โชว์/ภาพเต็มจอเปิดอยู่หรือไม่ ถ้าเปิดอยู่ให้ปิดส่วนนี้ก่อน
+                if (fullImgModal && !fullImgModal.classList.contains('hidden')) {
+                    closeFullImgModal();
+                } 
+                // หากไม่มีสไลด์โชว์ แต่มีหน้าต่างรายละเอียด (Modal) เปิดอยู่ ให้ปิดหน้าต่างรายละเอียดทันที
+                else if (detailModal && !detailModal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            }
+            
             const modalIsOpen = !document.getElementById('full-img-modal').classList.contains('hidden');
             if (modalIsOpen) {
                 if (e.key === 'ArrowRight') nextFullImg();
                 else if (e.key === 'ArrowLeft') prevFullImg();
-                else if (e.key === 'Escape') closeFullImgModal();
             }
         });
         
