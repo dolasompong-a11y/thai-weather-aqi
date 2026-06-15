@@ -1693,38 +1693,42 @@
             }
         });
         
-        // 🚀 อัปเกรดระบบดึงข้อมูลภาพ (Blob Fetching) ด้วยการแข่งขันเชื่อมต่อแบบ 4 ทิศทาง (Racing) ความเสถียรสูงสุด
         async function fetchBlobRacing(url) {
+            // 🛡️ ปรับลิงก์ JVR Library ให้ดึงตรงจาก DMM เพื่อลดภาระ Proxy
             if (url.startsWith('//')) url = 'https:' + url;
             if (url.includes('/static/digital/')) {
                 url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
             }
-
+            
+            const cleanUrl = url.replace(/^https?:\/\//, '');
             const controller = new AbortController();
-            const signal = controller.signal;
             const proxies = [
-                `https://wsrv.nl/?url=${encodeURIComponent(url)}`,
-                `https://images.weserv.nl/?url=${encodeURIComponent(url)}`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+                `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
+                `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`
             ];
             
             try {
-                const blob = await Promise.any(proxies.map(pUrl => 
-                    fetch(pUrl, { signal }).then(res => {
+                const promises = proxies.map(pUrl => 
+                    fetch(pUrl, { signal: controller.signal }).then(res => {
                         if (!res.ok) throw new Error('Proxy fail');
+                        const ct = res.headers.get('content-type');
+                        if (ct && ct.includes('text/html')) throw new Error('Invalid content');
                         return res.blob();
                     })
-                ));
-                controller.abort(); // สั่งยกเลิกเชื่อมต่อ Proxy ตัวอื่น ๆ เมื่อมีตัวหนึ่งเสร็จสมบูรณ์
+                );
+                const blob = await Promise.any(promises);
+                controller.abort(); 
                 return blob;
             } catch(e) {
-                // ขั้นสุดท้าย: ลองเชื่อมต่อเซิร์ฟเวอร์แบบตรง (Direct Fetch) เผื่อว่าโดนปลดบล็อกชั่วคราว
+                // พยายามดึงข้อมูลทางตรง (Direct Fetch) เป็นขั้นสุดท้ายหาก Proxy ล้มเหลวหมด
                 try {
                     const directRes = await fetch(url);
                     if (directRes.ok) return await directRes.blob();
                 } catch(directErr) {}
-                throw new Error("All proxies failed to fetch blob");
+                
+                throw new Error("All proxy blob fetches failed");
             }
         }
 
@@ -1755,28 +1759,26 @@
             }
             
             try {
+                // 🛡️ ปรับเป็นโหลดเข้าคิวทีละรูป (Sequential) แทน Promise.all ป้องกันเซิร์ฟเวอร์ Proxy บล็อก IP
                 let completed = 0;
-                const blobPromises = currentlyRenderedFavs.map(async (item, i) => {
+                for (let i = 0; i < currentlyRenderedFavs.length; i++) {
+                    const item = currentlyRenderedFavs[i];
+                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> โหลดแล้ว (${completed + 1}/${currentlyRenderedFavs.length})`;
+                    
                     const blob = await fetchBlobRacing(item.thumb);
-                    completed++;
-                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> โหลดสำเร็จ (${completed}/${currentlyRenderedFavs.length})`;
                     const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
-                    return { blob, filename };
-                });
-                
-                const results = await Promise.all(blobPromises);
-                if (btn) btn.innerHTML = `<i class="fas fa-save mr-1"></i> กำลังเซฟลงเครื่อง...`;
-                
-                for (const res of results) {
-                    const objUrl = URL.createObjectURL(res.blob);
+                    
+                    const objUrl = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = objUrl;
-                    link.download = res.filename;
+                    link.download = filename;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-                    await new Promise(r => setTimeout(r, 250)); 
+                    
+                    completed++;
+                    await new Promise(r => setTimeout(r, 400)); // เว้นระยะ 0.4 วินาที ให้เซิร์ฟเวอร์ได้พักหายใจ
                 }
                 
                 if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
@@ -1807,15 +1809,18 @@
             
             try {
                 let completed = 0;
-                const promises = currentlyRenderedFavs.map(async (item, i) => {
+                // 🛡️ ปรับเป็นโหลดเข้าคิว (Sequential)
+                for (let i = 0; i < currentlyRenderedFavs.length; i++) {
+                    const item = currentlyRenderedFavs[i];
+                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> โหลดแล้ว (${completed + 1}/${currentlyRenderedFavs.length})...`;
+                    
                     const blob = await fetchBlobRacing(item.thumb);
                     const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
                     zip.file(filename, blob);
+                    
                     completed++;
-                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> โหลดแล้ว (${completed}/${currentlyRenderedFavs.length})...`;
-                });
-                
-                await Promise.all(promises);
+                    await new Promise(r => setTimeout(r, 200)); 
+                }
                 
                 if (btn) btn.innerHTML = `<i class="fas fa-cog fa-spin mr-1"></i> กำลังสร้าง ZIP...`;
                 const content = await zip.generateAsync({type:"blob"});
@@ -1854,26 +1859,25 @@
             
             try {
                 let completed = 0;
-                const blobPromises = currentImages.map(async (url, i) => {
+                // 🛡️ ปรับเป็นโหลดเข้าคิว (Sequential)
+                for (let i = 0; i < currentImages.length; i++) {
+                    const url = currentImages[i];
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin text-lg"></i> โหลดไฟล์สำเร็จ (${completed + 1}/${currentImages.length})`;
+                    
                     const blob = await fetchBlobRacing(url);
-                    completed++;
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin text-lg"></i> โหลดไฟล์สำเร็จ (${completed}/${currentImages.length})`;
-                    return { blob, filename: `${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg` };
-                });
-                
-                const results = await Promise.all(blobPromises);
-                btn.innerHTML = `<i class="fas fa-save text-lg"></i> กำลังบันทึกลงเครื่อง...`;
-                
-                for (const res of results) {
-                    const objUrl = URL.createObjectURL(res.blob);
+                    const filename = `${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`;
+                    
+                    const objUrl = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = objUrl;
-                    link.download = res.filename;
+                    link.download = filename;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-                    await new Promise(r => setTimeout(r, 200)); 
+                    
+                    completed++;
+                    await new Promise(r => setTimeout(r, 300));
                 }
                 
                 btn.innerHTML = `<i class="fas fa-check-circle text-lg"></i> โหลดเสร็จสิ้น!`;
@@ -1902,14 +1906,17 @@
             
             try {
                 let completed = 0;
-                const promises = currentImages.map(async (url, i) => {
+                // 🛡️ ปรับเป็นโหลดเข้าคิว (Sequential)
+                for (let i = 0; i < currentImages.length; i++) {
+                    const url = currentImages[i];
+                    status.innerHTML = `<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i> โหลดรูปแล้ว (${completed + 1}/${currentImages.length})...`;
+                    
                     const blob = await fetchBlobRacing(url);
                     zip.file(`${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`, blob);
+                    
                     completed++;
-                    status.innerHTML = `<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i> โหลดรูปแล้ว (${completed}/${currentImages.length})...`;
-                });
-                
-                await Promise.all(promises);
+                    await new Promise(r => setTimeout(r, 200));
+                }
                 
                 status.innerHTML = `<i class="fas fa-cog fa-spin text-primary mr-1"></i> กำลังบีบอัดไฟล์ ZIP...`;
                 const content = await zip.generateAsync({type:"blob"});
@@ -1921,7 +1928,7 @@
                 showToast("แพ็กเกจไฟล์ ZIP ส่งออกสำเร็จ!", "success");
             } catch(e) {
                 status.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-1"></i> เกิดข้อผิดพลาดในการโหลดรูป`;
-                showToast("ระบบ Proxy ถูกบล็อกชั่วคราว กรุณาลองใหม่อีกครั้ง", "error");
+                showToast("ระบบ Proxy ถูกบล็อกชั่วคราว หรือการเชื่อมต่อล้มเหลว", "error");
             } finally {
                 setTimeout(() => {
                     btn.disabled = false;
