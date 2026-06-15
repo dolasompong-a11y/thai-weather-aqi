@@ -41,6 +41,9 @@
 </head>
 <body class="bg-gray-100 transition-colors duration-200">
 
+    <!-- แผงแจ้งเตือนแบบลอยตัว (Custom Toast Container) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[200] flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-colors duration-200 dark:bg-gray-800 dark:border-gray-700">
         <div class="container mx-auto px-3 py-3 flex flex-col md:flex-row justify-between items-center gap-3">
             
@@ -346,11 +349,53 @@
         let bookmarkList = [];
         let currentlyRenderedFavs = [];
 
+        // 🛡️ ฟังก์ชันสากลเพื่อการหลบหลีกการตัดสัญลักษณ์ในเครื่องหมายคำพูดอย่างปลอดภัยสูงสุด ป้องกัน SyntaxError 
         function escapeQuotes(str) {
             return String(str || '')
                 .replace(/\\/g, '\\\\')
                 .replace(/'/g, "\\'")
                 .replace(/"/g, '\\"');
+        }
+
+        // 🔔 ระบบกล่องแจ้งเตือนลอยตัวสุดพรีเมียม ทดแทนคำสั่ง alert() ที่ iFrame มักบล็อก
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-xl border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2.5`;
+            
+            let bgClass = 'bg-white border-gray-200 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100';
+            let iconHtml = '<i class="fas fa-info-circle text-blue-500 text-base"></i>';
+
+            if (type === 'success') {
+                bgClass = 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-900 dark:text-green-200';
+                iconHtml = '<i class="fas fa-check-circle text-green-500 text-base"></i>';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-900 dark:text-red-200';
+                iconHtml = '<i class="fas fa-exclamation-circle text-red-500 text-base"></i>';
+            } else if (type === 'warning') {
+                bgClass = 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-900 dark:text-yellow-200';
+                iconHtml = '<i class="fas fa-exclamation-triangle text-yellow-500 text-base"></i>';
+            }
+
+            toast.className += ` ${bgClass}`;
+            toast.innerHTML = `${iconHtml} <span class="flex-1">${message}</span>`;
+            
+            container.appendChild(toast);
+
+            // แสดงภาพเคลื่อนไหวขาเข้า
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // ลบกล่องแจ้งเตือนหลังจากผ่านไป 4 วินาที
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 4000);
         }
 
         function toggleTheme() {
@@ -411,7 +456,7 @@
             ];
 
             try {
-                const promises = proxies.map(pUrl => 
+                const htmlContent = await Promise.any(proxies.map(pUrl => 
                     fetch(pUrl, { signal: controller.signal }).then(async res => {
                         if (!res.ok) throw new Error('Proxy HTTP Error');
                         const text = await res.text();
@@ -423,9 +468,7 @@
                         }
                         return text;
                     })
-                );
-
-                const htmlContent = await Promise.any(promises);
+                ));
                 clearTimeout(timeoutId);
                 return htmlContent;
             } catch (e) {
@@ -451,8 +494,8 @@
 
             const pList = [
                 url, 
-                `https://wsrv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}`, 
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://wsrv.nl/?url=${encodeURIComponent(url)}`, 
+                `https://images.weserv.nl/?url=${encodeURIComponent(url)}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
             ];
             const firstSrc = pList.shift();
@@ -532,7 +575,7 @@
                     let rawHref = a.getAttribute('href');
                     let href = resolveUrl(rawHref, url);
                     
-                    const idMatch = title.match(/([a-zA-Z]{2,8}-?\d{2,6}|\d{2,4}[a-zA-Z]{2,8}-?\d{2,6}|fc2-?[a-zA-Z]+-?\d{2,7})/i);
+                    const idMatch = title.match(/[A-Z0-9]{2,8}-?[0-9]{2,6}/i);
                     const id = idMatch ? idMatch[0].toUpperCase() : null;
 
                     if (id && !seen.has(id)) {
@@ -989,13 +1032,13 @@
             const urlInput = document.getElementById('gas-url-input');
             const url = urlInput ? urlInput.value.trim() : '';
             if (!url) {
-                alert("กรุณากรอกลิงก์ Web App URL ก่อนครับ");
+                showToast("กรุณากรอกลิงก์ Web App URL ก่อนครับ", "warning");
                 return;
             }
             
             gasEndpoint = url;
             localStorage.setItem('gas_url', url); 
-            alert("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูล Favorites และ Bookmarks จะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวรนับจากนี้");
+            showToast("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูลจะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวร", "success");
             closeConfigModal();
             syncFromGoogleSheet(); 
             syncBookmarksFromGoogleSheet(); 
@@ -1006,7 +1049,7 @@
             localStorage.removeItem('gas_url'); 
             const urlInput = document.getElementById('gas-url-input');
             if (urlInput) urlInput.value = '';
-            alert("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว (ระบบจะบันทึกแบบเครื่อง LocalStorage เสมอ)");
+            showToast("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว", "info");
             closeConfigModal();
         }
 
@@ -1583,7 +1626,6 @@
             updateFullImgView();
         }
 
-        // เลื่อนรูปก่อนหน้า
         function prevFullImg() {
             if (!currentImages.length) return;
             slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length;
@@ -1651,26 +1693,38 @@
             }
         });
         
+        // 🚀 อัปเกรดระบบดึงข้อมูลภาพ (Blob Fetching) ด้วยการแข่งขันเชื่อมต่อแบบ 4 ทิศทาง (Racing) ความเสถียรสูงสุด
         async function fetchBlobRacing(url) {
+            if (url.startsWith('//')) url = 'https:' + url;
+            if (url.includes('/static/digital/')) {
+                url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
+            }
+
             const controller = new AbortController();
+            const signal = controller.signal;
             const proxies = [
-                `https://wsrv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}&cors=1`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://wsrv.nl/?url=${encodeURIComponent(url)}`,
+                `https://images.weserv.nl/?url=${encodeURIComponent(url)}`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
                 `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
             ];
             
             try {
-                const promises = proxies.map(pUrl => 
-                    fetch(pUrl, { signal: controller.signal }).then(res => {
+                const blob = await Promise.any(proxies.map(pUrl => 
+                    fetch(pUrl, { signal }).then(res => {
                         if (!res.ok) throw new Error('Proxy fail');
                         return res.blob();
                     })
-                );
-                const blob = await Promise.any(promises);
-                controller.abort(); 
+                ));
+                controller.abort(); // สั่งยกเลิกเชื่อมต่อ Proxy ตัวอื่น ๆ เมื่อมีตัวหนึ่งเสร็จสมบูรณ์
                 return blob;
             } catch(e) {
-                throw new Error("All proxy blob fetches failed");
+                // ขั้นสุดท้าย: ลองเชื่อมต่อเซิร์ฟเวอร์แบบตรง (Direct Fetch) เผื่อว่าโดนปลดบล็อกชั่วคราว
+                try {
+                    const directRes = await fetch(url);
+                    if (directRes.ok) return await directRes.blob();
+                } catch(directErr) {}
+                throw new Error("All proxies failed to fetch blob");
             }
         }
 
@@ -1686,7 +1740,7 @@
                 document.body.removeChild(link);
                 setTimeout(() => URL.revokeObjectURL(objUrl), 100);
             } catch (err) {
-                alert("เซิร์ฟเวอร์ป้องกันการโหลดอัตโนมัติ กรุณาคลิกขวาที่รูป -> บันทึกรูปภาพ (Save image as...) แทนครับ");
+                showToast("เซิร์ฟเวอร์ป้องกันการโหลดอัตโนมัติ กรุณาคลิกขวาที่รูป -> บันทึกรูปภาพ แทนครับ", "warning");
             }
         }
 
@@ -1722,12 +1776,14 @@
                     link.click();
                     document.body.removeChild(link);
                     setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-                    await new Promise(r => setTimeout(r, 200)); 
+                    await new Promise(r => setTimeout(r, 250)); 
                 }
                 
                 if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
+                showToast("ดาวน์โหลดไฟล์รูปภาพทั้งหมดเข้าสู่เครื่องแล้ว", "success");
             } catch(e) {
                 if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ล้มเหลว`;
+                showToast("พบปัญหาในการเชื่อมต่อคลาวด์ดาวน์โหลดรูปภาพสำรอง", "error");
             } finally {
                 setTimeout(() => {
                     if (btn) {
@@ -1751,7 +1807,6 @@
             
             try {
                 let completed = 0;
-                
                 const promises = currentlyRenderedFavs.map(async (item, i) => {
                     const blob = await fetchBlobRacing(item.thumb);
                     const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`;
@@ -1774,9 +1829,10 @@
                 
                 link.click();
                 if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> บันทึกแล้ว!`;
+                showToast("สร้างและจัดส่งแพ็กเกจไฟล์ ZIP สำเร็จ!", "success");
             } catch(e) {
                 if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> โหลดผิดพลาด`;
-                alert('เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง');
+                showToast("เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง", "error");
             } finally {
                 setTimeout(() => {
                     if (btn) {
@@ -1821,8 +1877,10 @@
                 }
                 
                 btn.innerHTML = `<i class="fas fa-check-circle text-lg"></i> โหลดเสร็จสิ้น!`;
+                showToast("ดาวน์โหลดไฟล์รูปภาพทั้งหมดเข้าสู่เครื่องแล้ว", "success");
             } catch(e) {
                 btn.innerHTML = `<i class="fas fa-times-circle text-lg"></i> โหลดไม่สำเร็จ`;
+                showToast("ไม่สามารถประมวลผลการแปลงดาวน์โหลดรูปภาพ", "error");
             } finally {
                 setTimeout(() => {
                     btn.innerHTML = originalText;
@@ -1860,9 +1918,10 @@
                 link.download = `${id}_Gallery.zip`;
                 link.click();
                 status.innerHTML = `<i class="fas fa-check-circle text-green-500 mr-1"></i> ดาวน์โหลดเสร็จสิ้น!`;
+                showToast("แพ็กเกจไฟล์ ZIP ส่งออกสำเร็จ!", "success");
             } catch(e) {
                 status.innerHTML = `<i class="fas fa-times-circle text-red-500 mr-1"></i> เกิดข้อผิดพลาดในการโหลดรูป`;
-                alert('เกิดข้อผิดพลาด: เซิร์ฟเวอร์ต้นทางบล็อก หรืออินเทอร์เน็ตมีปัญหา');
+                showToast("ระบบ Proxy ถูกบล็อกชั่วคราว กรุณาลองใหม่อีกครั้ง", "error");
             } finally {
                 setTimeout(() => {
                     btn.disabled = false;
@@ -1871,6 +1930,7 @@
             }
         }
 
+        // Mapping function for Modal downloads
         function downloadAllIndividually() { downloadAllIndividuallyModal(); }
         function downloadAll() { downloadAllModal(); }
 
