@@ -56,7 +56,6 @@
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-colors duration-200 dark:bg-gray-800 dark:border-gray-700" id="main-header">
         <div class="container mx-auto px-3 py-3 flex justify-between items-center">
             
-            <!-- ฝั่งซ้าย: โลโก้และปุ่มการนำทางหลัก -->
             <div class="flex items-center space-x-2 md:space-x-3">
                 <div class="bg-primary text-white px-3 py-1.5 rounded font-bold text-lg md:text-xl cursor-pointer shadow-sm active:scale-95 transition-transform" onclick="goHome()" title="กลับสู่หน้าแรก">JAV HUB</div>
                 
@@ -78,9 +77,7 @@
                 </button>
             </div>
 
-            <!-- ฝั่งขวา: ปุ่มเครื่องมือและสลับโหมด -->
             <div class="flex items-center space-x-1.5 md:space-x-2">
-                <!-- 🌟 ปุ่มใหม่: สลับโหมดการแสดงผล (Split View / Classic View) -->
                 <button onclick="toggleUIMode()" class="hidden md:flex p-2.5 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-400 transition-all active:scale-90" title="สลับมุมมอง (แยกซ้าย-ขวา / ป๊อปอัป)">
                     <i id="ui-mode-icon" class="fas fa-columns text-base"></i>
                 </button>
@@ -110,7 +107,7 @@
         </div>
     </header>
 
-    <!-- 🌟 MASTER LAYOUT WRAPPER (รองรับระบบ Split View) -->
+    <!-- 🌟 MASTER LAYOUT WRAPPER -->
     <div id="layout-wrapper" class="w-full">
         
         <!-- ฝั่งซ้าย: โครงสร้างหลัก (Grid แกลเลอรี) -->
@@ -214,14 +211,13 @@
             </main>
         </div>
 
-        <!-- 🌟 แถบสไลด์ปรับความกว้าง (Resizer) -->
+        <!-- แถบสไลด์ปรับความกว้าง (Resizer) -->
         <div id="pane-resizer" class="hidden split-resizer flex-shrink-0 relative">
-            <div class="absolute inset-y-0 -left-1 -right-1 z-40"></div> <!-- พื้นที่ดักจับเมาส์ให้กว้างขึ้น -->
+            <div class="absolute inset-y-0 -left-1 -right-1 z-40"></div> 
         </div>
 
-        <!-- 🌟 ฝั่งขวา: โครงสร้าง Split View (สำหรับแสดงรายละเอียดและรูปตอนเปิดคู่กัน) -->
+        <!-- ฝั่งขวา: โครงสร้าง Split View (แสดงรายละเอียด) -->
         <div id="right-pane" class="hidden w-0 split-right transition-none">
-            <!-- คล้ายกับ Modal แต่จัด Layout สำหรับแนวตั้ง -->
             <div class="sticky top-0 bg-white dark:bg-gray-800 z-10 p-3 flex justify-between items-center border-b border-gray-200 dark:border-gray-700 shadow-sm">
                 <span id="s-m-id" class="bg-red-500 text-white px-3 py-1 rounded text-sm font-bold shadow-sm tracking-wide"></span>
                 <button onclick="closeSplitPane()" class="text-gray-400 hover:text-red-500 transition-colors bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
@@ -239,22 +235,12 @@
                     <p id="s-m-count"><strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> กำลังสแกน...</p>
                 </div>
                 
-                <div class="flex gap-2 mb-5 shrink-0">
-                    <button onclick="downloadAllIndividually()" id="s-btn-dl-individual" class="flex-1 bg-orange-500 text-white py-2 rounded-xl font-bold hover:bg-orange-600 active:bg-orange-700 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors text-sm">
-                        <i class="fas fa-cloud-download-alt"></i> โหลดทีละรูป
-                    </button>
-                    <button onclick="downloadAll()" id="s-btn-dl" class="flex-1 bg-primary text-white py-2 rounded-xl font-bold hover:bg-red-700 active:bg-red-800 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors text-sm">
-                        <i class="fas fa-file-archive"></i> โหลด .ZIP
-                    </button>
-                </div>
-                <div id="s-dl-status" class="text-xs text-center mb-4 hidden font-semibold dark:text-gray-400"></div>
-                
-                <!-- แสดงรูปภาพในแนวตั้ง 1-2 คอลัมน์ -->
+                <!-- แสดงรูปภาพในแนวตั้ง -->
                 <div id="s-modal-images" class="w-full flex-1"></div>
             </div>
         </div>
 
-    </div> <!-- สิ้นสุด Master Layout Wrapper -->
+    </div> 
 
     <!-- Bookmark Panel -->
     <div id="bookmark-panel" class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl z-[90] transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700 flex flex-col">
@@ -323,15 +309,6 @@
                     <p id="m-count"><strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> กำลังสแกน...</p>
                 </div>
                 
-                <div class="flex flex-col gap-2 mt-auto">
-                    <button onclick="downloadAllIndividually()" id="btn-dl-individual" class="w-full bg-orange-500 text-white py-3 rounded-xl font-bold hover:bg-orange-600 active:bg-orange-700 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors text-sm md:text-base">
-                        <i class="fas fa-cloud-download-alt text-lg"></i> โหลดทีละรูป (ไม่ Zip)
-                    </button>
-                    <button onclick="downloadAll()" id="btn-dl" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:bg-red-700 active:bg-red-800 shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-colors text-sm md:text-base">
-                        <i class="fas fa-file-archive text-lg"></i> โหลดทั้งหมด (.ZIP)
-                    </button>
-                </div>
-
                 <div id="dl-status" class="text-xs text-center mt-3 text-gray-500 dark:text-gray-400 hidden font-semibold"></div>
                 <div class="pb-10 md:pb-0"></div> 
             </div>
@@ -412,7 +389,6 @@
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK: Core Scripts & Logic -->
     <script>
         let currentUrl = "https://www.jav321.com/";
         let currentPage = 1;
@@ -435,10 +411,8 @@
         let bookmarkList = [];
         let currentlyRenderedFavs = [];
 
-        // 🌟 ตัวแปรเก็บสถานะ UI Mode (Classic หรือ Split)
         let uiMode = localStorage.getItem('jav_ui_mode') || 'classic';
         
-        // 🌟 ตัวแปรระบบ Drag Resizer
         let isDragging = false;
         let savedSplitWidth = localStorage.getItem('jav_split_width') || '40%';
 
@@ -451,7 +425,6 @@
                 .replace(/\r/g, '\\r');
         }
 
-        // --- 🌟 ระบบจัดการ UI Mode (Split View / Classic) ---
         function initUIMode() {
             if (uiMode === 'split' && window.innerWidth >= 768) {
                 document.body.classList.add('split-active');
@@ -461,10 +434,9 @@
                 document.getElementById('pane-resizer').classList.add('flex');
                 document.getElementById('ui-mode-icon').className = "fas fa-window-maximize text-base";
                 
-                // หากยังไม่ได้เปิดหน้าต่างย่อยขวามือ ให้กินพื้นที่เต็มไปก่อน
                 document.getElementById('left-pane').style.width = '100%';
             } else {
-                uiMode = 'classic'; // กรณีจอมือถือบังคับเป็น Classic ไปเลย
+                uiMode = 'classic';
                 document.body.classList.remove('split-active');
                 document.getElementById('layout-wrapper').className = "w-full";
                 document.getElementById('left-pane').className = "w-full transition-all duration-200 ease-in-out";
@@ -485,7 +457,6 @@
             uiMode = uiMode === 'classic' ? 'split' : 'classic';
             localStorage.setItem('jav_ui_mode', uiMode);
             
-            // ปิด Modal ทั้งสองฝั่งเพื่อเคลียร์การแสดงผลก่อน
             closeModal();
             initUIMode();
             
@@ -493,7 +464,6 @@
             showToast(`เปลี่ยนการแสดงผลเป็น ${modeName}`, "info");
         }
 
-        // --- 🌟 ระบบปรับขนาดด้วยการลาก (Drag Resizer) ---
         function setupResizer() {
             const resizer = document.getElementById('pane-resizer');
             const rightPane = document.getElementById('right-pane');
@@ -505,17 +475,15 @@
             resizer.addEventListener('mousedown', function(e) {
                 isDragging = true;
                 document.body.style.cursor = 'col-resize';
-                document.body.style.userSelect = 'none'; // ป้องกันการคลุมดำข้อความ
+                document.body.style.userSelect = 'none'; 
             });
 
             document.addEventListener('mousemove', function(e) {
                 if (!isDragging) return;
                 
-                // คำนวณความกว้างใหม่จากตำแหน่งเมาส์ (ขวาไปซ้าย)
                 const containerWidth = wrapper.offsetWidth;
                 let newRightWidth = containerWidth - e.clientX;
 
-                // กำหนดลิมิตความกว้างต่ำสุด-สูงสุด
                 if (newRightWidth < 320) newRightWidth = 320; 
                 if (newRightWidth > containerWidth - 400) newRightWidth = containerWidth - 400;
 
@@ -535,7 +503,6 @@
             });
         }
 
-        // 🌟 Helper Update ฟังก์ชันเชื่อม DOM ทั้งโหมด Classic และ Split 
         function updateDOMText(baseId, text) {
             const m = document.getElementById(baseId);
             const s = document.getElementById('s-' + baseId);
@@ -548,17 +515,6 @@
             const s = document.getElementById('s-' + baseId);
             if(m) m.innerHTML = html;
             if(s) s.innerHTML = html;
-        }
-
-        function updateDownloadBtnState(disabled, loadHtml) {
-            ['btn-dl', 's-btn-dl', 'btn-dl-individual', 's-btn-dl-individual'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.disabled = disabled;
-                    if(loadHtml && id.includes('individual')) el.innerHTML = loadHtml.indiv;
-                    if(loadHtml && !id.includes('individual')) el.innerHTML = loadHtml.zip;
-                }
-            });
         }
 
         function updateStatusMsg(html, isHidden) {
@@ -578,7 +534,6 @@
             rightPane.classList.remove('hidden');
             rightPane.classList.add('split-right');
             
-            // ใช้ความกว้างที่บันทึกไว้
             rightPane.style.width = savedSplitWidth;
             leftPane.style.width = `calc(100% - ${savedSplitWidth})`;
         }
@@ -590,7 +545,6 @@
             rightPane.classList.remove('split-right');
             leftPane.style.width = '100%';
         }
-
 
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
@@ -630,7 +584,6 @@
             }, 4000);
         }
 
-        // --- 🚀 ฟังก์ชันควบคุมหน้าต่างป๊อปอัป ค้นหา และ วางลิงก์ ดีไซน์ใหม่ ---
         function openSearchModal() {
             const modal = document.getElementById('search-modal');
             if (modal) {
@@ -823,7 +776,6 @@
             
             updateCurrentPageBookmarkButtonUI();
 
-            // เลื่อน Grid กลับไปบนสุด
             const leftPane = document.getElementById('left-pane');
             if (leftPane) leftPane.scrollTo({ top: 0, behavior: 'smooth' });
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -916,6 +868,7 @@
             }
         }
 
+        // 🌟 ถอดสัญลักษณ์หัวใจออกจากหน้าแรก (Grid) และเปลี่ยนเป็นกรอบแดงเมื่อกดตรงพื้นที่รูปแทน
         function renderGrid(items) {
             const grid = document.getElementById('gallery-grid');
             grid.innerHTML = items.map(item => {
@@ -930,25 +883,25 @@
                 });
                 
                 return `
-                    <div class="gallery-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm cursor-pointer border border-transparent dark:border-gray-700 relative flex flex-col justify-between" id="item-card-${uniqueKey}">
+                    <div class="gallery-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-transparent dark:border-gray-700 relative flex flex-col justify-between" id="item-card-${uniqueKey}">
                         
-                        <div onclick="handleCardClick('${escapeQuotes(item.id)}', '${escapeQuotes(item.url)}', '${escapeQuotes(item.thumb)}', '${escapeQuotes(item.title)}', ${item.isSnapshot || false}, '${escapeQuotes(item.parentId)}', ${item.snapshotIndex || 0})" class="bg-gray-200 dark:bg-gray-700 relative pb-[150%]">
+                        <!-- พื้นที่รูปภาพ เมื่อคลิกคือการเพิ่มลง Favorites (และแสดงกรอบสีแดง) -->
+                        <div onclick="toggleFavorite(event, '${escapeQuotes(item.id)}', '${escapeQuotes(item.title)}', '${escapeQuotes(item.thumb)}', '${escapeQuotes(item.url)}', ${item.isSnapshot || false}, '${escapeQuotes(item.parentId)}', ${item.snapshotIndex || 0})" 
+                             class="fav-wrapper-${uniqueKey} bg-gray-200 dark:bg-gray-700 relative pb-[150%] cursor-pointer transition-all duration-200 ${isFav ? 'ring-4 ring-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] z-10' : ''}" title="คลิกเพื่อบันทึก/ยกเลิกรายการโปรด">
                             <div class="absolute inset-0">
                                 ${getRobustImgTag(item.thumb, "w-full h-full object-cover")}
                             </div>
                         </div>
 
-                        <button onclick="toggleFavorite(event, '${escapeQuotes(item.id)}', '${escapeQuotes(item.title)}', '${escapeQuotes(item.thumb)}', '${escapeQuotes(item.url)}', ${item.isSnapshot || false}, '${escapeQuotes(item.parentId)}', ${item.snapshotIndex || 0})" class="absolute top-2.5 right-2.5 z-10 w-8 h-8 rounded-full bg-black/60 text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all heart-btn-${uniqueKey}">
-                            <i class="${isFav ? 'fas text-red-500' : 'far'} fa-heart text-base"></i>
-                        </button>
-
-                        <div class="p-2.5 md:p-3 flex-grow flex flex-col justify-between">
+                        <!-- พื้นที่ข้อความด้านล่าง (แยกส่วน) เมื่อคลิกคือการเปิดดูรายละเอียด -->
+                        <div onclick="handleCardClick('${escapeQuotes(item.id)}', '${escapeQuotes(item.url)}', '${escapeQuotes(item.thumb)}', '${escapeQuotes(item.title)}', ${item.isSnapshot || false}, '${escapeQuotes(item.parentId)}', ${item.snapshotIndex || 0})" 
+                             class="p-2.5 md:p-3 flex-grow flex flex-col justify-between cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" title="คลิกเพื่อดูรายละเอียด">
                             <div class="text-[10px] md:text-xs font-bold text-red-500 mb-0.5 md:mb-1">
                                 ${item.isSnapshot ? `${escapeQuotes(item.parentId)} (Scene #${item.snapshotIndex})` : escapeQuotes(item.id)}
                             </div>
                             <div class="text-[11px] md:text-[12px] line-clamp-2 dark:text-gray-200 font-medium leading-tight mb-2">${escapeQuotes(item.title)}</div>
                             
-                            <div onclick="triggerDirectScan('${item.isSnapshot ? escapeQuotes(item.parentId) : escapeQuotes(item.id)}', '${escapeQuotes(item.url)}')" class="text-[10px] text-blue-500 dark:text-blue-400 font-bold border-t border-gray-100 dark:border-gray-700 pt-1.5 hover:underline cursor-pointer flex items-center gap-1">
+                            <div onclick="event.stopPropagation(); triggerDirectScan('${item.isSnapshot ? escapeQuotes(item.parentId) : escapeQuotes(item.id)}', '${escapeQuotes(item.url)}')" class="text-[10px] text-blue-500 dark:text-blue-400 font-bold border-t border-gray-100 dark:border-gray-700 pt-1.5 hover:underline flex items-center gap-1">
                                 <i class="fas fa-external-link-alt text-[8px]"></i> สแกนรหัสเรื่องนี้
                             </div>
                         </div>
@@ -957,6 +910,7 @@
             }).join('');
         }
 
+        // --- หากคลิกที่พื้นที่ข้อความของรูปโปรด (Snapshot) ให้เปิดสไลด์เต็มจอ ---
         function handleCardClick(id, url, thumb, title, isSnapshot, parentId, snapshotIndex) {
             if (isSnapshot) {
                 const sortedFavs = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp);
@@ -1044,19 +998,28 @@
 
         function goHome() { 
             switchMainTab('home');
+            const sIn = document.getElementById('search-input') || document.getElementById('search-modal-input');
+            if (sIn) sIn.value = '';
+            const uIn = document.getElementById('url-input') || document.getElementById('link-modal-input');
+            if (uIn) uIn.value = '';
             changeGridSize(6); 
             loadPage(TARGET_URL); 
         }
         function loadLatest() { 
             switchMainTab('home');
+            const sIn = document.getElementById('search-input') || document.getElementById('search-modal-input');
+            if (sIn) sIn.value = '';
+            const uIn = document.getElementById('url-input') || document.getElementById('link-modal-input');
+            if (uIn) uIn.value = '';
             changeGridSize(6); 
             loadPage(`${TARGET_URL}list/release_date/1`); 
         }
 
         function triggerDirectSearch(name, url) {
-            closeModal(); // จะครอบคลุมทั้งการปิด Classic และ Split View
+            closeModal();
             let safeUrl = resolveUrl(url);
             loadPage(safeUrl);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function getVisitedHistory() { try { return JSON.parse(localStorage.getItem('javGalleryVisited')) || []; } catch (e) { return []; } }
@@ -1407,6 +1370,7 @@
             if (countEl) countEl.innerText = favoriteList.length;
         }
 
+        // 🌟 อัปเดตฟังก์ชันกดหัวใจ (เปลี่ยนกรอบสีแดงแทนการโชว์หัวใจ)
         async function toggleFavorite(event, id, title, thumb, url, isSnapshot = false, parentId = '', snapshotIndex = 0) {
             if (event) event.stopPropagation();
             
@@ -1441,14 +1405,18 @@
             localStorage.setItem('jav_favorites', JSON.stringify(favoriteList));
             updateFavCountBadge();
 
-            // 🌟 อัปเดตไอคอนหัวใจทั้งบนการ์ดและใน Modal ให้ตรงกัน
-            const cardBtns = document.querySelectorAll(`.heart-btn-${uniqueKey} i`);
-            cardBtns.forEach(btn => {
-                if (actionType === 'add') btn.className = "fas text-red-500 fa-heart text-base animate-ping";
-                else btn.className = "far fa-heart text-base";
-                setTimeout(() => {
-                    if (actionType === 'add') btn.className = "fas text-red-500 fa-heart text-base";
-                }, 400);
+            // 🌟 อัปเดตคลาสแสดงผลกรอบรูปสีแดง (ทั้งใน Grid หน้าหลัก และ Modal ย่อย)
+            const wrappers = document.querySelectorAll(`.fav-wrapper-${uniqueKey}`);
+            wrappers.forEach(wrap => {
+                if (actionType === 'add') {
+                    wrap.classList.add('ring-4', 'ring-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]', 'z-10');
+                    wrap.classList.remove('border', 'border-gray-200', 'dark:border-gray-700', 'shadow-sm');
+                } else {
+                    wrap.classList.remove('ring-4', 'ring-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]', 'z-10');
+                    if (!wrap.classList.contains('pb-[150%]')) { 
+                        wrap.classList.add('border', 'border-gray-200', 'dark:border-gray-700', 'shadow-sm');
+                    }
+                }
             });
 
             if (activeMainTab === 'favorites') {
@@ -1543,7 +1511,7 @@
                     <div class="col-span-full py-20 text-center dark:text-gray-400">
                         <i class="far fa-heart text-5xl text-gray-300 mb-4 block"></i>
                         <p class="font-bold text-gray-500 dark:text-gray-400">ยังไม่มีรายการรูปที่กดหัวใจโปรด</p>
-                        <p class="text-xs text-gray-400 mt-2">คุณสามารถกดหัวใจที่มุมขวาบนของปกภาพ หรือ รูปถ่ายสแนปช็อต ในรายละเอียดเพื่อจัดเก็บได้</p>
+                        <p class="text-xs text-gray-400 mt-2">คุณสามารถบันทึกรายการโปรดได้ง่ายๆ เพียง <b>คลิกที่รูปภาพ</b> กรอบของภาพจะเปลี่ยนเป็นสีแดงทันที</p>
                     </div>
                 `;
                 return;
@@ -1657,10 +1625,8 @@
             }
         }
 
-        // 🌟 อัปเกรดระบบ Open Modal เพื่อรองรับทั้งโหมด Split View และ Classic Modal
         async function openModal(id, url, thumbUrl, title) {
             
-            // ตรวจสอบและเปิดใช้งาน Layout ตาม UI Mode ปัจจุบัน
             const isMobile = window.innerWidth < 768;
             if (uiMode === 'split' && !isMobile) {
                 openSplitPane();
@@ -1678,8 +1644,6 @@
             updateDOMHTML('m-genre', `<strong><i class="fas fa-tags text-blue-500 mr-2 text-base"></i> แนวหนัง:</strong> กำลังสแกน...`);
             updateDOMHTML('m-maker', `<strong><i class="fas fa-building text-purple-500 mr-2 text-base"></i> ค่าย:</strong> กำลังสแกน...`);
             updateDOMHTML('m-count', `<strong><i class="fas fa-spinner fa-spin text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> กำลังสแกน...`);
-            updateDownloadBtnState(true, null);
-            updateStatusMsg(null, true);
             
             const itemUrl = url || `${TARGET_URL}video/${id.toLowerCase().replace('-', '00')}`;
             markAsVisited(id);
@@ -1876,15 +1840,14 @@
                 updateDOMHTML('m-count', `<strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> <span class="text-gray-800 dark:text-gray-200 font-bold">${currentImages.length}</span> รูป`);
                 
                 renderModalImages(currentImages, scannedCode, title || scannedCode);
-                updateDownloadBtnState(false, null);
 
             } catch(e) {
                 console.warn("Failed to fetch detail page", e);
                 updateDOMHTML('m-count', `<strong><i class="fas fa-images text-orange-500 mr-2 text-base"></i> จำนวนรูป:</strong> <span class="text-red-500 text-xs">ติดบล็อกบอทจากเซิร์ฟเวอร์ (ดึงได้เฉพาะหน้าปก)</span>`);
-                updateDownloadBtnState(false, null);
             }
         }
 
+        // 🌟 อัปเกรด Clean UI ในส่วนการแสดงภาพสแนปช็อต
         function renderModalImages(images, id, title) {
             const safeId = String(id || '').replace(/\s+/g, '_');
             
@@ -1901,403 +1864,31 @@
                             return !f.isSnapshot && f.id === id;
                         });
 
+                        // ดีไซน์ใหม่: ลบป้ายบอกประเภท เอาปุ่มโหลดและลิงก์ออกทั้งหมด 
+                        // เพิ่ม Event Click ที่รูปให้ทำงานเป็นปุ่มกดหัวใจ (ตีกรอบสีแดง) และให้สิทธิการคลิก 2 ครั้ง (Double Click) สำหรับดูรูปเต็มจอแทน
                         return `
-                        <div class="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 shadow-sm ${i === 0 ? 'md:col-span-2 bg-black' : 'bg-gray-100 dark:bg-gray-800'}">
-                            <div class="absolute top-2 left-2 z-10 bg-black/60 text-white text-[10px] px-2 py-1 rounded font-bold pointer-events-none">
-                                ${i === 0 ? 'COVER' : 'SNAPSHOT #' + i}
-                            </div>
+                        <div id="modal-img-wrap-${uniqueKey}" 
+                             class="fav-wrapper-${uniqueKey} relative group rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${i === 0 ? 'md:col-span-2 bg-black' : 'bg-gray-100 dark:bg-gray-800'} ${isFav ? 'ring-4 ring-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] z-10' : 'border border-gray-200 dark:border-gray-700 shadow-sm'}"
+                             onclick="toggleFavorite(event, '${escapeQuotes(id)}', '${escapeQuotes(title)}', '${escapeQuotes(src)}', '${escapeQuotes(currentUrl)}', ${isSnapshot}, '${escapeQuotes(id)}', ${i})"
+                             ondblclick="openFullImgModal(${i})"
+                             title="คลิกเพื่อบันทึก/ยกเลิกรายการโปรด (ดับเบิลคลิกเพื่อดูภาพเต็มจอ)">
+                             
+                            ${getRobustImgTag(src, `w-full h-auto object-contain block ${i === 0 ? 'max-h-[50vh] md:max-h-[600px]' : ''}`)}
                             
-                            <button onclick="event.stopPropagation(); toggleFavorite(null, '${escapeQuotes(id)}', '${escapeQuotes(title)}', '${escapeQuotes(src)}', '${escapeQuotes(currentUrl)}', ${isSnapshot}, '${escapeQuotes(id)}', ${i})" class="absolute top-2.5 right-2.5 z-30 w-9 h-9 rounded-full bg-black/60 flex items-center justify-center hover:scale-110 active:scale-95 transition-all heart-btn-${uniqueKey}">
-                                <i class="${isFav ? 'fas text-red-500' : 'far text-white'} fa-heart text-base"></i>
-                            </button>
-
-                            <div onclick="openFullImgModal(${i})" class="cursor-zoom-in w-full">
-                                ${getRobustImgTag(src, `w-full h-auto object-contain block ${i === 0 ? 'max-h-[50vh] md:max-h-[600px]' : ''}`)}
-                            </div>
-                            
-                            <div class="absolute bottom-2 right-2 flex gap-1.5 z-30">
-                                <a href="${escapeQuotes(src)}" target="_blank" onclick="event.stopPropagation();" class="bg-blue-600/90 hover:bg-blue-600 text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform" title="เปิดดูลิงก์รูปต้นทาง">
-                                    <i class="fas fa-external-link-alt text-xs"></i>
-                                </a>
-                                <button onclick="event.stopPropagation(); downloadSingleImage('${escapeQuotes(src)}', '${escapeQuotes(id)}_${i === 0 ? 'cover' : i}.jpg')" class="bg-primary/90 hover:bg-primary text-white w-9 h-9 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition-transform" title="ดาวน์โหลดรูปภาพ">
-                                    <i class="fas fa-download text-xs"></i>
-                                </button>
-                            </div>
                         </div>
                     `}).join('')}
                 </div>
             `;
-            // อัปเดต HTML ทั้งในโหมดหน้าต่างป๊อปอัป และในโหมดแยกหน้าจอ
             updateDOMHTML('modal-images', html);
         }
 
-        // 🌟 ฟังก์ชันปิด Modal (ครอบคลุมทั้ง 2 โหมด)
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.getElementById('modal').classList.remove('flex');
-            document.body.style.overflow = 'auto'; 
-            closeSplitPane(); 
-        }
-
-        // --- 🌟 ระบบปรับขนาดลากซ้าย-ขวา (Drag Resizer Initialization) ---
         window.onload = () => {
-            initUIMode();      // ตรวจสอบโหมดที่เซฟไว้ตอนโหลดเข้าเว็บ
+            initUIMode();      
             initFavorites();   
             loadBookmarks();   
             changeGridSize(6); 
             loadLatest();      
         };
-
-        // --- ส่วนควบคุมแสดงภาพสไลด์โชว์ ---
-        function openFullImgModal(index) {
-            slideshowActiveIndex = index;
-            document.getElementById('full-img-modal').classList.remove('hidden');
-            document.getElementById('full-img-modal').classList.add('flex');
-            updateFullImgView();
-        }
-
-        function closeModalAndReset() {
-            stopSlideshow();
-            document.getElementById('full-img-modal').classList.add('hidden');
-            document.getElementById('full-img-modal').classList.remove('flex');
-        }
-        
-        function closeFullImgModal() {
-            closeModalAndReset();
-        }
-
-        function updateFullImgView() {
-            const targetImg = document.getElementById('full-modal-target-img');
-            const infoText = document.getElementById('slideshow-info');
-            const currentSrc = currentImages[slideshowActiveIndex];
-            
-            if (!targetImg) return;
-
-            targetImg.style.opacity = '0';
-            targetImg.style.transform = 'scale(0.95)';
-            
-            setTimeout(() => {
-                targetImg.src = currentSrc;
-                targetImg.onload = () => {
-                    targetImg.style.opacity = '1';
-                    targetImg.style.transform = 'scale(1)';
-                };
-                if (infoText) infoText.innerText = `${slideshowActiveIndex + 1} / ${currentImages.length}`;
-            }, 150);
-        }
-
-        function openCurrentImageSource() {
-            if (currentImages && currentImages[slideshowActiveIndex]) {
-                window.open(currentImages[slideshowActiveIndex], '_blank');
-            }
-        }
-
-        function nextFullImg() {
-            if (!currentImages.length) return;
-            slideshowActiveIndex = (slideshowActiveIndex + 1) % currentImages.length;
-            updateFullImgView();
-        }
-
-        function prevFullImg() {
-            if (!currentImages.length) return;
-            slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length;
-            updateFullImgView();
-        }
-
-        function toggleSlideshow() {
-            if (slideshowInterval) {
-                stopSlideshow();
-            } else {
-                startSlideshow();
-            }
-        }
-
-        function startSlideshow() {
-            const playBtn = document.getElementById('btn-play-slideshow');
-            const icon = document.getElementById('play-icon');
-            
-            slideshowSpeed = parseInt(document.getElementById('slideshow-speed').value);
-            
-            if (icon) icon.className = "fas fa-pause";
-            if (playBtn) playBtn.className = "text-green-400 hover:text-green-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
-            
-            slideshowInterval = setInterval(() => {
-                nextFullImg();
-            }, slideshowSpeed);
-        }
-
-        function stopSlideshow() {
-            const playBtn = document.getElementById('btn-play-slideshow');
-            const icon = document.getElementById('play-icon');
-            
-            if (icon) icon.className = "fas fa-play";
-            if (playBtn) playBtn.className = "text-green-400 hover:text-green-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
-            
-            if (slideshowInterval) {
-                clearInterval(slideshowInterval);
-                slideshowInterval = null;
-            }
-        }
-
-        function changeSlideshowSpeed() {
-            if (slideshowInterval) {
-                stopSlideshow();
-                startSlideshow();
-            }
-        }
-
-        // --- 🚀 ระบบดาวน์โหลดและเชื่อมคลาวด์ ---
-        async function fetchBlobRacing(url) {
-            if (url.startsWith('//')) url = 'https:' + url;
-            
-            if (url.includes('/static/digital/')) {
-                url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
-            }
-
-            const cleanUrl = url.replace(/^https?:\/\//, '');
-            const controller = new AbortController();
-            const signal = controller.signal;
-            
-            const proxies = [
-                url, // ลองเปิดรับตรงก่อนเผื่อไม่โดนบล็อก CORS
-                `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
-                `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`,
-                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
-            ];
-            
-            try {
-                const blob = await Promise.any(proxies.map(pUrl => 
-                    fetch(pUrl, { signal }).then(res => {
-                        if (!res.ok) throw new Error('Proxy error');
-                        const contentType = res.headers.get('content-type');
-                        if (contentType && contentType.includes('text/html')) throw new Error('CORS block');
-                        return res.blob();
-                    })
-                ));
-                controller.abort(); 
-                return blob;
-            } catch(e) {
-                throw new Error("PRO Download Engine - All proxies failed");
-            }
-        }
-
-        async function downloadSingleImage(url, filename) {
-            try {
-                const blob = await fetchBlobRacing(url);
-                const objUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = objUrl;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-            } catch (err) {
-                showToast("เซิร์ฟเวอร์ดักจับการโหลดอัตโนมัติ กรุณาคลิกขวา -> บันทึกรูปภาพ แทนครับ", "warning");
-            }
-        }
-
-        async function downloadFilteredFavoritesIndividually() {
-            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
-            const btn = document.getElementById('btn-dl-bulk-individual');
-            const originalText = btn ? btn.innerHTML : '';
-            
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> เตรียมดาวน์โหลด...`;
-            }
-            
-            try {
-                let completed = 0;
-                for (let i = 0; i < currentlyRenderedFavs.length; i++) {
-                    const item = currentlyRenderedFavs[i];
-                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> กำลังโหลด (${completed + 1}/${currentlyRenderedFavs.length})`;
-                    
-                    try {
-                        const blob = await fetchBlobRacing(item.thumb);
-                        const filename = item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}.jpg` : `cover_${item.id}.jpg`;
-                        
-                        const objUrl = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = objUrl;
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-                        completed++;
-                    } catch (err) {
-                        console.warn(`Failed downloading favorite image at index ${i}:`, err);
-                    }
-                    
-                    await new Promise(r => setTimeout(r, 220)); 
-                }
-                
-                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
-                showToast("ดาวน์โหลดไฟล์รูปโปรดทั้งหมดเข้าสู่เครื่องสำเร็จแล้ว", "success");
-            } catch(e) {
-                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ล้มเหลว`;
-                showToast("พบปัญหาในการเชื่อมต่อคลาวด์ดาวน์โหลดรูปภาพสำรอง", "error");
-            } finally {
-                setTimeout(() => {
-                    if (btn) {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    }
-                }, 3000);
-            }
-        }
-
-        async function downloadFilteredFavoritesZip() {
-            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
-            const btn = document.getElementById('btn-dl-bulk-zip');
-            const zip = new JSZip();
-            const originalText = btn ? btn.innerHTML : '';
-            
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังแพ็ค...`;
-            }
-            
-            try {
-                let completed = 0;
-                for (let i = 0; i < currentlyRenderedFavs.length; i++) {
-                    const item = currentlyRenderedFavs[i];
-                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> ดึงภาพ (${completed + 1}/${currentlyRenderedFavs.length})...`;
-                    
-                    try {
-                        const blob = await fetchBlobRacing(item.thumb);
-                        const filename = item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}.jpg` : `cover_${item.id}.jpg`;
-                        zip.file(filename, blob);
-                        completed++;
-                    } catch (err) {
-                        console.warn(`Failed pulling to ZIP at index ${i}:`, err);
-                    }
-                    
-                    await new Promise(r => setTimeout(r, 180)); 
-                }
-                
-                if (btn) btn.innerHTML = `<i class="fas fa-cog fa-spin mr-1"></i> กำลังสร้าง ZIP...`;
-                const content = await zip.generateAsync({type:"blob"});
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                
-                const dateFilter = document.getElementById('fav-date-filter');
-                const selectedDate = dateFilter ? dateFilter.value : 'all';
-                const dateTag = selectedDate !== 'all' ? selectedDate.replace(/\//g, '_') : 'custom';
-                link.download = `Favorites_${dateTag}_Gallery.zip`;
-                
-                link.click();
-                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> บันทึกแล้ว!`;
-                showToast("สร้างและจัดส่งแพ็กเกจไฟล์ ZIP สำเร็จ!", "success");
-            } catch(e) {
-                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> โหลดผิดพลาด`;
-                showToast("เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง", "error");
-            } finally {
-                setTimeout(() => {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = originalText;
-                    }
-                }, 3000);
-            }
-        }
-
-        async function downloadAllIndividuallyModal() {
-            if (!currentImages.length) return;
-            // 🌟 แก้ไขให้ดึงรหัส ID ได้ทั้งฝั่ง Modal ป๊อปอัปและ Split View
-            const idEl = document.getElementById('m-id') || document.getElementById('s-m-id');
-            const id = idEl ? idEl.innerText : 'gallery';
-            
-            updateDownloadBtnState(true, { indiv: `<i class="fas fa-spinner fa-spin"></i> โหลดทีละรูป`, zip: `<i class="fas fa-file-archive"></i> โหลด .ZIP` });
-            
-            try {
-                let completed = 0;
-                for (let i = 0; i < currentImages.length; i++) {
-                    const url = currentImages[i];
-                    updateDownloadBtnState(true, { indiv: `<i class="fas fa-spinner fa-spin"></i> ดึงภาพที่ (${completed + 1}/${currentImages.length})`, zip: `<i class="fas fa-file-archive"></i> โหลด .ZIP` });
-                    
-                    try {
-                        const blob = await fetchBlobRacing(url);
-                        const filename = `${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`;
-                        
-                        const objUrl = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
-                        link.href = objUrl;
-                        link.download = filename;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-                        completed++;
-                    } catch (err) {
-                        console.warn(`Failed single download inside modal index ${i}:`, err);
-                    }
-                    
-                    await new Promise(r => setTimeout(r, 220));
-                }
-                
-                updateDownloadBtnState(true, { indiv: `<i class="fas fa-check-circle"></i> โหลดเสร็จสิ้น!`, zip: `<i class="fas fa-file-archive"></i> โหลด .ZIP` });
-                showToast("ดาวน์โหลดไฟล์รูปภาพทั้งหมดเข้าสู่เครื่องแล้ว", "success");
-            } catch(e) {
-                updateDownloadBtnState(false, { indiv: `<i class="fas fa-times-circle"></i> โหลดไม่สำเร็จ`, zip: `<i class="fas fa-file-archive"></i> โหลด .ZIP` });
-                showToast("ไม่สามารถประมวลผลการแปลงดาวน์โหลดรูปภาพ", "error");
-            } finally {
-                setTimeout(() => {
-                    updateDownloadBtnState(false, { indiv: `<i class="fas fa-cloud-download-alt"></i> โหลดทีละรูป`, zip: `<i class="fas fa-file-archive"></i> โหลด .ZIP` });
-                }, 3000);
-            }
-        }
-
-        async function downloadAllModal() {
-            if (!currentImages.length) return;
-            const idEl = document.getElementById('m-id') || document.getElementById('s-m-id');
-            const id = idEl ? idEl.innerText : 'gallery';
-            const zip = new JSZip();
-            
-            updateDownloadBtnState(true, null);
-            updateStatusMsg(`<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i> เตรียมดาวน์โหลด...`, false);
-            
-            try {
-                let completed = 0;
-                for (let i = 0; i < currentImages.length; i++) {
-                    const url = currentImages[i];
-                    updateStatusMsg(`<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i> ดึงสกรีนช็อต (${completed + 1}/${currentImages.length})...`, false);
-                    
-                    try {
-                        const blob = await fetchBlobRacing(url);
-                        zip.file(`${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`, blob);
-                        completed++;
-                    } catch (err) {
-                        console.warn(`Failed adding to ZIP inside modal index ${i}:`, err);
-                    }
-                    
-                    await new Promise(r => setTimeout(r, 180));
-                }
-                
-                updateStatusMsg(`<i class="fas fa-cog fa-spin text-primary mr-1"></i> กำลังบีบอัดไฟล์ ZIP...`, false);
-                const content = await zip.generateAsync({type:"blob"});
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(content);
-                link.download = `${id}_Gallery.zip`;
-                link.click();
-                updateStatusMsg(`<i class="fas fa-check-circle text-green-500 mr-1"></i> ดาวน์โหลดเสร็จสิ้น!`, false);
-                showToast("แพ็กเกจไฟล์ ZIP ส่งออกสำเร็จ!", "success");
-            } catch(e) {
-                updateStatusMsg(`<i class="fas fa-times-circle text-red-500 mr-1"></i> เกิดข้อผิดพลาดในการโหลดรูป`, false);
-                showToast("เซิร์ฟเวอร์ปฏิเสธการเชื่อมต่อชั่วคราว", "error");
-            } finally {
-                setTimeout(() => {
-                    updateDownloadBtnState(false, null);
-                    updateStatusMsg(null, true);
-                }, 3000);
-            }
-        }
-
-        function downloadAllIndividually() { downloadAllIndividuallyModal(); }
-        function downloadAll() { downloadAllModal(); }
     </script>
 </body>
 </html>
