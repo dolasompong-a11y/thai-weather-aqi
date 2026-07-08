@@ -56,6 +56,7 @@
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-colors duration-200 dark:bg-gray-800 dark:border-gray-700" id="main-header">
         <div class="container mx-auto px-3 py-3 flex justify-between items-center">
             
+            <!-- ฝั่งซ้าย: โลโก้และปุ่มการนำทางหลัก -->
             <div class="flex items-center space-x-2 md:space-x-3">
                 <div class="bg-primary text-white px-3 py-1.5 rounded font-bold text-lg md:text-xl cursor-pointer shadow-sm active:scale-95 transition-transform" onclick="goHome()" title="กลับสู่หน้าแรก">JAV HUB</div>
                 
@@ -77,6 +78,7 @@
                 </button>
             </div>
 
+            <!-- ฝั่งขวา: เปลี่ยนเป็นชุดปุ่มไอคอนสไตล์มินิมอล เพื่อประหยัดพื้นที่แสดงรูปสูงสุด -->
             <div class="flex items-center space-x-1.5 md:space-x-2">
                 <button onclick="toggleUIMode()" class="hidden md:flex p-2.5 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-gray-700 dark:hover:bg-gray-600 text-blue-600 dark:text-blue-400 transition-all active:scale-90" title="สลับมุมมอง (แยกซ้าย-ขวา / ป๊อปอัป)">
                     <i id="ui-mode-icon" class="fas fa-columns text-base"></i>
@@ -257,36 +259,6 @@
         </div>
     </div>
 
-    <!-- หน้าต่างป๊อปอัป ค้นหา (Search Modal Popup) -->
-    <div id="search-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl p-5 shadow-2xl border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg dark:text-white"><i class="fas fa-search text-primary mr-2"></i>ค้นหาด่วน</h3>
-                <button onclick="closeSearchModal()" class="text-gray-400 hover:text-red-500 text-lg transition-colors"><i class="fas fa-times"></i></button>
-            </div>
-            <p class="text-xs text-gray-400 mb-3">ใส่รหัสเรื่อง หรือรหัสจำเพาะ เช่น SSIS-123 หรือ SIVR เพื่อค้นหาปกแบบความเร็วสูง</p>
-            <div class="flex gap-2">
-                <input type="text" id="search-modal-input" placeholder="พิมพ์คำค้นหาที่นี่..." class="flex-1 text-sm bg-gray-50 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary">
-                <button onclick="executeModalSearch()" class="bg-primary hover:bg-red-700 text-white px-5 rounded-xl text-sm font-bold transition-all">ค้นหา</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- หน้าต่างป๊อปอัป วางลิงก์ (URL Link Modal Popup) -->
-    <div id="link-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl p-5 shadow-2xl border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg dark:text-white"><i class="fas fa-link text-blue-500 mr-2"></i>เปิดจากลิงก์เว็บตรง</h3>
-                <button onclick="closeLinkInputModal()" class="text-gray-400 hover:text-red-500 text-lg transition-colors"><i class="fas fa-times"></i></button>
-            </div>
-            <p class="text-xs text-gray-400 mb-3">วางลิงก์หน้าดารา, หมวดหมู่ หรือลิงก์หนังโดยตรงจากเว็บ JAV321 หรือ JVR Library ที่นี่</p>
-            <div class="flex gap-2">
-                <input type="text" id="link-modal-input" placeholder="วางที่อยู่ลิงก์เว็บเป้าหมาย..." class="flex-1 text-sm bg-gray-50 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary">
-                <button onclick="executeModalLink()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl text-sm font-bold transition-all">เปิดลิงก์</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Classic Modal รายละเอียด (โหมดป๊อปอัปดั้งเดิม) -->
     <div id="modal" class="fixed inset-0 z-[100] bg-black/95 hidden items-center justify-center p-0 md:p-4 transition-opacity duration-300">
         <button onclick="closeModal()" class="absolute top-3 right-3 md:top-6 md:right-6 bg-black/60 md:bg-black/80 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl z-[110] hover:bg-red-500 active:bg-red-600 transition-colors shadow-lg backdrop-blur-sm border border-gray-600">
@@ -389,6 +361,7 @@
         </div>
     </div>
 
+    <!-- Core Scripts & Logic -->
     <script>
         let currentUrl = "https://www.jav321.com/";
         let currentPage = 1;
@@ -510,6 +483,49 @@
             if(s) s.innerText = text;
         }
 
+        // กู้คืนฟังก์ชันสลับหน้าและแสดงหน้าต่างตั้งค่าคลาวด์ GAS
+        function openConfigModal() {
+            const input = document.getElementById('gas-url-input');
+            if (input) input.value = gasEndpoint;
+            const modal = document.getElementById('config-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeConfigModal() {
+            const modal = document.getElementById('config-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+        
+        async function testAndSaveGAS() {
+            const urlInput = document.getElementById('gas-url-input');
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (!url) {
+                showToast("กรุณากรอกลิงก์ Web App URL ก่อนครับ", "warning");
+                return;
+            }
+            gasEndpoint = url;
+            localStorage.setItem('gas_url', url); 
+            showToast("เชื่อมต่อ Google Sheet สำเร็จ!", "success");
+            closeConfigModal();
+            syncFromGoogleSheet(); 
+            syncBookmarksFromGoogleSheet(); 
+        }
+        
+        function disconnectGAS() {
+            gasEndpoint = '';
+            localStorage.removeItem('gas_url'); 
+            const urlInput = document.getElementById('gas-url-input');
+            if (urlInput) urlInput.value = '';
+            showToast("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว", "info");
+            closeConfigModal();
+        }
+
         function updateDOMHTML(baseId, html) {
             const m = document.getElementById(baseId);
             const s = document.getElementById('s-' + baseId);
@@ -545,108 +561,6 @@
             rightPane.classList.remove('split-right');
             leftPane.style.width = '100%';
         }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-            toast.className = `p-4 rounded-xl shadow-xl border text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2.5`;
-            
-            let bgClass = 'bg-white border-gray-200 text-gray-800 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100';
-            let iconHtml = '<i class="fas fa-info-circle text-blue-500 text-base"></i>';
-
-            if (type === 'success') {
-                bgClass = 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-900 dark:text-green-200';
-                iconHtml = '<i class="fas fa-check-circle text-green-500 text-base"></i>';
-            } else if (type === 'error') {
-                bgClass = 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-900 dark:text-red-200';
-                iconHtml = '<i class="fas fa-exclamation-circle text-red-500 text-base"></i>';
-            } else if (type === 'warning') {
-                bgClass = 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-950 dark:border-yellow-900 dark:text-yellow-200';
-                iconHtml = '<i class="fas fa-exclamation-triangle text-yellow-500 text-base"></i>';
-            }
-
-            toast.className += ` ${bgClass}`;
-            toast.innerHTML = `${iconHtml} <span class="flex-1">${message}</span>`;
-            
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('translate-y-2', 'opacity-0');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 4000);
-        }
-
-        function openSearchModal() {
-            const modal = document.getElementById('search-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.getElementById('search-modal-input').focus();
-            }
-        }
-        function closeSearchModal() {
-            const modal = document.getElementById('search-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-        function executeModalSearch() {
-            const val = document.getElementById('search-modal-input').value.trim();
-            if (val) {
-                closeSearchModal();
-                switchMainTab('home');
-                if (currentUrl.includes('javdatabase.com')) {
-                    loadPage(`https://www.javdatabase.com/?s=${encodeURIComponent(val)}`);
-                } else {
-                    loadPage(`${TARGET_URL}search?sn=${encodeURIComponent(val)}`);
-                }
-            }
-        }
-
-        function openLinkInputModal() {
-            const modal = document.getElementById('link-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.getElementById('link-modal-input').focus();
-            }
-        }
-        function closeLinkInputModal() {
-            const modal = document.getElementById('link-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-        function executeModalLink() {
-            const val = document.getElementById('link-modal-input').value.trim();
-            if (val) {
-                closeLinkInputModal();
-                switchMainTab('home');
-                loadPage(val.startsWith('http') ? val : 'https://' + val);
-            }
-        }
-
-        document.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                const searchModal = document.getElementById('search-modal');
-                const linkModal = document.getElementById('link-modal');
-                if (searchModal && !searchModal.classList.contains('hidden')) {
-                    executeModalSearch();
-                } else if (linkModal && !linkModal.classList.contains('hidden')) {
-                    executeModalLink();
-                }
-            }
-        });
 
         function toggleTheme() {
             const isDark = document.documentElement.classList.toggle('dark');
@@ -1016,10 +930,9 @@
         }
 
         function triggerDirectSearch(name, url) {
-            closeModal();
+            closeModal(); // จะครอบคลุมทั้งการปิด Classic และ Split View
             let safeUrl = resolveUrl(url);
             loadPage(safeUrl);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function getVisitedHistory() { try { return JSON.parse(localStorage.getItem('javGalleryVisited')) || []; } catch (e) { return []; } }
@@ -1310,49 +1223,6 @@
             }
         }
 
-        function openConfigModal() {
-            const input = document.getElementById('gas-url-input');
-            if (input) input.value = gasEndpoint;
-            const modal = document.getElementById('config-modal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
-            }
-        }
-
-        function closeConfigModal() {
-            const modal = document.getElementById('config-modal');
-            if (modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
-        
-        async function testAndSaveGAS() {
-            const urlInput = document.getElementById('gas-url-input');
-            const url = urlInput ? urlInput.value.trim() : '';
-            if (!url) {
-                showToast("กรุณากรอกลิงก์ Web App URL ก่อนครับ", "warning");
-                return;
-            }
-            
-            gasEndpoint = url;
-            localStorage.setItem('gas_url', url); 
-            showToast("เชื่อมต่อ Google Sheet สำเร็จ! ข้อมูลจะถูกซิงค์จัดเก็บไว้บนชีตอย่างถาวร", "success");
-            closeConfigModal();
-            syncFromGoogleSheet(); 
-            syncBookmarksFromGoogleSheet(); 
-        }
-        
-        function disconnectGAS() {
-            gasEndpoint = '';
-            localStorage.removeItem('gas_url'); 
-            const urlInput = document.getElementById('gas-url-input');
-            if (urlInput) urlInput.value = '';
-            showToast("ยกเลิกการเชื่อมต่อระบบคลาวด์เรียบร้อยแล้ว", "info");
-            closeConfigModal();
-        }
-
         function initFavorites() {
             try {
                 favoriteList = JSON.parse(localStorage.getItem('jav_favorites')) || [];
@@ -1370,7 +1240,7 @@
             if (countEl) countEl.innerText = favoriteList.length;
         }
 
-        // 🌟 อัปเดตฟังก์ชันกดหัวใจ (เปลี่ยนกรอบสีแดงแทนการโชว์หัวใจ)
+        // 🌟 อัปเกรดฟังก์ชันกดหัวใจ (เปลี่ยนกรอบสีแดงแทนการโชว์หัวใจ)
         async function toggleFavorite(event, id, title, thumb, url, isSnapshot = false, parentId = '', snapshotIndex = 0) {
             if (event) event.stopPropagation();
             
@@ -1405,7 +1275,7 @@
             localStorage.setItem('jav_favorites', JSON.stringify(favoriteList));
             updateFavCountBadge();
 
-            // 🌟 อัปเดตคลาสแสดงผลกรอบรูปสีแดง (ทั้งใน Grid หน้าหลัก และ Modal ย่อย)
+            // 🌟 อัปเกรดคลาสแสดงผลกรอบรูปสีแดง (ทั้งใน Grid หน้าหลัก และ Modal ย่อย)
             const wrappers = document.querySelectorAll(`.fav-wrapper-${uniqueKey}`);
             wrappers.forEach(wrap => {
                 if (actionType === 'add') {
@@ -1626,7 +1496,6 @@
         }
 
         async function openModal(id, url, thumbUrl, title) {
-            
             const isMobile = window.innerWidth < 768;
             if (uiMode === 'split' && !isMobile) {
                 openSplitPane();
@@ -1699,7 +1568,7 @@
                         return `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${escapeQuotes(href)}'); return false;" class="text-purple-600 dark:text-purple-400 hover:underline font-semibold">${name}</a>`;
                     }).filter(Boolean))];
                 } else {
-                    stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"], a[href*="/idol"], a[href*="actress="], a[href*="star="], a[href*="idol="], a[href*="/cast?"], a[href*="cast="]')).map(a => {
+                    stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"], a[href*="/idol"], a[href*="actress="], a[href*="star="], a[href*="idol="]')).map(a => {
                         let name = a.innerText.trim();
                         if(a.querySelector('img') && !name) return null;
                         let href = resolveUrl(a.getAttribute('href'), itemUrl);
@@ -1847,7 +1716,6 @@
             }
         }
 
-        // 🌟 อัปเกรด Clean UI ในส่วนการแสดงภาพสแนปช็อต
         function renderModalImages(images, id, title) {
             const safeId = String(id || '').replace(/\s+/g, '_');
             
@@ -1864,8 +1732,6 @@
                             return !f.isSnapshot && f.id === id;
                         });
 
-                        // ดีไซน์ใหม่: ลบป้ายบอกประเภท เอาปุ่มโหลดและลิงก์ออกทั้งหมด 
-                        // เพิ่ม Event Click ที่รูปให้ทำงานเป็นปุ่มกดหัวใจ (ตีกรอบสีแดง) และให้สิทธิการคลิก 2 ครั้ง (Double Click) สำหรับดูรูปเต็มจอแทน
                         return `
                         <div id="modal-img-wrap-${uniqueKey}" 
                              class="fav-wrapper-${uniqueKey} relative group rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${i === 0 ? 'md:col-span-2 bg-black' : 'bg-gray-100 dark:bg-gray-800'} ${isFav ? 'ring-4 ring-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] z-10' : 'border border-gray-200 dark:border-gray-700 shadow-sm'}"
@@ -1880,6 +1746,375 @@
                 </div>
             `;
             updateDOMHTML('modal-images', html);
+        }
+
+        // 🌟 ฟังก์ชันปิด Modal (ครอบคลุมทั้ง 2 โหมด)
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+            document.body.style.overflow = 'auto'; 
+            closeSplitPane(); 
+        }
+
+        // --- ส่วนควบคุมแสดงภาพสไลด์โชว์ ---
+        function openFullImgModal(index) {
+            slideshowActiveIndex = index;
+            document.getElementById('full-img-modal').classList.remove('hidden');
+            document.getElementById('full-img-modal').classList.add('flex');
+            updateFullImgView();
+        }
+
+        function closeModalAndReset() {
+            stopSlideshow();
+            document.getElementById('full-img-modal').classList.add('hidden');
+            document.getElementById('full-img-modal').classList.remove('flex');
+        }
+        
+        function closeFullImgModal() {
+            closeModalAndReset();
+        }
+
+        function updateFullImgView() {
+            const targetImg = document.getElementById('full-modal-target-img');
+            const infoText = document.getElementById('slideshow-info');
+            const currentSrc = currentImages[slideshowActiveIndex];
+            
+            if (!targetImg) return;
+
+            targetImg.style.opacity = '0';
+            targetImg.style.transform = 'scale(0.95)';
+            
+            setTimeout(() => {
+                targetImg.src = currentSrc;
+                targetImg.onload = () => {
+                    targetImg.style.opacity = '1';
+                    targetImg.style.transform = 'scale(1)';
+                };
+                if (infoText) infoText.innerText = `${slideshowActiveIndex + 1} / ${currentImages.length}`;
+            }, 150);
+        }
+
+        function openCurrentImageSource() {
+            if (currentImages && currentImages[slideshowActiveIndex]) {
+                window.open(currentImages[slideshowActiveIndex], '_blank');
+            }
+        }
+
+        function nextFullImg() {
+            if (!currentImages.length) return;
+            slideshowActiveIndex = (slideshowActiveIndex + 1) % currentImages.length;
+            updateFullImgView();
+        }
+
+        function prevFullImg() {
+            if (!currentImages.length) return;
+            slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length;
+            updateFullImgView();
+        }
+
+        function toggleSlideshow() {
+            if (slideshowInterval) {
+                stopSlideshow();
+            } else {
+                startSlideshow();
+            }
+        }
+
+        function startSlideshow() {
+            const playBtn = document.getElementById('btn-play-slideshow');
+            const icon = document.getElementById('play-icon');
+            
+            slideshowSpeed = parseInt(document.getElementById('slideshow-speed').value);
+            
+            if (icon) icon.className = "fas fa-pause";
+            if (playBtn) playBtn.className = "text-yellow-400 hover:text-yellow-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
+            
+            slideshowInterval = setInterval(() => {
+                nextFullImg();
+            }, slideshowSpeed);
+        }
+
+        function stopSlideshow() {
+            const playBtn = document.getElementById('btn-play-slideshow');
+            const icon = document.getElementById('play-icon');
+            
+            if (icon) icon.className = "fas fa-play";
+            if (playBtn) playBtn.className = "text-green-400 hover:text-green-300 px-3 py-1 text-sm font-bold flex items-center gap-1.5 transition-all";
+            
+            if (slideshowInterval) {
+                clearInterval(slideshowInterval);
+                slideshowInterval = null;
+            }
+        }
+
+        function changeSlideshowSpeed() {
+            if (slideshowInterval) {
+                stopSlideshow();
+                startSlideshow();
+            }
+        }
+
+        // --- 🚀 ระบบดาวน์โหลดและเชื่อมคลาวด์ ---
+        async function fetchBlobRacing(url) {
+            if (url.startsWith('//')) url = 'https:' + url;
+            
+            if (url.includes('/static/digital/')) {
+                url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
+            }
+
+            const cleanUrl = url.replace(/^https?:\/\//, '');
+            const controller = new AbortController();
+            const signal = controller.signal;
+            
+            const proxies = [
+                url, // ลองเปิดรับตรงก่อนเผื่อไม่โดนบล็อก CORS
+                `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
+                `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
+                `https://corsproxy.io/?${encodeURIComponent(url)}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`
+            ];
+            
+            try {
+                const blob = await Promise.any(proxies.map(pUrl => 
+                    fetch(pUrl, { signal }).then(res => {
+                        if (!res.ok) throw new Error('Proxy error');
+                        const contentType = res.headers.get('content-type');
+                        if (contentType && contentType.includes('text/html')) throw new Error('CORS block');
+                        return res.blob();
+                    })
+                ));
+                controller.abort(); 
+                return blob;
+            } catch(e) {
+                throw new Error("PRO Download Engine - All proxies failed");
+            }
+        }
+
+        async function downloadSingleImage(url, filename) {
+            try {
+                const blob = await fetchBlobRacing(url);
+                const objUrl = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = objUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(objUrl), 100);
+            } catch (err) {
+                showToast("เซิร์ฟเวอร์ดักจับการโหลดอัตโนมัติ กรุณาคลิกขวา -> บันทึกรูปภาพ แทนครับ", "warning");
+            }
+        }
+
+        async function downloadFilteredFavoritesIndividually() {
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
+            const btn = document.getElementById('btn-dl-bulk-individual');
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> เตรียมดาวน์โหลด...`;
+            }
+            
+            try {
+                let completed = 0;
+                for (let i = 0; i < currentlyRenderedFavs.length; i++) {
+                    const item = currentlyRenderedFavs[i];
+                    if (btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> กำลังโหลด (${completed + 1}/${currentlyRenderedFavs.length})`;
+                    
+                    try {
+                        const blob = await fetchBlobRacing(item.thumb);
+                        const filename = item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}.jpg` : `cover_${item.id}.jpg`;
+                        
+                        const objUrl = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = objUrl;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(objUrl), 100);
+                        completed++;
+                    } catch (err) {
+                        console.warn(`Failed downloading favorite image at index ${i}:`, err);
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 220)); 
+                }
+                
+                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> เสร็จสิ้น!`;
+                showToast("ดาวน์โหลดไฟล์รูปโปรดทั้งหมดเข้าสู่เครื่องสำเร็จแล้ว", "success");
+            } catch(e) {
+                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> ล้มเหลว`;
+                showToast("พบปัญหาในการเชื่อมต่อคลาวด์ดาวน์โหลดรูปภาพสำรอง", "error");
+            } finally {
+                setTimeout(() => {
+                    if (btn) {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }
+                }, 3000);
+            }
+        }
+
+        async function downloadFilteredFavoritesZip() {
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return;
+            const btn = document.getElementById('btn-dl-bulk-zip');
+            const zip = new JSZip();
+            const originalText = btn ? btn.innerHTML : '';
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> กำลังแพ็ค...`;
+            }
+            
+            try {
+                let completed = 0;
+                for (let i = 0; i < currentlyRenderedFavs.length; i++) {
+                    const item = currentlyRenderedFavs[i];
+                    if (btn) btn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-1"></i> ดึงภาพ (${completed + 1}/${currentlyRenderedFavs.length})...`;
+                    
+                    try {
+                        const blob = await fetchBlobRacing(item.thumb);
+                        const filename = item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}.jpg` : `cover_${item.id}.jpg`;
+                        zip.file(filename, blob);
+                        completed++;
+                    } catch (err) {
+                        console.warn(`Failed pulling to ZIP at index ${i}:`, err);
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 180)); 
+                }
+                
+                if (btn) btn.innerHTML = `<i class="fas fa-cog fa-spin mr-1"></i> กำลังสร้าง ZIP...`;
+                const content = await zip.generateAsync({type:"blob"});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                
+                const dateFilter = document.getElementById('fav-date-filter');
+                const selectedDate = dateFilter ? dateFilter.value : 'all';
+                const dateTag = selectedDate !== 'all' ? selectedDate.replace(/\//g, '_') : 'custom';
+                link.download = `Favorites_${dateTag}_Gallery.zip`;
+                
+                link.click();
+                if (btn) btn.innerHTML = `<i class="fas fa-check-circle mr-1"></i> บันทึกแล้ว!`;
+                showToast("สร้างและจัดส่งแพ็กเกจไฟล์ ZIP สำเร็จ!", "success");
+            } catch(e) {
+                if (btn) btn.innerHTML = `<i class="fas fa-times-circle mr-1"></i> โหลดผิดพลาด`;
+                showToast("เกิดข้อผิดพลาดในการดาวน์โหลดรูปเป็นกลุ่มจากเซิร์ฟเวอร์สำรอง", "error");
+            } finally {
+                setTimeout(() => {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalText;
+                    }
+                }, 3000);
+            }
+        }
+
+        async function downloadAllIndividuallyModal() {
+            if (!currentImages.length) return;
+            const idEl = document.getElementById('m-id') || document.getElementById('s-m-id');
+            const id = idEl ? idEl.innerText : 'gallery';
+            
+            try {
+                let completed = 0;
+                for (let i = 0; i < currentImages.length; i++) {
+                    const url = currentImages[i];
+                    
+                    try {
+                        const blob = await fetchBlobRacing(url);
+                        const filename = `${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`;
+                        
+                        const objUrl = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = objUrl;
+                        link.download = filename;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(objUrl), 100);
+                        completed++;
+                    } catch (err) {
+                        console.warn(`Failed single download inside modal index ${i}:`, err);
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 220));
+                }
+                
+                showToast("ดาวน์โหลดไฟล์รูปภาพทั้งหมดเข้าสู่เครื่องแล้ว", "success");
+            } catch(e) {
+                showToast("ไม่สามารถประมวลผลการแปลงดาวน์โหลดรูปภาพ", "error");
+            }
+        }
+
+        async function downloadAllModal() {
+            if (!currentImages.length) return;
+            const idEl = document.getElementById('m-id') || document.getElementById('s-m-id');
+            const id = idEl ? idEl.innerText : 'gallery';
+            const zip = new JSZip();
+            
+            updateStatusMsg(`<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i> เตรียมดาวน์โหลด...`, false);
+            
+            try {
+                let completed = 0;
+                for (let i = 0; i < currentImages.length; i++) {
+                    const url = currentImages[i];
+                    updateStatusMsg(`<i class="fas fa-circle-notch fa-spin text-primary mr-1"></i> ดึงสกรีนช็อต (${completed + 1}/${currentImages.length})...`, false);
+                    
+                    try {
+                        const blob = await fetchBlobRacing(url);
+                        zip.file(`${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`, blob);
+                        completed++;
+                    } catch (err) {
+                        console.warn(`Failed adding to ZIP inside modal index ${i}:`, err);
+                    }
+                    
+                    await new Promise(r => setTimeout(r, 180));
+                }
+                
+                updateStatusMsg(`<i class="fas fa-cog fa-spin text-primary mr-1"></i> กำลังบีบอัดไฟล์ ZIP...`, false);
+                const content = await zip.generateAsync({type:"blob"});
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(content);
+                link.download = `${id}_Gallery.zip`;
+                link.click();
+                updateStatusMsg(`<i class="fas fa-check-circle text-green-500 mr-1"></i> ดาวน์โหลดเสร็จสิ้น!`, false);
+                showToast("แพ็กเกจไฟล์ ZIP ส่งออกสำเร็จ!", "success");
+            } catch(e) {
+                updateStatusMsg(`<i class="fas fa-times-circle text-red-500 mr-1"></i> เกิดข้อผิดพลาดในการโหลดรูป`, false);
+                showToast("เซิร์ฟเวอร์ปฏิเสธการเชื่อมต่อชั่วคราว", "error");
+            } finally {
+                setTimeout(() => {
+                    updateStatusMsg(null, true);
+                }, 3000);
+            }
+        }
+
+        function downloadAllIndividually() { downloadAllIndividuallyModal(); }
+        function downloadAll() { downloadAllModal(); }
+
+        async function syncFromGoogleSheet() {
+            if (!gasEndpoint) return;
+            try {
+                const res = await fetch(`${gasEndpoint}?action=getFavorites`);
+                const data = await res.json();
+                if (data && data.success && Array.isArray(data.favorites)) {
+                    favoriteList = data.favorites.map(f => {
+                        return {
+                            ...f,
+                            isSnapshot: f.isSnapshot === 'true' || f.isSnapshot === true,
+                            snapshotIndex: parseInt(f.snapshotIndex) || 0
+                        }
+                    });
+                    localStorage.setItem('jav_favorites', JSON.stringify(favoriteList));
+                    updateFavCountBadge();
+                    if (activeMainTab === 'favorites') renderFavoritesPage();
+                }
+            } catch(e) {
+                console.warn("Sync from Sheets failed:", e);
+            }
         }
 
         window.onload = () => {
