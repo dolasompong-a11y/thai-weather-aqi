@@ -83,6 +83,9 @@
                 </div>
             </div>
             <div class="flex items-center space-x-1">
+                <button onclick="openDirectCodeModal()" class="px-2.5 py-1 text-xs font-bold bg-amber-500 text-white rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-1" title="เปิดด้วยรหัสตรงไม่ต้องง้อเว็บ">
+                    <i class="fas fa-bolt"></i> <span class="hidden sm:inline">Direct CDN</span>
+                </button>
                 <button onclick="openConfigModal()" class="w-9 h-9 flex items-center justify-center rounded-full text-green-600 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-gray-700 active:scale-90 transition-all">
                     <i class="fas fa-cloud"></i>
                 </button>
@@ -173,21 +176,21 @@
                 <i class="fas fa-chevron-left"></i>
             </button>
             <div class="font-bold text-sm bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200 px-5 py-2.5 rounded-full border border-gray-200 dark:border-gray-700">
-                หน้า <span id="page-number" class="text-primary">1</span>
+    <!-- Direct Code Modal -->
+    <div id="direct-code-modal" class="fixed inset-0 z-50 bg-black/50 hidden items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-lg bottom-sheet sm:rounded-2xl p-5 shadow-2xl transform translate-y-full sm:translate-y-0 transition-transform duration-300">
+            <div class="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full mx-auto mb-4 sm:hidden"></div>
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-lg dark:text-white"><i class="fas fa-bolt text-amber-500 mr-2"></i>ทะลวงด้วยรหัสตรง (Direct DMM CDN)</h3>
+                <button onclick="closeDirectCodeModal()" class="text-gray-400 hover:text-red-500 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-700"><i class="fas fa-times"></i></button>
             </div>
-            <button onclick="navPage(1)" id="btn-next" class="w-12 h-12 flex items-center justify-center bg-primary text-white rounded-full shadow-sm shadow-red-500/30 active:scale-90 transition-transform">
-                <i class="fas fa-chevron-right"></i>
-            </button>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">ใส่รหัสหนัง เช่น SSIS-123, IPX-534 ระบบจะสร้างอัลบั้มรูป HD จาก DMM CDN โดยตรง 100% ไม่ติดบล็อก Cloudflare</p>
+            <div class="flex gap-2">
+                <input type="text" id="direct-code-input" placeholder="ใส่รหัส เช่น SSIS-123..." class="flex-1 text-base bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 dark:text-white rounded-xl py-3 px-4 focus:outline-none focus:border-amber-500 uppercase">
+                <button onclick="executeDirectCodeSearch()" class="bg-amber-500 hover:bg-amber-600 text-white px-5 rounded-xl font-bold active:scale-95 transition-transform"><i class="fas fa-magic mr-1"></i> ดึงภาพ</button>
+            </div>
+            <div class="h-safe"></div>
         </div>
-    </main>
-
-    <!-- Bookmark Panel -->
-    <div id="bookmark-panel" class="fixed top-0 right-0 h-full w-4/5 max-w-sm bg-white dark:bg-gray-800 shadow-2xl z-[90] transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700 flex flex-col">
-        <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
-            <h3 class="font-bold text-sm text-gray-700 dark:text-gray-200"><i class="fas fa-bookmark text-yellow-500 mr-2"></i> บันทึกหน้าเว็บ</h3>
-            <button onclick="toggleBookmarkPanel()" class="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-500 flex items-center justify-center"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="bookmark-list" class="flex-1 overflow-y-auto p-3 space-y-2 pb-24"></div>
     </div>
 
     <!-- Modals -->
@@ -326,61 +329,239 @@
     </div>
 
     <script>
-        // --- 🚀 ตัวแปรหลัก ---
-        let currentUrl = "https://www.jav321.com/";
-        let currentPage = 1;
-        const TARGET_URL = 'https://www.jav321.com/';
-        let currentImages = [];
-        let activeMainTab = 'home'; 
-        let favoriteList = [];      
-        let gasEndpoint = localStorage.getItem('gas_url') || 'https://script.google.com/macros/s/AKfycbw7P7lijJeFfv4ChzKaRUAy30g5jmD_0fKOq0yd43Lq1IdC8VgQBqlAYXXoBL8IE0n1/exec';
-        let bookmarkList = [];
-        let currentlyRenderedFavs = [];
-
-        const pageCache = new Map();
-        let historyStack = [currentUrl]; let historyIndex = 0; let isNavigatingHistory = false; 
-        let slideshowInterval = null; let slideshowActiveIndex = 0; let slideshowSpeed = 4000;
-        let isModalDetailsOpen = false;
-
-        function triggerHaptic(type = 'light') { if (navigator.vibrate) { if (type === 'light') navigator.vibrate(10); else if (type === 'medium') navigator.vibrate(30); } }
-        function escapeQuotes(str) { return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"'); }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container'); if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = `p-3 sm:p-4 rounded-xl shadow-lg border text-xs sm:text-sm font-bold transition-all duration-300 transform -translate-y-4 opacity-0 pointer-events-auto flex items-center gap-2.5 backdrop-blur-md`;
-            let bgClass = 'bg-white/90 border-gray-200 text-gray-800 dark:bg-gray-800/90 dark:border-gray-700 dark:text-gray-100';
-            let iconHtml = '<i class="fas fa-info-circle text-blue-500"></i>';
-            if (type === 'success') { bgClass = 'bg-green-50/95 border-green-200 text-green-800 dark:bg-green-900/90 dark:border-green-800 dark:text-green-200'; iconHtml = '<i class="fas fa-check-circle text-green-500"></i>'; } 
-            else if (type === 'error') { bgClass = 'bg-red-50/95 border-red-200 text-red-800 dark:bg-red-900/90 dark:border-red-800 dark:text-red-200'; iconHtml = '<i class="fas fa-times-circle text-red-500"></i>'; }
-            toast.className += ` ${bgClass}`; toast.innerHTML = `${iconHtml} <span class="flex-1">${message}</span>`;
-            container.appendChild(toast); triggerHaptic('light');
-            requestAnimationFrame(() => toast.classList.remove('-translate-y-4', 'opacity-0'));
-            setTimeout(() => { toast.classList.add('-translate-y-4', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 3000);
+        // --- ⚡ Direct DMM CDN Engine Helper ---
+        function parseJavCodeToCid(code) {
+            if (!code) return null;
+            let clean = code.trim().toLowerCase().replace(/\s+/g, '');
+            
+            // Format 1: SSIS-123 or SSIS123 -> ssis00123
+            let match = clean.match(/^([a-z]{2,8})-?(\d{2,6})$/i);
+            if (match) {
+                let prefix = match[1];
+                let num = match[2];
+                let paddedNum = num.length < 5 ? num.padStart(5, '0') : num;
+                return { prefix, num, cid: `${prefix}${paddedNum}`, rawCode: `${prefix.toUpperCase()}-${num}` };
+            }
+            
+            // Format 2: 550MIDV-001 or h_086ssis00123
+            let matchAlt = clean.match(/^(\d+)?([a-z]{2,8})-?(\d{2,6})$/i);
+            if (matchAlt) {
+                let prefix = matchAlt[2];
+                let num = matchAlt[3];
+                let paddedNum = num.length < 5 ? num.padStart(5, '0') : num;
+                return { prefix, num, cid: `${prefix}${paddedNum}`, rawCode: `${prefix.toUpperCase()}-${num}` };
+            }
+            return null;
         }
 
-        function openBottomSheet(id, inputId = null) {
-            const modal = document.getElementById(id); const sheet = modal.querySelector('.bottom-sheet');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            requestAnimationFrame(() => { modal.classList.remove('opacity-0'); sheet.classList.remove('translate-y-full'); if (inputId && window.innerWidth > 640) document.getElementById(inputId).focus(); });
+        function openDirectCodeModal() { openBottomSheet('direct-code-modal', 'direct-code-input'); }
+        function closeDirectCodeModal() { closeBottomSheet('direct-code-modal'); }
+        function executeDirectCodeSearch() {
+            const val = document.getElementById('direct-code-input').value.trim();
+            if (val) {
+                closeDirectCodeModal();
+                const parsed = parseJavCodeToCid(val);
+                const id = parsed ? parsed.rawCode : val.toUpperCase();
+                openModal(id, '', '', id);
+            }
+        }
+
+        // --- Fetch & HTML พร้อม Multi-Tunneling Proxies ---
+        async function fetchHtml(url) {
+            const targetUrl = url.split('#')[0];
+            if (pageCache.has(targetUrl)) return pageCache.get(targetUrl);
+            
+            const controller = new AbortController(); 
+            const timeoutId = setTimeout(() => controller.abort(), 12000); 
+            
+            // ขยาย Proxy Pool 6 ช่องทาง สลับดึงข้อมูลอัตโนมัติ
+            const proxies = [
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
+                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
+                `https://thingproxy.freeboard.io/fetch/${targetUrl}`,
+                `https://yacdn.org/proxy/${targetUrl}`
+            ];
+
+            if (gasEndpoint) {
+                proxies.unshift(`${gasEndpoint}?action=proxy&url=${encodeURIComponent(targetUrl)}`);
+            }
+
+            try {
+                const htmlContent = await Promise.any(proxies.map(pUrl => 
+                    fetch(pUrl, { signal: controller.signal }).then(async res => {
+                        if (!res.ok) throw new Error('Proxy HTTP Error'); 
+                        const text = await res.text();
+                        if (text.includes('Just a moment...') || text.includes('Attention Required!') || text.length < 300) {
+                            throw new Error('Blocked or Challenge'); 
+                        }
+                        return text;
+                    })
+                ));
+                clearTimeout(timeoutId);
+                pageCache.set(targetUrl, htmlContent); 
+                if (pageCache.size > 20) pageCache.delete(pageCache.keys().next().value);
+                return htmlContent;
+            } catch (e) { 
+                clearTimeout(timeoutId); 
+                
+                try {
+                    const fallbackRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+                    const fallbackData = await fallbackRes.json();
+                    if (fallbackData && fallbackData.contents && !fallbackData.contents.includes('Just a moment...')) {
+                        return fallbackData.contents;
+                    }
+                } catch(fallbackErr) {}
+                
+                throw new Error("Proxy fetch failed and blocked by Server"); 
+            }
+        }
+
+        function getRobustImgTag(url, classNames, hideOnError = false) {
+            if (!url) return `<div class="${classNames} bg-gray-200 dark:bg-gray-800 animate-pulse"></div>`;
+            if (url.includes('/static/digital/')) url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
+            
+            const cleanUrl = url.replace(/^https?:\/\//, '');
+            // Multi-CDN Tunneling ล็อคความชัวร์ในการแสดงผลภาพ
+            const pList = [
+                url,
+                `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&output=webp`,
+                `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}`,
+                `https://i0.wp.com/${cleanUrl}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+            ];
+            const firstSrc = pList.shift(); 
+            const pStr = JSON.stringify(pList).replace(/'/g, "\\'");
+            const onLoad = `this.classList.remove('animate-pulse', 'bg-gray-200', 'dark:bg-gray-700'); this.style.opacity=1;`;
+            
+            const errorAction = hideOnError ? `let wrap = this.closest('.break-inside-avoid'); if(wrap) wrap.remove();` : `this.src='https://placehold.co/400x600/1e293b/ffffff?text=Direct+Image';`;
+            const onError = `try{let p=JSON.parse(this.getAttribute('data-p'));if(p.length>0){this.src=p.shift();this.setAttribute('data-p',JSON.stringify(p));}else{this.onerror=null;${errorAction}}}catch(e){this.onerror=null;${errorAction}}`;
+            
+            return `<img src="${firstSrc}" data-p='${pStr}' referrerpolicy="no-referrer" class="${classNames} animate-pulse bg-gray-200 dark:bg-gray-700 transition-opacity duration-300" style="opacity:0;" loading="lazy" decoding="async" onload="${onLoad}" onerror="${onError}">`;
+        }
+
+        // --- 🎴 Modal รายละเอียด พร้อม Direct DMM CDN Engine ---
+        async function openModal(id, url, thumbUrl, title) {
             triggerHaptic('light');
+            const modal = document.getElementById('modal'); if (!modal) return;
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+            
+            requestAnimationFrame(() => modal.classList.remove('translate-y-full'));
+            document.body.style.overflow = 'hidden'; 
+            isModalDetailsOpen = false;
+            
+            document.getElementById('m-id-header').innerText = id;
+            document.getElementById('m-title').innerText = title || id;
+            document.getElementById('m-star').innerHTML = `<strong>นักแสดง:</strong> ...`;
+            document.getElementById('m-genre').innerHTML = `<strong>แนว:</strong> ...`;
+            document.getElementById('m-maker').innerHTML = `<strong>ค่าย:</strong> ...`;
+            document.getElementById('m-count').innerHTML = `<strong>รูป:</strong> <i class="fas fa-circle-notch fa-spin"></i>`;
+            
+            changeModalGridSize(1);
+            
+            const btnDl = document.getElementById('btn-dl'); const btnDlIndiv = document.getElementById('btn-dl-individual');
+            if (btnDl) btnDl.disabled = true; if (btnDlIndiv) btnDlIndiv.disabled = true;
+            
+            const parsed = parseJavCodeToCid(id);
+            let highResCover = thumbUrl ? thumbUrl.replace('sn.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg').replace('ps.jpg', 'pl.jpg') : '';
+            
+            if (!highResCover && parsed) {
+                highResCover = `https://pics.dmm.co.jp/digital/video/${parsed.cid}/${parsed.cid}pl.jpg`;
+            }
+
+            currentImages = highResCover ? [highResCover] : []; 
+            renderModalImages(currentImages, id, title || id); 
+
+            let scrapeSuccess = false;
+            const itemUrl = url || `${TARGET_URL}video/${id.toLowerCase().replace('-', '00')}`;
+
+            try {
+                const html = await fetchHtml(itemUrl);
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                
+                let scannedCode = id;
+                const allTextNodes = Array.from(doc.querySelectorAll('strong, b, span, div, li, p, th, td'));
+                for(const el of allTextNodes) {
+                    const txt = el.innerText.trim();
+                    if(txt.match(/^(Code|รหัส|品番)\s*:/i)) {
+                        let parentText = el.parentElement ? el.parentElement.innerText.trim() : txt;
+                        let val = parentText.replace(/^(Code|รหัส|品番)\s*:/i, '').trim();
+                        if(!val && el.nextElementSibling) val = el.nextElementSibling.innerText.trim(); 
+                        if(val && val.length > 2 && val.length < 30) { scannedCode = val.split('\n')[0].trim(); break; }
+                    }
+                }
+                document.getElementById('m-id-header').innerText = scannedCode;
+
+                const extractLinks = (selector, regexTxt) => {
+                    let items = [...new Set(Array.from(doc.querySelectorAll(selector)).map(a => {
+                        let name = a.innerText.trim(); if(a.querySelector('img') && !name) return null;
+                        return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${resolveUrl(a.getAttribute('href'), itemUrl)}'); return false;" class="text-blue-600 font-semibold">${name}</a>` : null;
+                    }).filter(Boolean))];
+                    return items;
+                };
+
+                let stars = extractLinks('a[href*="/star/"], a[href*="/actress"]', /^(Casts?|Cast|นักแสดง|出演者)\s*:/i);
+                let genres = extractLinks('a[href*="/genre/"], a[href*="/category/"]', /^(Genres?|แนวหนัง|ジャンル)\s*:/i);
+                let makers = extractLinks('a[href*="/company/"], a[href*="/maker"]', /^(Maker|Studio|ค่าย|สตูดิโอ|メーカー)\s*:/i);
+
+                document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-sm"></i> นักแสดง:</strong> ${stars.length ? stars.join(', ') : '-'}`;
+                document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-sm"></i> แนว:</strong> ${genres.length ? genres.join(', ') : '-'}`;
+                document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-sm"></i> ค่าย:</strong> ${makers.length ? makers.join(', ') : '-'}`;
+
+                const snapshotSet = new Set();
+                if(highResCover) snapshotSet.add(highResCover);
+                
+                doc.querySelectorAll('img').forEach(img => {
+                    let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
+                    if (!rawS || rawS.includes('logo') || rawS.includes('avatar')) return;
+                    let s = resolveUrl(rawS, itemUrl);
+                    if (s.includes('pics.dmm.co.jp') || s.includes('/snapshot/') || s.match(/-\d+t?\.jpg/i)) {
+                        let large = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg');
+                        snapshotSet.add(large);
+                    }
+                });
+
+                if (snapshotSet.size > 1) {
+                    currentImages = Array.from(snapshotSet);
+                    scrapeSuccess = true;
+                }
+            } catch(e) {
+                console.warn("Scraping blocked. Activating Direct DMM Generator Engine...");
+            }
+
+            // ⚡ หากถูก Cloudflare บล็อก หรือดึงรูปได้ไม่ครบ ให้ใช้ Direct DMM Engine ทันที
+            if (!scrapeSuccess && parsed) {
+                document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-sm"></i> นักแสดง:</strong> <span class="text-amber-500 text-xs font-semibold">(Direct DMM Engine)</span>`;
+                document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-sm"></i> แนว:</strong> <span class="text-amber-500 text-xs font-semibold">(Direct DMM Engine)</span>`;
+                document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-sm"></i> ค่าย:</strong> <span class="text-amber-500 text-xs font-semibold">${parsed.prefix.toUpperCase()}</span>`;
+
+                const directSet = new Set();
+                const mainCover = `https://pics.dmm.co.jp/digital/video/${parsed.cid}/${parsed.cid}pl.jpg`;
+                directSet.add(mainCover);
+
+                // สร้างลิงก์รูปฉาก HD 15 รูปส่งตรงจาก DMM CDN
+                for(let i = 1; i <= 15; i++) {
+                    directSet.add(`https://pics.dmm.co.jp/digital/video/${parsed.cid}/${parsed.cid}jp-${i}.jpg`);
+                }
+
+                currentImages = Array.from(directSet);
+                document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-2 text-sm"></i> รูป:</strong> <span class="text-emerald-600 font-bold text-xs bg-emerald-100 dark:bg-emerald-900/50 dark:text-emerald-300 px-2 py-0.5 rounded-md"><i class="fas fa-shield-alt"></i> ทะลวงบล็อกสำเร็จ</span>`;
+                
+                renderModalImages(currentImages, parsed.rawCode, title || parsed.rawCode, true);
+            } else {
+                document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-2 text-sm"></i> รูป:</strong> <span class="font-bold">${currentImages.length}</span>`;
+                renderModalImages(currentImages, id, title || id, false);
+            }
+
+            if (btnDl) btnDl.disabled = false; 
+            if (btnDlIndiv) btnDlIndiv.disabled = false;
         }
-        function closeBottomSheet(id) {
-            const modal = document.getElementById(id); const sheet = modal.querySelector('.bottom-sheet');
-            modal.classList.add('opacity-0'); sheet.classList.add('translate-y-full');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
-        }
-        function openSearchModal() { openBottomSheet('search-modal', 'search-modal-input'); }
-        function closeSearchModal() { closeBottomSheet('search-modal'); }
-        function executeModalSearch() { const val = document.getElementById('search-modal-input').value.trim(); if (val) { closeSearchModal(); switchMainTab('home'); loadPage(`${TARGET_URL}search?sn=${encodeURIComponent(val)}`); } }
-        function openLinkInputModal() { openBottomSheet('link-modal', 'link-modal-input'); }
-        function closeLinkInputModal() { closeBottomSheet('link-modal'); }
-        function executeModalLink() { const val = document.getElementById('link-modal-input').value.trim(); if (val) { closeLinkInputModal(); switchMainTab('home'); loadPage(val.startsWith('http') ? val : 'https://' + val); } }
-        
+
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
                 if (!document.getElementById('search-modal').classList.contains('hidden')) executeModalSearch();
                 else if (!document.getElementById('link-modal').classList.contains('hidden')) executeModalLink();
+                else if (!document.getElementById('direct-code-modal').classList.contains('hidden')) executeDirectCodeSearch();
             }
         });
 
