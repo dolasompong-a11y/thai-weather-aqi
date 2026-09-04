@@ -311,120 +311,120 @@
             return path.startsWith('/') ? origin + path : origin + '/' + path;
         }
 
+        // Clean: ลดความซับซ้อนของการใช้ Proxy หลายตัว กลับมาใช้แบบธรรมดา
         async function fetchHtml(url) {
-            const targetUrl = url.split('#')[0]; if (pageCache.has(targetUrl)) return pageCache.get(targetUrl);
-            const controller = new AbortController(); const timeoutId = setTimeout(() => controller.abort(), 12000); 
-            const proxies = [`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`, `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`, `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`];
+            const targetUrl = url.split('#')[0]; 
+            if (pageCache.has(targetUrl)) return pageCache.get(targetUrl);
+            
             try {
-                const htmlContent = await Promise.any(proxies.map(pUrl => fetch(pUrl, { signal: controller.signal }).then(async res => {
-                    if (!res.ok) throw new Error('Proxy HTTP Error'); const text = await res.text(); if (text.includes('Just a moment...') || text.length < 500) throw new Error('Blocked or Short'); return text;
-                })));
-                clearTimeout(timeoutId); pageCache.set(targetUrl, htmlContent); if (pageCache.size > 15) pageCache.delete(pageCache.keys().next().value); return htmlContent;
-            } catch (e) { 
-                clearTimeout(timeoutId); 
-                try { const fallbackRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`); const fallbackData = await fallbackRes.json(); if (fallbackData && fallbackData.contents && !fallbackData.contents.includes('Just a moment...')) return fallbackData.contents; } catch(err) {}
-                throw new Error("Blocked"); 
+                // ใช้ proxy พื้นฐานตัวเดียวเพื่อหลีกเลี่ยงปัญหา CORS พื้นฐาน
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('HTTP Error');
+                
+                const data = await response.json();
+                if (data && data.contents) {
+                    const htmlContent = data.contents;
+                    pageCache.set(targetUrl, htmlContent);
+                    return htmlContent;
+                }
+                throw new Error("Empty content");
+            } catch (e) {
+                console.error("Fetch error:", e);
+                throw new Error("Failed to fetch HTML");
             }
         }
 
-        function getRobustImgTag(url, classNames) {
+        // Clean: ใช้ Tag img แบบปกติ ไม่มีระบบ Fallback วนลูปที่ซับซ้อน
+        function getSimpleImgTag(url, classNames) {
             if (!url) return `<div class="${classNames} bg-gray-200 dark:bg-gray-800"></div>`;
-            if (url.includes('/static/digital/')) url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
-            const pList = [url, `https://wsrv.nl/?url=${encodeURIComponent(url.replace(/^https?:\/\//, ''))}`, `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`];
-            const firstSrc = pList.shift(); const pStr = JSON.stringify(pList).replace(/'/g, "\\'");
-            const onLoad = `this.classList.remove('animate-pulse', 'bg-gray-200', 'dark:bg-gray-700'); this.style.opacity=1;`;
-            const onError = `try{let p=JSON.parse(this.getAttribute('data-p'));if(p.length>0){this.src=p.shift();this.setAttribute('data-p',JSON.stringify(p));}else{this.onerror=null;this.src='https://placehold.co/400x600?text=Error';}}catch(e){this.onerror=null;}`;
-            return `<img src="${firstSrc}" data-p='${pStr}' referrerpolicy="no-referrer" class="${classNames} animate-pulse bg-gray-200 dark:bg-gray-700 transition-opacity duration-300" style="opacity:0;" loading="lazy" decoding="async" onload="${onLoad}" onerror="${onError}">`;
-        }
-
-        // --- 🔮 Predictive Image Engine (พระเอกของการหนีบล็อก) ---
-        // ฟังก์ชันนี้จะแปลงรหัสหนังและรูปปก เป็นอาร์เรย์ของรูปลูก 1-20 รูป โดยไม่ต้องพึ่ง HTML
-        function generatePredictiveImages(id, thumbUrl) {
-            let images = [];
-            // ถ้ามีรูปปกที่ชี้ไปหา DMM (90% ของหนัง JAV ทั้งหมด)
-            let baseDmmMatch = thumbUrl ? thumbUrl.match(/(https?:\/\/pics\.dmm\.co\.jp\/.*?\/)([a-z0-9]+)(ps|pt|sn|pl|\-thumb)\.jpg/i) : null;
-
-            if (baseDmmMatch) {
-                let basePath = baseDmmMatch[1]; // e.g. https://pics.dmm.co.jp/digital/video/ssis00123/
-                let baseId = baseDmmMatch[2];   // e.g. ssis00123
-                images.push(`${basePath}${baseId}pl.jpg`); // ใส่ภาพปกใหญ่ก่อน
-                for (let i = 1; i <= 20; i++) images.push(`${basePath}${baseId}-${i}.jpg`); // สุ่มดึงภาพสแนปช็อตมา 20 ภาพล่วงหน้า
-                return images;
+            let cleanUrl = url;
+            if (cleanUrl.includes('/static/digital/')) {
+                cleanUrl = cleanUrl.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
             }
-
-            // ถ้าไม่มี DMM ชัดๆ ลองพยายามแกะจากรหัสหนัง
-            let match = id.match(/([a-zA-Z]+)-?(\d+)/);
-            if (match && (!thumbUrl || thumbUrl.includes('dmm.co.jp'))) {
-                let prefix = match[1].toLowerCase();
-                let num = match[2];
-                let paddedNum = num.padStart(5, '0'); // DMM มักใช้เลข 5 หลัก
-                let dmmId = prefix + paddedNum;
-                let urlBase = `https://pics.dmm.co.jp/digital/video/${dmmId}/${dmmId}`;
-                images.push(`${urlBase}pl.jpg`);
-                for (let i = 1; i <= 20; i++) images.push(`${urlBase}-${i}.jpg`);
-                return images;
-            }
-
-            // ถ้าเป็นเว็บ FC2 หรือค่ายที่ไม่ได้ใช้ DMM ก็ใส่รูปปกเท่าที่มีไปก่อน
-            if(thumbUrl) images.push(thumbUrl.replace('ps.jpg','pl.jpg').replace('sn.jpg','pl.jpg').replace('-thumb.jpg', '.jpg'));
-            return images;
+            return `<img src="${cleanUrl}" class="${classNames} bg-gray-200 dark:bg-gray-700 transition-opacity duration-300" style="opacity:0;" loading="lazy" onload="this.classList.remove('bg-gray-200', 'dark:bg-gray-700'); this.style.opacity=1;" onerror="this.src='https://placehold.co/400x600?text=Error'; this.style.opacity=1;">`;
         }
-
-        // ฟังก์ชันลบกรอบรูปทิ้งถ้าระบบสุ่มเดาภาพพลาด (เช่น หนังมี 12 รูป แต่เดาไป 20 รูป รูปที่ 13-20 จะลบตัวเองทิ้งเนียนๆ)
-        window.handleBrokenPredictiveImage = function(imgEl, url) {
-            const container = imgEl.closest('.break-inside-avoid');
-            if (container) container.remove(); // ลบกรอบทิ้ง
-            currentImages = currentImages.filter(u => u !== url); // เอาออกจากคิว Download
-            const countEl = document.getElementById('m-count-num');
-            if (countEl) countEl.innerText = currentImages.length; // อัปเดตตัวเลขแบบ Realtime
-        };
 
         async function loadPage(url) {
-            if (!isNavigatingHistory) { historyStack = historyStack.slice(0, historyIndex + 1); historyStack.push(url); historyIndex = historyStack.length - 1; }
-            updateNavigationButtonsUI(); currentUrl = url;
-            const activeUrlDisplay = document.getElementById('display-active-url'); if (activeUrlDisplay) activeUrlDisplay.innerText = url;
+            if (!isNavigatingHistory) { 
+                historyStack = historyStack.slice(0, historyIndex + 1); 
+                historyStack.push(url); 
+                historyIndex = historyStack.length - 1; 
+            }
+            updateNavigationButtonsUI(); 
+            currentUrl = url;
+            const activeUrlDisplay = document.getElementById('display-active-url'); 
+            if (activeUrlDisplay) activeUrlDisplay.innerText = url;
             updateCurrentPageBookmarkButtonUI();
 
             let showPagination = false;
             try {
-                let urlObj = new URL(url); let isDetail = urlObj.pathname.includes('/video/') || urlObj.searchParams.has('id');
-                if (!isDetail) { if (urlObj.searchParams.has('page') || urlObj.hostname.includes('jvrlibrary.com') || url.match(/\/(\d+)\/?$/) || url === TARGET_URL || url === TARGET_URL.replace(/\/$/, '')) { currentPage = parseInt(urlObj.searchParams.get('page')) || parseInt((url.match(/\/(\d+)\/?$/)||[])[1]) || 1; showPagination = true; } }
+                let urlObj = new URL(url); 
+                let isDetail = urlObj.pathname.includes('/video/') || urlObj.searchParams.has('id');
+                if (!isDetail) { 
+                    if (urlObj.searchParams.has('page') || urlObj.hostname.includes('jvrlibrary.com') || url.match(/\/(\d+)\/?$/) || url === TARGET_URL || url === TARGET_URL.replace(/\/$/, '')) { 
+                        currentPage = parseInt(urlObj.searchParams.get('page')) || parseInt((url.match(/\/(\d+)\/?$/)||[])[1]) || 1; 
+                        showPagination = true; 
+                    } 
+                }
             } catch(e) {}
 
             const paginationEl = document.getElementById('pagination');
-            if (paginationEl) { if (showPagination) { paginationEl.classList.remove('hidden'); paginationEl.classList.add('flex'); document.getElementById('page-number').innerText = currentPage; document.getElementById('btn-prev').disabled = (currentPage <= 1); } else paginationEl.classList.add('hidden'); }
+            if (paginationEl) { 
+                if (showPagination) { 
+                    paginationEl.classList.remove('hidden'); 
+                    paginationEl.classList.add('flex'); 
+                    document.getElementById('page-number').innerText = currentPage; 
+                    document.getElementById('btn-prev').disabled = (currentPage <= 1); 
+                } else {
+                    paginationEl.classList.add('hidden'); 
+                }
+            }
 
             const grid = document.getElementById('gallery-grid');
             if (grid) grid.innerHTML = '<div class="col-span-full py-24 text-center"><i class="fas fa-circle-notch fa-spin text-4xl text-primary mb-3"></i><p class="text-xs font-bold text-gray-500 mt-2">กำลังดึงข้อมูล...</p></div>';
 
             try {
-                const html = await fetchHtml(url); const doc = new DOMParser().parseFromString(html, 'text/html');
-                const items = []; const seen = new Set();
+                const html = await fetchHtml(url); 
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const items = []; 
+                const seen = new Set();
+
                 doc.querySelectorAll('a').forEach(a => {
-                    const img = a.querySelector('img'); if (!img) return;
+                    const img = a.querySelector('img'); 
+                    if (!img) return;
                     let rawSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
                     if (!rawSrc || rawSrc.includes('logo') || rawSrc.includes('banner')) return;
-                    let src = resolveUrl(rawSrc, url); let title = img.getAttribute('title') || img.getAttribute('alt') || a.innerText.trim() || 'Untitled';
+                    
+                    let src = resolveUrl(rawSrc, url); 
+                    let title = img.getAttribute('title') || img.getAttribute('alt') || a.innerText.trim() || 'Untitled';
                     let href = resolveUrl(a.getAttribute('href'), url);
+                    
                     const idMatch = title.match(/([a-zA-Z]{2,8}-?\d{2,6}|\d{2,4}[a-zA-Z]{2,8}-?\d{2,6}|fc2-?[a-zA-Z]+-?\d{2,7})/i);
                     const id = idMatch ? idMatch[0].toUpperCase() : null;
-                    if (id && !seen.has(id)) { seen.add(id); items.push({ id, title, thumb: src, url: href }); }
+                    
+                    if (id && !seen.has(id)) { 
+                        seen.add(id); 
+                        items.push({ id, title, thumb: src, url: href }); 
+                    }
                 });
+
                 if(items.length === 0) throw new Error("No items found");
                 renderGridFast(items);
             } catch (e) {
-                if (grid) grid.innerHTML = `<div class="col-span-full py-20 text-center text-red-500"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><br><span class="font-bold text-sm">หน้าเว็บถูกบล็อกจากการสแกนชั่วคราว</span><button onclick="loadPage('${escapeQuotes(url)}')" class="mt-4 px-6 py-2.5 bg-primary text-white rounded-full text-xs font-bold shadow-md active:scale-95"><i class="fas fa-redo mr-2"></i> ลองใหม่</button></div>`;
+                if (grid) grid.innerHTML = `<div class="col-span-full py-20 text-center text-red-500"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><br><span class="font-bold text-sm">ไม่สามารถโหลดข้อมูลได้</span><button onclick="loadPage('${escapeQuotes(url)}')" class="mt-4 px-6 py-2.5 bg-primary text-white rounded-full text-xs font-bold shadow-md active:scale-95"><i class="fas fa-redo mr-2"></i> ลองใหม่</button></div>`;
             }
         }
 
         function renderGridFast(items) {
             const grid = document.getElementById('gallery-grid'); if (!grid) return;
             grid.innerHTML = items.map(item => {
-                const safeId = String(item.id || '').replace(/\s+/g, '_'); const uniqueKey = item.isSnapshot ? `snapshot_${item.parentId}_${item.snapshotIndex}` : safeId;
+                const safeId = String(item.id || '').replace(/\s+/g, '_'); 
+                const uniqueKey = item.isSnapshot ? `snapshot_${item.parentId}_${item.snapshotIndex}` : safeId;
                 const isFav = favoriteList.some(f => f.isSnapshot ? (f.parentId === item.parentId && f.thumb === item.thumb) : f.id === item.id);
                 return `
                     <div class="gallery-card bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm relative flex flex-col border border-gray-100 dark:border-gray-700/50" id="item-card-${uniqueKey}">
-                        <div onclick="handleCardClick('${item.id}', '${item.url}', '${item.thumb}', '${escapeQuotes(item.title)}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="bg-gray-100 dark:bg-gray-900 relative pb-[145%]"><div class="absolute inset-0">${getRobustImgTag(item.thumb, "w-full h-full object-cover")}</div></div>
+                        <div onclick="handleCardClick('${item.id}', '${item.url}', '${item.thumb}', '${escapeQuotes(item.title)}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="bg-gray-100 dark:bg-gray-900 relative pb-[145%]"><div class="absolute inset-0">${getSimpleImgTag(item.thumb, "w-full h-full object-cover")}</div></div>
                         <button onclick="toggleFavorite(event, '${item.id}', '${escapeQuotes(item.title)}', '${item.thumb}', '${item.url}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm text-white flex items-center justify-center active:scale-90 transition-transform"><i class="${isFav ? 'fas text-red-500' : 'far'} fa-heart text-sm drop-shadow-md"></i></button>
                         <div class="p-2 flex-grow flex flex-col"><div class="text-[9px] sm:text-[10px] font-bold text-primary mb-0.5">${item.isSnapshot ? `${item.parentId} (#${item.snapshotIndex})` : item.id}</div><div class="text-[10px] sm:text-xs line-clamp-2 dark:text-gray-200 font-medium leading-snug mb-1">${item.title}</div></div>
                     </div>`;
@@ -437,7 +437,9 @@
                 const favSnapshots = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp).filter(f => f.isSnapshot);
                 currentImages = favSnapshots.map(f => f.thumb); const clickedIndex = favSnapshots.findIndex(f => f.parentId === parentId && f.thumb === thumb);
                 if (clickedIndex > -1) openFullImgModal(clickedIndex); else { currentImages = [thumb]; openFullImgModal(0); }
-            } else openModal(id, url, thumb, title);
+            } else {
+                openModal(id, url, thumb, title);
+            }
         }
 
         function triggerDirectScan(id, url) { openModal(id, url, '', ''); }
@@ -559,83 +561,133 @@
             if (filtered.length === 0) document.getElementById('gallery-grid').innerHTML = `<div class="col-span-full py-20 text-center"><i class="fas fa-search text-4xl text-gray-300 mb-3 block"></i><p class="font-bold text-gray-500">ไม่พบรูป</p></div>`; else renderGridFast(filtered);
         }
 
-        // --- 🎴 Modal รายละเอียด (อัปเกรดระบบ Predictive Image Bypass) ---
+        // Clean: นำระบบเดาภาพออก โหลดข้อมูลตามปกติ
         async function openModal(id, url, thumbUrl, title) {
-            triggerHaptic('light'); const modal = document.getElementById('modal'); if (!modal) return;
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            requestAnimationFrame(() => modal.classList.remove('translate-y-full')); document.body.style.overflow = 'hidden'; isModalDetailsOpen = false;
+            triggerHaptic('light'); 
+            const modal = document.getElementById('modal'); 
+            if (!modal) return;
             
-            document.getElementById('m-id-header').innerText = id; document.getElementById('m-title').innerText = title || id;
-            document.getElementById('m-star').innerHTML = `<strong>นักแสดง:</strong> ...`; document.getElementById('m-genre').innerHTML = `<strong>แนว:</strong> ...`; document.getElementById('m-maker').innerHTML = `<strong>ค่าย:</strong> ...`;
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex');
+            requestAnimationFrame(() => modal.classList.remove('translate-y-full')); 
+            document.body.style.overflow = 'hidden'; 
+            isModalDetailsOpen = false;
+            
+            document.getElementById('m-id-header').innerText = id; 
+            document.getElementById('m-title').innerText = title || id;
+            document.getElementById('m-star').innerHTML = `<strong>นักแสดง:</strong> กำลังโหลด...`; 
+            document.getElementById('m-genre').innerHTML = `<strong>แนว:</strong> กำลังโหลด...`; 
+            document.getElementById('m-maker').innerHTML = `<strong>ค่าย:</strong> กำลังโหลด...`;
             document.getElementById('m-count').innerHTML = `<strong>รูป:</strong> <i class="fas fa-circle-notch fa-spin"></i>`;
             
+            document.getElementById('modal-images').innerHTML = '<div class="py-20 text-center text-white w-full"><i class="fas fa-circle-notch fa-spin text-3xl mb-3 block"></i>กำลังดึงข้อมูล...</div>';
             changeModalGridSize(1);
             
-            // 🚀 วินาทีที่ 0: ดึงภาพขึ้นมาโชว์ก่อนเลยทันที ไม่รอโหลด HTML
-            currentImages = generatePredictiveImages(id, thumbUrl);
-            renderModalImages(currentImages, id, title || id, true); // true = โหมดเดา (ถ้ารูปไหน error จะลบทิ้งเอง)
-            
-            // เปิดปุ่มโหลดรอไว้เลย เพราะมีภาพแล้ว
-            const btnDl = document.getElementById('btn-dl'); const btnDlIndiv = document.getElementById('btn-dl-individual');
-            if (btnDl) btnDl.disabled = false; if (btnDlIndiv) btnDlIndiv.disabled = false;
+            const btnDl = document.getElementById('btn-dl'); 
+            const btnDlIndiv = document.getElementById('btn-dl-individual');
+            if (btnDl) btnDl.disabled = true; 
+            if (btnDlIndiv) btnDlIndiv.disabled = true;
 
-            // พยายามดึงข้อมูลเบื้องหลัง
             const itemUrl = url || `${TARGET_URL}video/${id.toLowerCase().replace('-', '00')}`;
+            
             try {
-                const html = await fetchHtml(itemUrl); const doc = new DOMParser().parseFromString(html, 'text/html');
+                const html = await fetchHtml(itemUrl); 
+                const doc = new DOMParser().parseFromString(html, 'text/html');
                 
-                let scannedCode = id; const allTextNodes = Array.from(doc.querySelectorAll('strong, b, span, div, li, p, th, td'));
-                for(const el of allTextNodes) { const txt = el.innerText.trim(); if(txt.match(/^(Code|รหัส|品番)\s*:/i)) { let parentText = el.parentElement ? el.parentElement.innerText.trim() : txt; let val = parentText.replace(/^(Code|รหัส|品番)\s*:/i, '').trim(); if(!val && el.nextElementSibling) val = el.nextElementSibling.innerText.trim(); if(val && val.length > 2 && val.length < 30) { scannedCode = val.split('\n')[0].trim(); break; } } }
+                // ดึงข้อมูลตัวอักษร
+                let scannedCode = id; 
+                const allTextNodes = Array.from(doc.querySelectorAll('strong, b, span, div, li, p, th, td'));
+                for(const el of allTextNodes) { 
+                    const txt = el.innerText.trim(); 
+                    if(txt.match(/^(Code|รหัส|品番)\s*:/i)) { 
+                        let parentText = el.parentElement ? el.parentElement.innerText.trim() : txt; 
+                        let val = parentText.replace(/^(Code|รหัส|品番)\s*:/i, '').trim(); 
+                        if(!val && el.nextElementSibling) val = el.nextElementSibling.innerText.trim(); 
+                        if(val && val.length > 2 && val.length < 30) { 
+                            scannedCode = val.split('\n')[0].trim(); 
+                            break; 
+                        } 
+                    } 
+                }
                 document.getElementById('m-id-header').innerText = scannedCode;
 
-                const extractLinks = (selector, regexTxt) => { let items = [...new Set(Array.from(doc.querySelectorAll(selector)).map(a => { let name = a.innerText.trim(); if(a.querySelector('img') && !name) return null; return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${resolveUrl(a.getAttribute('href'), itemUrl)}'); return false;" class="text-blue-600 font-semibold">${name}</a>` : null; }).filter(Boolean))]; if(items.length === 0) { for(const el of allTextNodes) { if(el.innerText.trim().match(regexTxt)) { let parent = el.parentElement; if(parent && parent.querySelectorAll('a').length === 0) parent = parent.parentElement; if(parent) items = [...new Set(Array.from(parent.querySelectorAll('a')).map(a => { let name = a.innerText.trim(); if(a.querySelector('img') && !name) return null; return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${resolveUrl(a.getAttribute('href'), itemUrl)}'); return false;" class="text-blue-600 font-semibold">${name}</a>` : null; }).filter(Boolean))]; break; } } } return items; };
-                let stars = extractLinks('a[href*="/star/"], a[href*="/actress"], a[href*="actress="], a[href*="star="]', /^(Casts?|Cast|นักแสดง|出演者)\s*:/i); let genres = extractLinks('a[href*="/genre/"], a[href*="/category/"], a[href*="genre="]', /^(Genres?|แนวหนัง|ジャンル)\s*:/i); let makers = extractLinks('a[href*="/company/"], a[href*="/maker"], a[href*="/studio"], a[href*="maker="]', /^(Maker|Studio|ค่าย|สตูดิโอ|メーカー)\s*:/i);
+                const extractLinks = (selector, regexTxt) => { 
+                    let items = [...new Set(Array.from(doc.querySelectorAll(selector)).map(a => { 
+                        let name = a.innerText.trim(); 
+                        if(a.querySelector('img') && !name) return null; 
+                        return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${resolveUrl(a.getAttribute('href'), itemUrl)}'); return false;" class="text-blue-600 font-semibold">${name}</a>` : null; 
+                    }).filter(Boolean))]; 
+                    
+                    if(items.length === 0) { 
+                        for(const el of allTextNodes) { 
+                            if(el.innerText.trim().match(regexTxt)) { 
+                                let parent = el.parentElement; 
+                                if(parent && parent.querySelectorAll('a').length === 0) parent = parent.parentElement; 
+                                if(parent) items = [...new Set(Array.from(parent.querySelectorAll('a')).map(a => { 
+                                    let name = a.innerText.trim(); 
+                                    if(a.querySelector('img') && !name) return null; 
+                                    return name && name.length < 40 ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${resolveUrl(a.getAttribute('href'), itemUrl)}'); return false;" class="text-blue-600 font-semibold">${name}</a>` : null; 
+                                }).filter(Boolean))]; 
+                                break; 
+                            } 
+                        } 
+                    } 
+                    return items; 
+                };
 
-                document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-sm"></i> นักแสดง:</strong> ${stars.length ? stars.join(', ') : '-'}`; document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-sm"></i> แนว:</strong> ${genres.length ? genres.join(', ') : '-'}`; document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-sm"></i> ค่าย:</strong> ${makers.length ? makers.join(', ') : '-'}`;
+                let stars = extractLinks('a[href*="/star/"], a[href*="/actress"], a[href*="actress="], a[href*="star="]', /^(Casts?|Cast|นักแสดง|出演者)\s*:/i); 
+                let genres = extractLinks('a[href*="/genre/"], a[href*="/category/"], a[href*="genre="]', /^(Genres?|แนวหนัง|ジャンル)\s*:/i); 
+                let makers = extractLinks('a[href*="/company/"], a[href*="/maker"], a[href*="/studio"], a[href*="maker="]', /^(Maker|Studio|ค่าย|สตูดิโอ|メーカー)\s*:/i);
+
+                document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-sm"></i> นักแสดง:</strong> ${stars.length ? stars.join(', ') : '-'}`; 
+                document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-sm"></i> แนว:</strong> ${genres.length ? genres.join(', ') : '-'}`; 
+                document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-sm"></i> ค่าย:</strong> ${makers.length ? makers.join(', ') : '-'}`;
                 
-                // ตรวจสอบรูปภาพจาก HTML อีกรอบเพื่อความชัวร์ (ถ้าโหลดหน้าเว็บผ่าน)
-                const snapshotSet = new Set();
+                // ดึงรูปภาพจาก HTML โดยตรง
+                currentImages = [];
                 let highResCover = thumbUrl ? thumbUrl.replace('sn.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg').replace('ps.jpg', 'pl.jpg') : '';
-                if(highResCover) snapshotSet.add(highResCover);
-                const idParts = id.toLowerCase().split('-'); const idPrefix = idParts[0]||''; const idNum = idParts[1]?idParts[1].replace(/^0+/,''):''; 
+                if(highResCover) currentImages.push(highResCover);
+
                 doc.querySelectorAll('img').forEach(img => {
-                    let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src'); if (!rawS || rawS.includes('logo') || rawS.includes('avatar') || rawS.includes('banner')) return;
-                    let s = resolveUrl(rawS, itemUrl); let altText = (img.getAttribute('alt')||'').toLowerCase(); let isCurrentMovie = false;
-                    if (idPrefix && idNum) { if (s.toLowerCase().includes(idPrefix) && s.toLowerCase().includes(idNum)) isCurrentMovie = true; else if (altText.includes(id.toLowerCase())) isCurrentMovie = true; } else if (s.toLowerCase().includes(id.toLowerCase()) || altText.includes(id.toLowerCase())) isCurrentMovie = true;
-                    if (!isCurrentMovie) return;
-                    if (img.classList.contains('cover') || altText.includes('cover')) { let largeCover = s.replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg'); const currentSnaps = Array.from(snapshotSet); snapshotSet.clear(); snapshotSet.add(largeCover); currentSnaps.forEach(snap => snapshotSet.add(snap)); }
-                    if (s.includes('pics.dmm.co.jp') || s.includes('/snapshot/') || s.match(/-\d+t?\.jpg/i) || s.includes('jp-') || altText.includes('thumb') || altText.includes('screen')) { let large = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg'); if (!large.includes('pl.jpg') || large.match(/jp-\d+\.jpg/i) || large.match(/-\d+\.jpg/i)) snapshotSet.add(large); }
+                    let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src'); 
+                    if (!rawS || rawS.includes('logo') || rawS.includes('avatar') || rawS.includes('banner')) return;
+                    
+                    let s = resolveUrl(rawS, itemUrl); 
+                    if (s.includes('pics.dmm.co.jp') || s.includes('/snapshot/') || s.includes('jp-') || s.match(/-\d+t?\.jpg/i) || s.includes('screen')) { 
+                        let large = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg'); 
+                        if (!currentImages.includes(large)) {
+                            currentImages.push(large);
+                        }
+                    }
                 });
                 
-                // ถ้ารูปจาก HTML มีจำนวนมากกว่าหรือต่างจากที่เดาไว้ ให้ Render ใหม่
-                if (snapshotSet.size > 0 && snapshotSet.size !== currentImages.length) {
-                    currentImages = Array.from(snapshotSet);
-                    renderModalImages(currentImages, scannedCode, title || scannedCode, false);
-                }
-                
+                renderModalImages(currentImages, scannedCode, title || scannedCode);
                 document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-2 text-sm"></i> รูป:</strong> <span class="font-bold" id="m-count-num">${currentImages.length}</span>`;
+                
+                if (btnDl) btnDl.disabled = false; 
+                if (btnDlIndiv) btnDlIndiv.disabled = false;
+
             } catch(e) {
-                // 🛑 กรณีโดน Cloudflare บล็อก (HTML ไม่มา แต่เรามีรูปจากอัลกอริทึมเดาแล้ว)
-                document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-2 text-sm"></i> นักแสดง:</strong> <span class="text-gray-400 text-xs">โดนบล็อกรายชื่อ</span>`;
-                document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-2 text-sm"></i> แนว:</strong> <span class="text-gray-400 text-xs">โดนบล็อก</span>`;
-                document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-2 text-sm"></i> ค่าย:</strong> <span class="text-gray-400 text-xs">โดนบล็อก</span>`;
-                document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-2 text-sm"></i> รูป:</strong> <span class="font-bold text-yellow-600 bg-yellow-100 px-2 py-0.5 rounded" id="m-count-num">${currentImages.length}</span> <span class="text-[10px] text-gray-500">เดาลิงก์อัตโนมัติ</span>`;
-                showToast("โหลดหน้ารายละเอียดไม่สำเร็จ แต่ระบบเดาลิงก์รูปภาพมาให้แล้ว", "warning");
+                document.getElementById('modal-images').innerHTML = `<div class="py-20 text-center text-red-400 w-full"><i class="fas fa-exclamation-triangle text-3xl mb-3 block"></i>ไม่สามารถโหลดข้อมูลได้ อาจถูกบล็อก</div>`;
+                document.getElementById('m-star').innerHTML = `<strong>นักแสดง:</strong> -`;
+                document.getElementById('m-genre').innerHTML = `<strong>แนว:</strong> -`;
+                document.getElementById('m-maker').innerHTML = `<strong>ค่าย:</strong> -`;
+                document.getElementById('m-count').innerHTML = `<strong>รูป:</strong> 0`;
             }
         }
 
-        // Render รูปภาพในหน้าจอ Modal โดยรับคำสั่ง isBypassMode เพื่อตัดสินใจว่าจะลบรูปทิ้งไหมถ้ารูปเสีย
-        function renderModalImages(images, id, title, isBypassMode = false) {
-            const container = document.getElementById('modal-images'); if (!container) return;
+        // Clean: นำ Bypass Mode ออก Render รูปแบบปกติ
+        function renderModalImages(images, id, title) {
+            const container = document.getElementById('modal-images'); 
+            if (!container) return;
             const safeId = String(id || '').replace(/\s+/g, '_');
             
             container.innerHTML = images.map((src, i) => {
-                const isSnapshot = i > 0; const uniqueKey = isSnapshot ? `snapshot_${safeId}_${i}` : safeId;
+                const isSnapshot = i > 0; 
+                const uniqueKey = isSnapshot ? `snapshot_${safeId}_${i}` : safeId;
                 const isFav = favoriteList.some(f => isSnapshot ? (f.isSnapshot && f.parentId === id && f.thumb === src) : (!f.isSnapshot && f.id === id));
                 
-                // ถ้ารูปโหลดไม่ขึ้น และอยู่ในโหมดเดา (isBypassMode) ให้ลบกรอบนั้นทิ้งไปเลย
-                const errorAction = isBypassMode ? `handleBrokenPredictiveImage(this, '${src}')` : `this.src='https://placehold.co/400x600?text=Error';`;
-                const imgTag = `<img src="${src}" class="w-full h-auto object-cover block animate-pulse bg-gray-800 transition-opacity duration-300" style="opacity:0;" loading="lazy" onload="this.classList.remove('animate-pulse', 'bg-gray-800'); this.style.opacity=1;" onerror="${errorAction}">`;
+                const imgTag = `<img src="${src}" class="w-full h-auto object-cover block bg-gray-800 transition-opacity duration-300" style="opacity:0;" loading="lazy" onload="this.style.opacity=1;" onerror="this.src='https://placehold.co/400x600?text=Error'; this.style.opacity=1;">`;
 
                 return `
                 <div class="relative break-inside-avoid mb-2 sm:mb-3 rounded-xl overflow-hidden bg-gray-900 group shadow-md border border-gray-800">
@@ -691,30 +743,120 @@
             if (!document.getElementById('full-img-modal').classList.contains('hidden')) { if (e.key === 'ArrowRight') nextFullImg(); else if (e.key === 'ArrowLeft') prevFullImg(); }
         });
 
-        async function fetchBlobRacing(url) {
-            if (url.startsWith('//')) url = 'https:' + url; if (url.includes('/static/digital/')) url = url.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
-            const cleanUrl = url.replace(/^https?:\/\//, ''); const controller = new AbortController();
-            const proxies = [`https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`, `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`];
-            try { const blob = await Promise.any(proxies.map(pUrl => fetch(pUrl, { signal: controller.signal }).then(res => { if (!res.ok) throw new Error('Proxy error'); const type = res.headers.get('content-type'); if (type && type.includes('text/html')) throw new Error('CORS HTML'); return res.blob(); }))); controller.abort(); return blob; } catch(e) { try { const directRes = await fetch(url); if (directRes.ok) return await directRes.blob(); } catch(err) {} throw new Error("DL Failed"); }
+        // Clean: ดึงไฟล์ออกแบบตรงไปตรงมา ไม่ต้องใช้เทคนิค Racing
+        async function fetchImageBlob(url) {
+            let cleanUrl = url;
+            if (cleanUrl.startsWith('//')) cleanUrl = 'https:' + cleanUrl; 
+            if (cleanUrl.includes('/static/digital/')) cleanUrl = cleanUrl.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
+            
+            try {
+                const res = await fetch(cleanUrl);
+                if (!res.ok) throw new Error('Network response was not ok');
+                return await res.blob();
+            } catch (error) {
+                console.error("Download Error:", error);
+                throw error;
+            }
         }
 
-        async function downloadSingleImage(url, filename) { try { showToast("กำลังดึงไฟล์ภาพ...", "info"); const blob = await fetchBlobRacing(url); const objUrl = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = objUrl; link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); setTimeout(() => URL.revokeObjectURL(objUrl), 200); } catch (err) { showToast("โดนบล็อก กรุณากดค้างที่รูปภาพและเลือก 'บันทึกรูปภาพ'", "warning"); } }
+        async function downloadSingleImage(url, filename) { 
+            try { 
+                showToast("กำลังโหลดไฟล์ภาพ...", "info"); 
+                const blob = await fetchImageBlob(url); 
+                const objUrl = URL.createObjectURL(blob); 
+                const link = document.createElement('a'); 
+                link.href = objUrl; 
+                link.download = filename; 
+                document.body.appendChild(link); 
+                link.click(); 
+                document.body.removeChild(link); 
+                setTimeout(() => URL.revokeObjectURL(objUrl), 200); 
+            } catch (err) { 
+                showToast("ดาวน์โหลดไม่สำเร็จ กรุณากดค้างที่รูปภาพเพื่อบันทึกเอง", "warning"); 
+            } 
+        }
 
-        async function downloadFilteredFavoritesIndividually() { if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return; showToast("กำลังดาวน์โหลด กรุณารอสักครู่...", "info"); for (let i = 0; i < currentlyRenderedFavs.length; i++) { try { const item = currentlyRenderedFavs[i]; const blob = await fetchBlobRacing(item.thumb); const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`; const objUrl = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = objUrl; link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); setTimeout(() => URL.revokeObjectURL(objUrl), 200); await new Promise(r => setTimeout(r, 300)); } catch(e) {} } showToast("ดาวน์โหลดทั้งหมดเสร็จสิ้น", "success"); }
+        async function downloadFilteredFavoritesIndividually() { 
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return; 
+            showToast("กำลังดาวน์โหลด กรุณารอสักครู่...", "info"); 
+            for (let i = 0; i < currentlyRenderedFavs.length; i++) { 
+                try { 
+                    const item = currentlyRenderedFavs[i]; 
+                    const blob = await fetchImageBlob(item.thumb); 
+                    const filename = `${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`; 
+                    const objUrl = URL.createObjectURL(blob); 
+                    const link = document.createElement('a'); link.href = objUrl; link.download = filename; 
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link); 
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 200); 
+                    await new Promise(r => setTimeout(r, 300)); 
+                } catch(e) {} 
+            } 
+            showToast("ดาวน์โหลดทั้งหมดเสร็จสิ้น", "success"); 
+        }
 
-        async function downloadFilteredFavoritesZip() { if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return; const zip = new JSZip(); showToast("กำลังแพ็ค ZIP รอประมาณ 10-30 วินาที...", "info"); try { for (let i = 0; i < currentlyRenderedFavs.length; i++) { const item = currentlyRenderedFavs[i]; const blob = await fetchBlobRacing(item.thumb); zip.file(`${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`, blob); await new Promise(r => setTimeout(r, 200)); } const content = await zip.generateAsync({type:"blob"}); const objUrl = URL.createObjectURL(content); const link = document.createElement('a'); link.href = objUrl; link.download = `Fav_Gallery.zip`; link.click(); setTimeout(() => URL.revokeObjectURL(objUrl), 500); showToast("สร้างไฟล์ ZIP สำเร็จ!", "success"); } catch(e) { showToast("เกิดข้อผิดพลาดขณะสร้าง ZIP", "error"); } }
+        async function downloadFilteredFavoritesZip() { 
+            if (!currentlyRenderedFavs || !currentlyRenderedFavs.length) return; 
+            const zip = new JSZip(); 
+            showToast("กำลังสร้าง ZIP รอสักครู่...", "info"); 
+            try { 
+                for (let i = 0; i < currentlyRenderedFavs.length; i++) { 
+                    const item = currentlyRenderedFavs[i]; 
+                    const blob = await fetchImageBlob(item.thumb); 
+                    zip.file(`${item.isSnapshot ? `scene_${item.parentId}_${item.snapshotIndex}` : `cover_${item.id}`}.jpg`, blob); 
+                    await new Promise(r => setTimeout(r, 200)); 
+                } 
+                const content = await zip.generateAsync({type:"blob"}); 
+                const objUrl = URL.createObjectURL(content); 
+                const link = document.createElement('a'); link.href = objUrl; link.download = `Fav_Gallery.zip`; link.click(); 
+                setTimeout(() => URL.revokeObjectURL(objUrl), 500); 
+                showToast("สร้างไฟล์ ZIP สำเร็จ!", "success"); 
+            } catch(e) { 
+                showToast("เกิดข้อผิดพลาดขณะสร้าง ZIP", "error"); 
+            } 
+        }
 
-        async function downloadAllIndividuallyModal() { if (!currentImages || !currentImages.length) return; const id = document.getElementById('m-id-header').innerText; showToast(`เริ่มโหลด ${currentImages.length} รูป...`, "info"); for (let i = 0; i < currentImages.length; i++) { try { const blob = await fetchBlobRacing(currentImages[i]); const objUrl = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = objUrl; link.download = `${id}_${i===0?'cover':'scene_'+i}.jpg`; document.body.appendChild(link); link.click(); document.body.removeChild(link); setTimeout(() => URL.revokeObjectURL(objUrl), 200); await new Promise(r => setTimeout(r, 300)); } catch(e){} } showToast("โหลดรูปในหน้านี้สำเร็จแล้ว", "success"); }
+        async function downloadAllIndividuallyModal() { 
+            if (!currentImages || !currentImages.length) return; 
+            const id = document.getElementById('m-id-header').innerText; 
+            showToast(`เริ่มโหลด ${currentImages.length} รูป...`, "info"); 
+            for (let i = 0; i < currentImages.length; i++) { 
+                try { 
+                    const blob = await fetchImageBlob(currentImages[i]); 
+                    const objUrl = URL.createObjectURL(blob); 
+                    const link = document.createElement('a'); link.href = objUrl; link.download = `${id}_${i===0?'cover':'scene_'+i}.jpg`; 
+                    document.body.appendChild(link); link.click(); document.body.removeChild(link); 
+                    setTimeout(() => URL.revokeObjectURL(objUrl), 200); 
+                    await new Promise(r => setTimeout(r, 300)); 
+                } catch(e){} 
+            } 
+            showToast("โหลดรูปในหน้านี้สำเร็จแล้ว", "success"); 
+        }
 
-        async function downloadAllModal() { if (!currentImages || !currentImages.length) return; const zip = new JSZip(); const id = document.getElementById('m-id-header').innerText; const status = document.getElementById('dl-status'); if (status) { status.classList.remove('hidden'); status.innerText = `ดึงรูป... 0/${currentImages.length}`; } try { for (let i = 0; i < currentImages.length; i++) { if (status) status.innerText = `ดึงรูป... ${i+1}/${currentImages.length}`; const blob = await fetchBlobRacing(currentImages[i]); zip.file(`${id}_${i===0?'cover':'scene_'+i}.jpg`, blob); await new Promise(r => setTimeout(r, 200)); } if (status) status.innerText = `กำลังสร้าง ZIP...`; const content = await zip.generateAsync({type:"blob"}); const objUrl = URL.createObjectURL(content); const link = document.createElement('a'); link.href = objUrl; link.download = `${id}_Gallery.zip`; link.click(); setTimeout(() => URL.revokeObjectURL(objUrl), 500); if (status) status.innerText = `สำเร็จ!`; } catch(e) { if (status) status.innerText = `ผิดพลาด!`; } setTimeout(() => { if(status) status.classList.add('hidden'); }, 3000); }
+        async function downloadAllModal() { 
+            if (!currentImages || !currentImages.length) return; 
+            const zip = new JSZip(); 
+            const id = document.getElementById('m-id-header').innerText; 
+            const status = document.getElementById('m-count'); // ใช้พื้นที่บอกจำนวนรูปแทนการสร้าง element ใหม่
+            const originalCountText = status.innerHTML;
+            
+            try { 
+                for (let i = 0; i < currentImages.length; i++) { 
+                    status.innerHTML = `<strong>ดึงรูป:</strong> ${i+1}/${currentImages.length}`; 
+                    const blob = await fetchImageBlob(currentImages[i]); 
+                    zip.file(`${id}_${i===0?'cover':'scene_'+i}.jpg`, blob); 
+                    await new Promise(r => setTimeout(r, 200)); 
+                } 
+                status.innerHTML = `<strong>สร้างไฟล์ ZIP...</strong>`; 
+                const content = await zip.generateAsync({type:"blob"}); 
+                const objUrl = URL.createObjectURL(content); 
+                const link = document.createElement('a'); link.href = objUrl; link.download = `${id}_Gallery.zip`; link.click(); 
+                setTimeout(() => URL.revokeObjectURL(objUrl), 500); 
+                status.innerHTML = `<strong>สำเร็จ!</strong>`; 
+            } catch(e) { 
+                status.innerHTML = `<strong>ผิดพลาด!</strong>`; 
+            } 
+            setTimeout(() => { status.innerHTML = originalCountText; }, 3000); 
+        }
 
-        function downloadAllIndividually() { downloadAllIndividuallyModal(); } function downloadAll() { downloadAllModal(); }
-
-        function openConfigModal() { openBottomSheet('config-modal', 'gas-url-input'); document.getElementById('gas-url-input').value = gasEndpoint; } function closeConfigModal() { closeBottomSheet('config-modal'); }
-        function testAndSaveGAS() { const url = document.getElementById('gas-url-input').value.trim(); if(!url) return showToast("กรุณาใส่ลิงก์", "warning"); gasEndpoint = url; localStorage.setItem('gas_url', url); showToast("บันทึก Cloud สำเร็จ", "success"); closeConfigModal(); syncFromGoogleSheet(); syncBookmarksFromGoogleSheet(); }
-        function disconnectGAS() { gasEndpoint = ''; localStorage.removeItem('gas_url'); document.getElementById('gas-url-input').value = ''; showToast("ยกเลิก Cloud แล้ว", "info"); closeConfigModal(); }
-
-        window.onload = () => { initFavorites(); loadBookmarks(); changeGridSize(4); loadLatest(); };
-    </script>
-</body>
-</html>
+        function downloadAllIndividually() { downloadAllIndividuallyModal(); } 
+        function downloadAll() { downloadAllModal(); }
