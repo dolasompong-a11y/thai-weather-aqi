@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="no-referrer">
-    <title>JAV321 & JVR Gallery Hub - Server Proxy Edition</title>
+    <title>JAV Gallery Hub - Ultra Edition</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -14,11 +14,11 @@
                 extend: { 
                     colors: { primary: '#e74c3c' },
                     animation: {
-                        'fade-up': 'fadeUp 0.4s ease-out forwards',
+                        'fade-up': 'fadeUp 0.35s ease-out forwards',
                     },
                     keyframes: {
                         fadeUp: {
-                            '0%': { opacity: '0', transform: 'translateY(15px) scale(0.98)' },
+                            '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
                             '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
                         }
                     }
@@ -33,24 +33,36 @@
     </script>
     
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
         body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
         
-        /* Pinterest Masonry Grid Styles */
-        .masonry-grid { column-count: 2; column-gap: 0.75rem; }
-        @media (min-width: 640px) { .masonry-grid { column-count: 3; column-gap: 1rem; } }
-        @media (min-width: 768px) { .masonry-grid { column-count: 4; } }
-        @media (min-width: 1024px) { .masonry-grid { column-count: 5; } }
-        @media (min-width: 1280px) { .masonry-grid { column-count: 6; } }
+        /* Pinterest Masonry Layout Base */
+        .masonry-grid { column-gap: 0.75rem; column-count: 2; }
+        @media (min-width: 640px) { .masonry-grid { column-gap: 1rem; column-count: 3; } }
+        @media (min-width: 1024px) { .masonry-grid { column-count: 4; } }
+        
+        /* Grid Size Modifiers */
+        .masonry-grid.size-large { column-count: 1; }
+        @media (min-width: 640px) { .masonry-grid.size-large { column-count: 2; } }
+        @media (min-width: 1024px) { .masonry-grid.size-large { column-count: 3; } }
+
+        .masonry-grid.size-medium { column-count: 2; }
+        @media (min-width: 640px) { .masonry-grid.size-medium { column-count: 3; } }
+        @media (min-width: 1024px) { .masonry-grid.size-medium { column-count: 4; } }
+        @media (min-width: 1280px) { .masonry-grid.size-medium { column-count: 5; } }
+
+        .masonry-grid.size-small { column-count: 3; }
+        @media (min-width: 640px) { .masonry-grid.size-small { column-count: 4; } }
+        @media (min-width: 1024px) { .masonry-grid.size-small { column-count: 6; } }
+        @media (min-width: 1280px) { .masonry-grid.size-small { column-count: 8; } }
 
         .masonry-item { break-inside: avoid; margin-bottom: 0.75rem; }
         @media (min-width: 640px) { .masonry-item { margin-bottom: 1rem; } }
 
-        /* Modal Masonry */
-        .modal-masonry { column-count: 1; column-gap: 0.75rem; }
+        /* Modal Masonry Layout */
+        .modal-masonry { column-gap: 0.75rem; column-count: 1; }
         @media (min-width: 640px) { .modal-masonry { column-count: 2; } }
         @media (min-width: 1024px) { .modal-masonry { column-count: 3; } }
 
@@ -67,7 +79,6 @@
 
     <div id="toast-container" class="fixed bottom-5 right-5 z-[200] flex flex-col gap-2 max-w-sm pointer-events-none"></div>
 
-    <!-- Header Navigation Bar -->
     <header class="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-sm transition-colors duration-200 dark:bg-gray-800 dark:border-gray-700">
         <div class="container mx-auto px-3 py-2.5 flex justify-between items-center">
             
@@ -82,8 +93,8 @@
                     <i class="fas fa-fire text-lg md:text-xl"></i>
                 </button>
                 
-                <button onclick="openConfigModal()" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 active:scale-95 transition-transform" title="ตั้งค่าระบบป้องกันบล็อกและฐานข้อมูล">
-                    <i class="fas fa-shield-alt text-lg md:text-xl"></i>
+                <button onclick="openConfigModal()" class="p-2 text-green-600 hover:text-green-700 dark:text-green-400 active:scale-95 transition-transform" title="ตั้งค่าคลาวด์ Google Sheet">
+                    <i class="fas fa-cloud text-lg md:text-xl"></i>
                 </button>
 
                 <button onclick="toggleBookmarkPanel()" class="p-2 text-yellow-500 hover:text-yellow-600 active:scale-95 transition-transform relative" title="ลิงก์ที่บันทึกไว้">
@@ -119,15 +130,15 @@
     </header>
 
     <main class="container mx-auto px-2 sm:px-3 py-4">
-        <!-- Sub Controls Bar -->
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-3">
-            <div class="flex flex-wrap items-center justify-between w-full sm:w-auto gap-3">
-                <nav class="flex text-xs md:text-sm text-gray-500 dark:text-gray-400 gap-1.5 items-center">
+        <!-- Control Bar -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-3">
+            <div class="flex flex-wrap items-center justify-between w-full md:w-auto gap-3">
+                <nav class="flex text-xs md:text-sm text-gray-500 dark:text-gray-400 gap-1.5 items-center shrink-0">
                     <span class="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" id="status-dot"></span>
-                    <span id="status-text" class="font-bold text-gray-700 dark:text-gray-300">พร้อมใช้งาน (GAS Proxy)</span>
+                    <span id="status-text" class="font-bold text-gray-700 dark:text-gray-300">สแตนด์บาย</span>
                 </nav>
 
-                <div class="flex bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 shadow-sm text-xs">
+                <div class="flex bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-0.5 shadow-sm text-xs shrink-0">
                     <button id="btn-nav-back" onclick="navigateHistoryBack()" class="px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed" disabled title="หน้าก่อนหน้า">
                         <i class="fas fa-arrow-left"></i> ย้อนกลับ
                     </button>
@@ -136,45 +147,55 @@
                     </button>
                 </div>
 
-                <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1 text-xs">
+                <div class="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-1 text-xs shrink-0">
                     <button id="tab-home" onclick="switchMainTab('home')" class="px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white">
                         <i class="fas fa-home mr-1"></i> หน้าแรก
                     </button>
                     <button id="tab-fav" onclick="switchMainTab('favorites')" class="px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300">
-                        <i class="fas fa-heart text-red-500 mr-1 animate-pulse"></i> รูปภาพโปรด (<span id="fav-count">0</span>)
+                        <i class="fas fa-heart text-red-500 mr-1 animate-pulse"></i> รายการโปรด (<span id="fav-count">0</span>)
                     </button>
                 </div>
             </div>
+
+            <!-- Grid Size Modifier Menu -->
+            <div class="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-1 shadow-sm w-full md:w-auto justify-center md:justify-start">
+                <span class="text-[10px] font-bold text-gray-400 px-1.5 border-r border-gray-200 dark:border-gray-700 mr-1 uppercase">ขนาดรูป</span>
+                <button onclick="changeGridSize('large')" class="size-btn px-2.5 py-1 text-[11px] sm:text-xs rounded font-bold hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 text-gray-600" id="btn-grid-large">ใหญ่</button>
+                <button onclick="changeGridSize('medium')" class="size-btn active bg-primary text-white px-2.5 py-1 text-[11px] sm:text-xs rounded font-bold hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 text-gray-600" id="btn-grid-medium">กลาง</button>
+                <button onclick="changeGridSize('small')" class="size-btn px-2.5 py-1 text-[11px] sm:text-xs rounded font-bold hover:bg-gray-100 dark:hover:bg-gray-700 dark:text-gray-300 text-gray-600" id="btn-grid-small">เล็ก</button>
+            </div>
         </div>
 
-        <!-- Favorites Filters & Actions (Hidden by default) -->
+        <!-- Favorites Filter -->
         <div id="favorites-filter-container" class="hidden mb-5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 shadow-sm flex flex-col xl:flex-row gap-3 items-stretch xl:items-center transition-all">
             <div class="flex-grow flex items-center gap-2 border-b xl:border-b-0 xl:border-r border-gray-200 dark:border-gray-700 pb-2 xl:pb-0 xl:pr-3">
                 <i class="fas fa-filter text-gray-400 ml-1"></i>
                 <input type="text" id="fav-search-input" oninput="filterFavorites()" placeholder="กรองด้วยรหัสหนัง หรือ คีย์เวิร์ดในรายการโปรด..." class="w-full bg-transparent border-none focus:outline-none text-sm dark:text-white py-1">
                 <button onclick="document.getElementById('fav-search-input').value=''; filterFavorites();" class="text-gray-400 hover:text-red-500 px-2 py-1 transition-colors"><i class="fas fa-times"></i></button>
             </div>
-        </div>
-        
-        <div id="fav-bulk-action-bar" class="hidden mb-5 p-3.5 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-xl flex flex-col sm:flex-row justify-between items-center gap-3 shadow-sm transition-all duration-300">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-folder-open text-yellow-600 dark:text-yellow-400 text-base"></i>
-                <span id="fav-bulk-info-text" class="text-xs font-bold text-yellow-800 dark:text-yellow-300 leading-normal"></span>
-            </div>
-            <div class="flex gap-2 w-full sm:w-auto shrink-0">
-                <button onclick="downloadFilteredFavoritesIndividually()" id="btn-dl-bulk-individual" class="flex-1 sm:flex-none text-xs bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-download"></i> โหลดทีละรูป
-                </button>
-                <button onclick="downloadFilteredFavoritesZip()" id="btn-dl-bulk-zip" class="flex-1 sm:flex-none text-xs bg-primary hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center gap-2">
-                    <i class="fas fa-file-archive"></i> โหลดรวมไฟล์ (.ZIP)
-                </button>
+            
+            <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center shrink-0">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-calendar-alt mr-1"></i>วันที่กดใจ:</span>
+                    <select id="fav-date-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[120px]">
+                        <option value="all">ทั้งหมด</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-semibold text-gray-400 uppercase shrink-0"><i class="fas fa-sort mr-1"></i>เรียงตาม:</span>
+                    <select id="fav-sort-filter" onchange="filterFavorites()" class="text-xs bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-white rounded-lg border border-gray-300 dark:border-gray-600 px-2.5 py-1.5 outline-none font-bold min-w-[110px]">
+                        <option value="newest" selected>บันทึกใหม่สุด</option>
+                        <option value="oldest">บันทึกเก่าสุด</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <!-- Main Gallery Pinterest Grid Container -->
-        <div id="gallery-grid" class="masonry-grid"></div>
+        <!-- Gallery Pinterest Grid -->
+        <div id="gallery-grid" class="masonry-grid size-medium"></div>
 
-        <!-- Pagination Bar -->
+        <!-- Pagination -->
         <div id="pagination" class="mt-8 mb-16 flex justify-center items-center gap-2 md:gap-4 hidden">
             <button onclick="navPage(-1)" id="btn-prev" class="px-3 md:px-5 py-2.5 bg-white border border-gray-300 rounded-xl shadow-sm active:bg-gray-100 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 font-bold dark:text-white text-sm">
                 <i class="fas fa-chevron-left md:mr-2"></i> <span class="hidden md:inline">ก่อนหน้า</span>
@@ -186,7 +207,7 @@
         </div>
     </main>
 
-    <!-- Bookmark Drawer Panel -->
+    <!-- Bookmark Drawer -->
     <div id="bookmark-panel" class="fixed top-0 right-0 h-full w-80 bg-white dark:bg-gray-800 shadow-2xl z-[90] transform translate-x-full transition-transform duration-300 ease-in-out border-l border-gray-200 dark:border-gray-700 flex flex-col">
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
             <h3 class="font-bold text-sm text-gray-700 dark:text-gray-200 uppercase tracking-wider"><i class="fas fa-bookmark text-yellow-500 mr-2"></i>ลิงก์ที่บันทึกไว้</h3>
@@ -202,7 +223,6 @@
                 <h3 class="font-bold text-lg dark:text-white"><i class="fas fa-search text-primary mr-2"></i>ค้นหาด่วน</h3>
                 <button onclick="closeSearchModal()" class="text-gray-400 hover:text-red-500 text-lg transition-colors"><i class="fas fa-times"></i></button>
             </div>
-            <p class="text-xs text-gray-400 mb-3">ใส่รหัสเรื่อง เช่น SSIS-123 เพื่อค้นหาภาพปกและซีนหนัง</p>
             <div class="flex gap-2">
                 <input type="text" id="search-modal-input" placeholder="พิมพ์คำค้นหาที่นี่..." class="flex-1 text-sm bg-gray-50 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary">
                 <button onclick="executeModalSearch()" class="bg-primary hover:bg-red-700 text-white px-5 rounded-xl text-sm font-bold transition-all">ค้นหา</button>
@@ -210,14 +230,13 @@
         </div>
     </div>
 
-    <!-- Link Input Modal -->
+    <!-- Link Modal -->
     <div id="link-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4 backdrop-blur-sm">
         <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl p-5 shadow-2xl border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-lg dark:text-white"><i class="fas fa-link text-blue-500 mr-2"></i>เปิดจากลิงก์เว็บตรง</h3>
                 <button onclick="closeLinkInputModal()" class="text-gray-400 hover:text-red-500 text-lg transition-colors"><i class="fas fa-times"></i></button>
             </div>
-            <p class="text-xs text-gray-400 mb-3">วางลิงก์หน้าดารา หมวดหมู่ หรือลิงก์หนังตรงจาก JAV321</p>
             <div class="flex gap-2">
                 <input type="text" id="link-modal-input" placeholder="วางที่อยู่ลิงก์เว็บเป้าหมาย..." class="flex-1 text-sm bg-gray-50 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-primary">
                 <button onclick="executeModalLink()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 rounded-xl text-sm font-bold transition-all">เปิดลิงก์</button>
@@ -232,47 +251,36 @@
         </button>
 
         <div class="bg-white dark:bg-gray-800 w-full max-w-6xl h-[94vh] rounded-2xl overflow-hidden flex flex-col relative shadow-2xl border border-gray-200 dark:border-gray-700">
-            <!-- Modal Header Toolbar -->
+            
+            <!-- Toolbar -->
             <div class="p-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center shrink-0">
                 <div class="flex items-center gap-2 truncate">
                     <span id="m-id" class="bg-primary text-white px-2.5 py-1 rounded-md text-xs font-bold shrink-0"></span>
                     <span id="m-title-short" class="font-bold text-xs sm:text-sm text-gray-800 dark:text-gray-100 truncate"></span>
                 </div>
 
+                <!-- Toggle Movie Info Button -->
                 <button onclick="toggleMovieDetailsToggle()" id="btn-toggle-info" class="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0">
                     <i class="fas fa-info-circle text-blue-500"></i>
-                    <span>รายละเอียดหนัง</span>
+                    <span>รายละเอียดหนัง (นักแสดง)</span>
                     <i id="toggle-info-icon" class="fas fa-chevron-down text-[10px] transition-transform"></i>
                 </button>
             </div>
 
-            <!-- Expandable Movie Information Box (Hidden by default) -->
+            <!-- Expandable Information Drawer (Actor & Info Scan Results) -->
             <div id="movie-info-drawer" class="hidden bg-gray-100 dark:bg-gray-900/90 border-b border-gray-200 dark:border-gray-700 p-4 transition-all text-xs sm:text-sm space-y-2 shrink-0">
                 <h2 id="m-title" class="font-bold mb-2 dark:text-white leading-snug"></h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 dark:text-gray-300 bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-700">
-                    <p id="m-star"><strong><i class="fas fa-user-circle text-pink-500 mr-1.5"></i> นักแสดง:</strong> -</p>
-                    <p id="m-genre"><strong><i class="fas fa-tags text-blue-500 mr-1.5"></i> แนวหนัง:</strong> -</p>
-                    <p id="m-maker"><strong><i class="fas fa-building text-purple-500 mr-1.5"></i> ค่าย:</strong> -</p>
-                    <p id="m-count"><strong><i class="fas fa-images text-orange-500 mr-1.5"></i> จำนวนรูป:</strong> -</p>
+                    <p id="m-star"><strong><i class="fas fa-user-circle text-pink-500 mr-1.5"></i> นักแสดง:</strong> <span class="actor-list block mt-1"></span></p>
+                    <p id="m-genre"><strong><i class="fas fa-tags text-blue-500 mr-1.5"></i> แนวหนัง:</strong> <span class="genre-list block mt-1"></span></p>
+                    <p id="m-maker"><strong><i class="fas fa-building text-purple-500 mr-1.5"></i> ค่าย:</strong> <span class="maker-list block mt-1"></span></p>
+                    <p id="m-count"><strong><i class="fas fa-images text-orange-500 mr-1.5"></i> จำนวนรูป:</strong> <span class="count-val block mt-1 font-bold"></span></p>
                 </div>
             </div>
 
-            <!-- Scenes Pinterest Masonry Container -->
+            <!-- Scenes Container -->
             <div id="modal-images-scroll" class="flex-1 overflow-y-auto p-3 sm:p-5 bg-gray-100 dark:bg-gray-950 modal-mobile-scroll">
                 <div id="modal-images" class="modal-masonry"></div>
-            </div>
-
-            <!-- Modal Action Footer -->
-            <div class="p-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-2 shrink-0">
-                <div id="dl-status" class="text-xs text-gray-500 dark:text-gray-400 font-semibold truncate"></div>
-                <div class="flex gap-2 w-full sm:w-auto">
-                    <button onclick="downloadAllIndividually()" id="btn-dl-individual" class="flex-1 sm:flex-none bg-orange-500 text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold hover:bg-orange-600 shadow-sm flex items-center justify-center gap-1.5 transition-all">
-                        <i class="fas fa-cloud-download-alt"></i> โหลดทีละรูป
-                    </button>
-                    <button onclick="downloadAll()" id="btn-dl" class="flex-1 sm:flex-none bg-primary text-white px-4 py-2 rounded-xl text-xs sm:text-sm font-bold hover:bg-red-700 shadow-sm flex items-center justify-center gap-1.5 transition-all">
-                        <i class="fas fa-file-archive"></i> โหลดรวม (.ZIP)
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -294,9 +302,6 @@
             </div>
 
             <div class="flex gap-2">
-                <button id="btn-open-src-slideshow" onclick="openCurrentImageSource()" class="text-white bg-blue-600/80 hover:bg-blue-600 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors" title="เปิดภาพต้นทาง">
-                    <i class="fas fa-external-link-alt text-xs sm:text-sm"></i>
-                </button>
                 <button onclick="closeFullImgModal()" class="text-white bg-red-600/80 hover:bg-red-600 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors">
                     <i class="fas fa-times text-base sm:text-lg"></i>
                 </button>
@@ -307,43 +312,37 @@
             <button onclick="prevFullImg()" class="absolute left-2 sm:left-4 z-20 text-white bg-black/50 hover:bg-black/80 w-11 h-11 rounded-full flex items-center justify-center transition-all">
                 <i class="fas fa-chevron-left text-lg"></i>
             </button>
+
             <img id="full-modal-target-img" src="" alt="Full Screen" class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-all duration-300">
+
             <button onclick="nextFullImg()" class="absolute right-2 sm:right-4 z-20 text-white bg-black/50 hover:bg-black/80 w-11 h-11 rounded-full flex items-center justify-center transition-all">
                 <i class="fas fa-chevron-right text-lg"></i>
             </button>
         </div>
     </div>
 
-    <!-- Config Modal (Google Sheet Proxy) -->
+    <!-- Google Sheet Config Modal -->
     <div id="config-modal" class="fixed inset-0 z-[100] bg-black/80 hidden items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-lg rounded-2xl p-5 sm:p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl p-5 sm:p-6 shadow-2xl border border-gray-200 dark:border-gray-700">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg text-gray-800 dark:text-white"><i class="fas fa-shield-alt text-blue-500 mr-2"></i>ตั้งค่าเซิร์ฟเวอร์ทะลวงบล็อก (GAS Proxy)</h3>
+                <h3 class="font-bold text-lg text-gray-800 dark:text-white"><i class="fas fa-database text-green-500 mr-2"></i>ตั้งค่าคลาวด์ Google Sheet</h3>
                 <button onclick="closeConfigModal()" class="text-gray-400 hover:text-red-500 text-lg"><i class="fas fa-times"></i></button>
             </div>
-            
-            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-relaxed bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
-                <strong class="text-blue-600 dark:text-blue-400">สำคัญมาก!</strong> เพื่อป้องกันการโดน Cloudflare บล็อก ระบบจำเป็นต้องใช้ <strong>Google Apps Script</strong> ของคุณเป็นตัวกลาง (Proxy) ในการดึงข้อมูล และใช้จัดเก็บรายการโปรด
-            </p>
-
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">วาง Web App URL ของคุณที่นี่ เพื่อเปิดใช้งานระบบทะลวงบล็อกเว็บ (Proxy) และซิงค์รายการโปรดข้ามอุปกรณ์</p>
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 dark:text-gray-300 mb-1.5">Google Web App URL (GAS Endpoint)</label>
-                    <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-sm bg-gray-50 border border-gray-300 dark:border-gray-600 rounded-xl py-2.5 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white transition-shadow">
+                    <label class="block text-xs font-bold text-gray-400 mb-1.5 uppercase">Google Web App URL (GAS)</label>
+                    <input type="text" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full text-sm bg-gray-50 border border-gray-300 dark:border-gray-600 rounded-xl py-2.5 px-3 focus:outline-none dark:bg-gray-700 dark:text-white">
                 </div>
-
-                <div class="flex gap-2 pt-2">
-                    <button onclick="testAndSaveGAS()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors shadow-md">
-                        บันทึกและเชื่อมต่อ
-                    </button>
-                    <button onclick="disconnectGAS()" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
-                        ล้างค่า
-                    </button>
+                <div class="flex gap-2">
+                    <button onclick="testAndSaveGAS()" class="flex-1 bg-green-500 text-white py-2.5 rounded-xl text-sm font-bold hover:bg-green-600 transition-colors">บันทึก URL</button>
+                    <button onclick="disconnectGAS()" class="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">ล้างค่า</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- JavaScript Logic -->
     <script>
         let currentUrl = "https://www.jav321.com/";
         let currentPage = 1;
@@ -352,8 +351,8 @@
         
         let activeMainTab = 'home'; 
         let favoriteList = [];      
+        let isFavSynced = false; // Check if we already did background sync
         
-        // 🌟 ตั้งค่าเริ่มต้น GAS Endpoint ถ้าไม่มีการตั้งค่าจะแจ้งเตือนให้ตั้งค่า
         let gasEndpoint = localStorage.getItem('gas_url') || '';
 
         let slideshowInterval = null;
@@ -365,7 +364,6 @@
         let isNavigatingHistory = false; 
 
         let bookmarkList = [];
-        let currentlyRenderedFavs = [];
 
         function escapeQuotes(str) {
             return String(str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"');
@@ -374,6 +372,7 @@
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             if (!container) return;
+
             const toast = document.createElement('div');
             toast.className = `p-3.5 rounded-xl shadow-xl border text-xs sm:text-sm font-semibold transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto flex items-center gap-2`;
             
@@ -396,26 +395,32 @@
             
             container.appendChild(toast);
             setTimeout(() => { toast.classList.remove('translate-y-2', 'opacity-0'); }, 10);
-            setTimeout(() => {
-                toast.classList.add('translate-y-2', 'opacity-0');
-                setTimeout(() => { toast.remove(); }, 300);
-            }, 4000);
+            setTimeout(() => { toast.classList.add('translate-y-2', 'opacity-0'); setTimeout(() => { toast.remove(); }, 300); }, 3500);
         }
 
-        // --- UI Modals ---
+        // จัดการปรับขนาดรูป (Grid)
+        function changeGridSize(size) {
+            document.querySelectorAll('.size-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-primary', 'text-white');
+                btn.classList.add('text-gray-600', 'dark:text-gray-300');
+            });
+            const activeBtn = document.getElementById(`btn-grid-${size}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'bg-primary', 'text-white');
+                activeBtn.classList.remove('text-gray-600', 'dark:text-gray-300');
+            }
+
+            const grid = document.getElementById('gallery-grid');
+            if (grid) grid.className = `masonry-grid size-${size}`;
+        }
+
         function openSearchModal() { document.getElementById('search-modal').classList.remove('hidden'); document.getElementById('search-modal').classList.add('flex'); document.getElementById('search-modal-input').focus(); }
         function closeSearchModal() { document.getElementById('search-modal').classList.add('hidden'); document.getElementById('search-modal').classList.remove('flex'); }
-        function executeModalSearch() {
-            const val = document.getElementById('search-modal-input').value.trim();
-            if (val) { closeSearchModal(); switchMainTab('home'); loadPage(`${TARGET_URL}search?sn=${encodeURIComponent(val)}`); }
-        }
+        function executeModalSearch() { const val = document.getElementById('search-modal-input').value.trim(); if (val) { closeSearchModal(); switchMainTab('home'); loadPage(`${TARGET_URL}search?sn=${encodeURIComponent(val)}`); } }
 
         function openLinkInputModal() { document.getElementById('link-modal').classList.remove('hidden'); document.getElementById('link-modal').classList.add('flex'); document.getElementById('link-modal-input').focus(); }
         function closeLinkInputModal() { document.getElementById('link-modal').classList.add('hidden'); document.getElementById('link-modal').classList.remove('flex'); }
-        function executeModalLink() {
-            const val = document.getElementById('link-modal-input').value.trim();
-            if (val) { closeLinkInputModal(); switchMainTab('home'); loadPage(val.startsWith('http') ? val : 'https://' + val); }
-        }
+        function executeModalLink() { const val = document.getElementById('link-modal-input').value.trim(); if (val) { closeLinkInputModal(); switchMainTab('home'); loadPage(val.startsWith('http') ? val : 'https://' + val); } }
 
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -429,11 +434,9 @@
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
             updateThemeUI();
         }
-
         function updateThemeUI() {
-            const isDark = document.documentElement.classList.contains('dark');
             const icon = document.getElementById('theme-icon');
-            if (isDark) icon.className = 'fas fa-sun text-yellow-400 text-[1.1rem]';
+            if (document.documentElement.classList.contains('dark')) icon.className = 'fas fa-sun text-yellow-400 text-[1.1rem]';
             else icon.className = 'fas fa-moon text-gray-600 text-[1.1rem]';
         }
         updateThemeUI();
@@ -448,82 +451,64 @@
             return path.startsWith('/') ? origin + path : origin + '/' + path;
         }
 
-        // 🚀 THE MAGIC TRICK: Fetch HTML using Google Apps Script (Server-Side Proxy)
+        function clearHistory() {
+            localStorage.removeItem('javGalleryVisited');
+            showToast('ล้างประวัติการเข้าชมเรียบร้อยแล้ว', 'success');
+        }
+
         async function fetchHtml(url) {
             const targetUrl = url.split('#')[0];
             
-            // 1. ลองใช้ GAS เป็นอันดับแรก (เพราะเจาะเกราะ Cloudflare ได้ชัวร์ที่สุด)
             if (gasEndpoint) {
                 try {
-                    const proxyUrl = `${gasEndpoint}?action=fetchHtml&targetUrl=${encodeURIComponent(targetUrl)}`;
-                    const res = await fetch(proxyUrl);
+                    const res = await fetch(`${gasEndpoint}?action=fetchHtml&targetUrl=${encodeURIComponent(targetUrl)}`);
                     const data = await res.json();
                     if (data && data.success && data.html) {
                         return data.html;
-                    } else if (data && !data.success) {
-                        console.warn("GAS Proxy returned error:", data.error);
                     }
                 } catch(e) {
-                    console.warn("GAS Proxy Request Failed:", e);
+                    console.warn("GAS Fetch failed, falling back to public proxies...");
                 }
-            } else {
-                showToast("ระบบยังไม่ได้เชื่อมต่อ GAS Proxy การโหลดอาจติดบล็อก กรุณาตั้งค่าที่ไอคอนรูปโล่", "warning");
-                openConfigModal();
             }
 
-            // 2. ถ้า GAS พัง หรือยังไม่ตั้งค่า ลองใช้ Public Proxies แทน
-            const publicProxies = [
+            const proxies = [
                 `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
-                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`,
-                `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`
+                `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`
             ];
-
-            for (const pUrl of publicProxies) {
+            for (const pUrl of proxies) {
                 try {
                     const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 6000);
+                    const timeout = setTimeout(() => controller.abort(), 7000);
                     const res = await fetch(pUrl, { signal: controller.signal });
                     clearTimeout(timeout);
-                    
                     if (!res.ok) continue;
                     const text = await res.text();
-                    
-                    if (!text.includes('Just a moment...') && !text.includes('cf-browser-verification') && text.length > 500) {
-                        return text;
-                    }
+                    if (!text.includes('Just a moment...') && !text.includes('cf-browser-verification') && text.length > 500) return text;
                 } catch(e) { continue; }
             }
             
-            throw new Error("ระบบล้มเหลว โดน Cloudflare บล็อก 100% ต้องใช้ Google Apps Script Proxy เท่านั้น");
+            try {
+                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+                const data = await res.json();
+                if (data && data.contents && !data.contents.includes('Just a moment...')) return data.contents;
+            } catch(e) {}
+            
+            throw new Error("Proxy connection failed. ไม่สามารถทะลวงเว็บได้ แนะนำให้ใส่ URL ของ Google Sheet ในหน้าตั้งค่า");
         }
 
-        // Image Mirroring: ใช้บริการรูปย่อส่วนที่เชื่อถือได้
         function getRobustImgTag(url, classNames) {
             if (!url) return `<div class="${classNames} bg-gray-300 flex items-center justify-center text-xs">ไม่มีภาพ</div>`;
-            
             let cleanUrl = url;
-            if (cleanUrl.includes('/static/digital/')) {
-                cleanUrl = cleanUrl.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
-            }
-
+            if (cleanUrl.includes('/static/digital/')) cleanUrl = cleanUrl.replace(/^.*\/static\/digital\//, 'https://pics.dmm.co.jp/digital/');
             const rawHost = cleanUrl.replace(/^https?:\/\//, '');
-            const pList = [
-                `https://images.weserv.nl/?url=${encodeURIComponent(rawHost)}`,
-                `https://wsrv.nl/?url=${encodeURIComponent(rawHost)}`,
-                `https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`,
-                cleanUrl
-            ];
-            
+            const pList = [`https://wsrv.nl/?url=${encodeURIComponent(rawHost)}`, `https://images.weserv.nl/?url=${encodeURIComponent(rawHost)}`, `https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`, cleanUrl];
             const firstSrc = pList.shift();
             const fallback = `https://placehold.co/400x600/111827/FFFFFF?text=Image+Blocked`;
             const pStr = JSON.stringify(pList).replace(/'/g, "\\'");
-            
             const onErrorHandler = `try{let p=JSON.parse(this.getAttribute('data-p'));if(p.length>0){this.src=p.shift();this.setAttribute('data-p',JSON.stringify(p));}else{this.onerror=null;this.src='${fallback}';}}catch(e){this.onerror=null;this.src='${fallback}';}`;
-            
             return `<img src="${firstSrc}" data-p='${pStr}' referrerpolicy="no-referrer" class="${classNames} img-lazy" loading="lazy" decoding="async" onerror="${onErrorHandler}">`;
         }
 
-        // --- Core Page Load Engine ---
         async function loadPage(url) {
             if (!isNavigatingHistory) {
                 historyStack = historyStack.slice(0, historyIndex + 1);
@@ -552,390 +537,248 @@
                 }
             } catch(e) {}
 
-            if (showPagination) {
-                document.getElementById('pagination').classList.remove('hidden');
-                document.getElementById('page-number').innerText = `หน้า ${currentPage}`;
-                document.getElementById('btn-prev').disabled = (currentPage <= 1);
-            } else {
-                document.getElementById('pagination').classList.add('hidden');
-            }
+            if (showPagination) { document.getElementById('pagination').classList.remove('hidden'); document.getElementById('page-number').innerText = `หน้า ${currentPage}`; document.getElementById('btn-prev').disabled = (currentPage <= 1); }
+            else { document.getElementById('pagination').classList.add('hidden'); }
 
             const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '<div class="col-span-full py-20 text-center dark:text-white"><i class="fas fa-circle-notch fa-spin text-4xl text-blue-500 mb-3"></i><br><span class="text-xs font-bold text-gray-500 dark:text-gray-400 mt-2 block">กำลังโหลดข้อมูลผ่าน GAS Proxy...</span></div>';
+            grid.innerHTML = '<div class="col-span-full py-20 text-center dark:text-white"><i class="fas fa-circle-notch fa-spin text-4xl text-primary mb-3"></i><br><span class="text-xs font-bold text-gray-500 dark:text-gray-400 mt-2 block">กำลังเชื่อมต่อข้อมูล...</span></div>';
 
             try {
                 const html = await fetchHtml(url);
                 const doc = new DOMParser().parseFromString(html, 'text/html');
                 const items = [];
                 const seen = new Set();
-
                 doc.querySelectorAll('a').forEach(a => {
                     const img = a.querySelector('img');
                     if (!img) return;
-                    
                     let rawSrc = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
                     if (!rawSrc || rawSrc.includes('logo') || rawSrc.includes('banner')) return;
-                    
                     let src = resolveUrl(rawSrc, url);
                     let title = img.getAttribute('title') || img.getAttribute('alt') || a.innerText.trim() || 'Untitled';
                     let href = resolveUrl(a.getAttribute('href'), url);
-                    
                     const idMatch = title.match(/([a-zA-Z]{2,8}-?\d{2,6}|\d{2,4}[a-zA-Z]{2,8}-?\d{2,6}|fc2-?[a-zA-Z]+-?\d{2,7})/i);
                     const id = idMatch ? idMatch[0].toUpperCase() : null;
-
-                    if (id && !seen.has(id)) {
-                        seen.add(id);
-                        items.push({ id, title, thumb: src, url: href });
-                    }
+                    if (id && !seen.has(id)) { seen.add(id); items.push({ id, title, thumb: src, url: href }); }
                 });
-
                 if(items.length === 0) throw new Error("No items found");
                 renderGrid(items);
             } catch (e) {
-                grid.innerHTML = `
-                    <div class="col-span-full py-20 text-center text-red-500">
-                        <i class="fas fa-shield-alt text-4xl mb-3 text-red-500"></i><br>
-                        <span class="font-bold text-base">ระบบยังโดนบล็อก!</span><br>
-                        <span class="text-xs text-gray-500 dark:text-gray-400 mt-2 block">การเชื่อมต่อ Public Proxy ล้มเหลว โปรดตั้งค่า <strong>GAS Endpoint</strong> ที่ปุ่มรูปโล่</span>
-                        <div class="mt-4 flex gap-2 justify-center">
-                            <button onclick="openConfigModal()" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md active:scale-95"><i class="fas fa-cog mr-2"></i> ตั้งค่า GAS</button>
-                            <button onclick="loadPage('${escapeQuotes(url)}')" class="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl text-xs font-bold shadow-md active:scale-95"><i class="fas fa-redo mr-2"></i> ลองอีกครั้ง</button>
-                        </div>
-                    </div>`;
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-red-500"><i class="fas fa-exclamation-triangle text-4xl mb-3"></i><br><span class="font-bold text-base">ถูกปฏิเสธชั่วคราว / โหลดไม่สำเร็จ</span><br><span class="text-xs text-gray-500 dark:text-gray-400 mt-2 block">${e.message}</span><button onclick="loadPage('${escapeQuotes(url)}')" class="mt-4 px-5 py-2 bg-primary hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-colors shadow-md active:scale-95"><i class="fas fa-redo mr-2"></i> ลองอีกครั้ง</button></div>`;
             }
         }
 
-        // 🎨 Clean Pinterest Masonry Cards
         function renderGrid(items) {
             const grid = document.getElementById('gallery-grid');
             grid.innerHTML = items.map((item, idx) => {
                 const safeId = String(item.id || '').replace(/\s+/g, '_');
                 const uniqueKey = item.isSnapshot ? `snapshot_${item.parentId}_${item.snapshotIndex}` : safeId;
-                
-                const isFav = favoriteList.some(f => {
-                    if (item.isSnapshot) return f.isSnapshot && f.parentId === item.parentId && f.thumb === item.thumb;
-                    return !f.isSnapshot && f.id === item.id;
-                });
-
+                const isFav = favoriteList.some(f => { if (item.isSnapshot) return f.isSnapshot && f.parentId === item.parentId && f.thumb === item.thumb; return !f.isSnapshot && f.id === item.id; });
                 const animDelay = (idx % 12) * 0.04;
-                
                 return `
                     <div class="masonry-item animate-fade-up" style="animation-delay: ${animDelay}s">
-                        <div class="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 relative border border-gray-100 dark:border-gray-700/60" id="item-card-${uniqueKey}">
-                            
+                        <div class="group bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 relative border border-gray-100 dark:border-gray-700/60" id="item-card-${uniqueKey}">
                             <div onclick="handleCardClick('${item.id}', '${item.url}', '${item.thumb}', '${escapeQuotes(item.title)}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="bg-gray-200 dark:bg-gray-900 cursor-pointer overflow-hidden relative">
                                 ${getRobustImgTag(item.thumb, "w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500")}
-                                
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 pointer-events-none">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
                                     <p class="text-white text-xs font-bold line-clamp-2 leading-snug">${item.title}</p>
                                 </div>
                             </div>
-
                             <button onclick="toggleFavorite(event, '${item.id}', '${escapeQuotes(item.title)}', '${item.thumb}', '${item.url}', ${item.isSnapshot || false}, '${item.parentId || ''}', ${item.snapshotIndex || 0})" class="absolute bottom-2.5 left-2.5 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md text-white flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-lg border border-white/20">
                                 <i class="${isFav ? 'fas text-red-500' : 'far'} fa-heart text-sm"></i>
                             </button>
-
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
         function handleCardClick(id, url, thumb, title, isSnapshot, parentId, snapshotIndex) {
             if (isSnapshot) {
-                const sortedFavs = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp);
-                const favSnapshots = sortedFavs.filter(f => f.isSnapshot);
+                const favSnapshots = [...favoriteList].sort((a,b) => b.timestamp - a.timestamp).filter(f => f.isSnapshot);
                 currentImages = favSnapshots.map(f => f.thumb);
-                
                 const clickedIndex = favSnapshots.findIndex(f => f.parentId === parentId && f.thumb === thumb);
                 openFullImgModal(clickedIndex > -1 ? clickedIndex : 0);
-            } else {
-                openModal(id, url, thumb, title);
-            }
+            } else { openModal(id, url, thumb, title); }
         }
 
-        // --- Navigation Logic ---
         function navPage(direction) {
             try {
                 let urlObj = new URL(currentUrl);
                 if (urlObj.hostname.includes('jvrlibrary.com') || urlObj.searchParams.has('page')) {
                     let newPage = parseInt(urlObj.searchParams.get('page') || "1") + direction;
                     if (newPage < 1) newPage = 1;
-                    urlObj.searchParams.set('page', newPage);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    loadPage(urlObj.toString());
-                    return;
+                    urlObj.searchParams.set('page', newPage); window.scrollTo({ top: 0, behavior: 'smooth' }); loadPage(urlObj.toString()); return;
                 }
                 const pageMatch = currentUrl.match(/\/(\d+)\/?$/);
                 if (pageMatch) {
                     let newPage = parseInt(pageMatch[1]) + direction;
                     if (newPage < 1) newPage = 1;
-                    const newUrl = currentUrl.replace(/\/\d+\/?$/, `/${newPage}`);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    loadPage(newUrl);
-                    return;
+                    window.scrollTo({ top: 0, behavior: 'smooth' }); loadPage(currentUrl.replace(/\/\d+\/?$/, `/${newPage}`)); return;
                 }
-                if (currentUrl === TARGET_URL || currentUrl === TARGET_URL.replace(/\/$/, '')) {
-                    if (direction > 0) {
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        loadPage(`${TARGET_URL}list/release_date/2`);
-                    }
-                }
+                if (currentUrl === TARGET_URL || currentUrl === TARGET_URL.replace(/\/$/, '')) { if (direction > 0) { window.scrollTo({ top: 0, behavior: 'smooth' }); loadPage(`${TARGET_URL}list/release_date/2`); } }
             } catch(e) {}
         }
 
         function goHome() { switchMainTab('home'); loadPage(TARGET_URL); }
         function loadLatest() { switchMainTab('home'); loadPage(`${TARGET_URL}list/release_date/1`); }
-
         function triggerDirectSearch(name, url) { closeModal(); loadPage(resolveUrl(url)); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
         function switchMainTab(tab) {
-            const tabHome = document.getElementById('tab-home');
-            const tabFav = document.getElementById('tab-fav');
-            const pag = document.getElementById('pagination');
-            const favFilter = document.getElementById('favorites-filter-container');
-            const bulkBar = document.getElementById('fav-bulk-action-bar');
-
+            const tabHome = document.getElementById('tab-home'); const tabFav = document.getElementById('tab-fav');
+            const pag = document.getElementById('pagination'); const favFilter = document.getElementById('favorites-filter-container');
             activeMainTab = tab;
-
             if (tab === 'home') {
                 if (tabHome) tabHome.className = "px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white";
                 if (tabFav) tabFav.className = "px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300";
                 if (favFilter) favFilter.classList.add('hidden');
-                if (bulkBar) bulkBar.classList.add('hidden');
                 loadPage(currentUrl);
             } else if (tab === 'favorites') {
                 if (tabHome) tabHome.className = "px-3 py-1.5 rounded-md font-bold transition-all text-gray-600 dark:text-gray-300";
                 if (tabFav) tabFav.className = "px-3 py-1.5 rounded-md font-bold transition-all bg-white dark:bg-gray-800 shadow-sm text-gray-800 dark:text-white";
                 if (pag) pag.classList.add('hidden');
-                renderFavoritesPage();
+                renderFavoritesPage(); // Load instantly from memory cache, no network request
             }
         }
 
-        function navigateHistoryBack() {
-            if (historyIndex > 0) { isNavigatingHistory = true; historyIndex--; loadPage(historyStack[historyIndex]).then(() => { isNavigatingHistory = false; }); }
-        }
-        function navigateHistoryForward() {
-            if (historyIndex < historyStack.length - 1) { isNavigatingHistory = true; historyIndex++; loadPage(historyStack[historyIndex]).then(() => { isNavigatingHistory = false; }); }
-        }
+        function navigateHistoryBack() { if (historyIndex > 0) { isNavigatingHistory = true; historyIndex--; loadPage(historyStack[historyIndex]).then(() => { isNavigatingHistory = false; }); } }
+        function navigateHistoryForward() { if (historyIndex < historyStack.length - 1) { isNavigatingHistory = true; historyIndex++; loadPage(historyStack[historyIndex]).then(() => { isNavigatingHistory = false; }); } }
         function updateNavigationButtonsUI() {
-            const btnBack = document.getElementById('btn-nav-back');
-            const btnForward = document.getElementById('btn-nav-forward');
+            const btnBack = document.getElementById('btn-nav-back'); const btnForward = document.getElementById('btn-nav-forward');
             if (!btnBack || !btnForward) return;
-            btnBack.disabled = historyIndex <= 0;
-            btnBack.className = historyIndex > 0 ? "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95" : "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
-            btnForward.disabled = historyIndex >= historyStack.length - 1;
-            btnForward.className = historyIndex < historyStack.length - 1 ? "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95" : "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
+            btnBack.disabled = historyIndex <= 0; btnBack.className = historyIndex > 0 ? "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95" : "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
+            btnForward.disabled = historyIndex >= historyStack.length - 1; btnForward.className = historyIndex < historyStack.length - 1 ? "px-2.5 py-1.5 rounded-md font-bold transition-all bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-white active:scale-95" : "px-2.5 py-1.5 rounded-md font-bold transition-all text-gray-400 cursor-not-allowed";
         }
 
-        function loadBookmarks() {
-            try {
-                bookmarkList = JSON.parse(localStorage.getItem('jav_bookmarks')) || [];
-                updateBookmarkBadgeUI(); renderBookmarkListUI();
-            } catch(e) { bookmarkList = []; }
-            if (gasEndpoint) syncBookmarksFromGoogleSheet();
-        }
-
-        function updateBookmarkBadgeUI() {
-            const badge = document.getElementById('bookmark-badge');
-            if (!badge) return;
-            if (bookmarkList.length > 0) { badge.innerText = bookmarkList.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
-        }
-
-        function updateCurrentPageBookmarkButtonUI() {
-            const btn = document.getElementById('btn-bookmark-current');
-            if (!btn) return; 
-            const isBookmarked = bookmarkList.some(b => b.url === currentUrl);
-            btn.innerHTML = isBookmarked ? `<i class="fas fa-star text-yellow-500"></i> บันทึกแล้ว` : `<i class="far fa-star"></i> บันทึกหน้านี้`;
-        }
-
+        function loadBookmarks() { try { bookmarkList = JSON.parse(localStorage.getItem('jav_bookmarks')) || []; updateBookmarkBadgeUI(); renderBookmarkListUI(); } catch(e) { bookmarkList = []; } if (gasEndpoint) syncBookmarksFromGoogleSheet(); }
+        function updateBookmarkBadgeUI() { const badge = document.getElementById('bookmark-badge'); if (!badge) return; if (bookmarkList.length > 0) { badge.innerText = bookmarkList.length; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); } }
+        function updateCurrentPageBookmarkButtonUI() { const btn = document.getElementById('btn-bookmark-current'); if (!btn) return; const isBookmarked = bookmarkList.some(b => b.url === currentUrl); btn.innerHTML = isBookmarked ? `<i class="fas fa-star text-yellow-500"></i> บันทึกแล้ว` : `<i class="far fa-star"></i> บันทึกหน้านี้`; }
         function toggleCurrentPageBookmark() {
-            const existingIndex = bookmarkList.findIndex(b => b.url === currentUrl);
-            let actionType = 'add', title = "หน้าเว็บเป้าหมาย";
-
-            if (existingIndex > -1) { bookmarkList.splice(existingIndex, 1); actionType = 'remove'; }
-            else { bookmarkList.push({ title, url: currentUrl, timestamp: new Date().getTime() }); }
-
-            localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList));
-            updateBookmarkBadgeUI(); updateCurrentPageBookmarkButtonUI(); renderBookmarkListUI();
-            if (gasEndpoint) syncBookmarkToGoogleSheet(title, currentUrl, actionType);
+            const existingIndex = bookmarkList.findIndex(b => b.url === currentUrl); let actionType = 'add'; let title = "หน้าเว็บเป้าหมาย";
+            if (existingIndex > -1) { bookmarkList.splice(existingIndex, 1); actionType = 'remove'; } else { bookmarkList.push({ title, url: currentUrl, timestamp: new Date().getTime() }); }
+            localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList)); updateBookmarkBadgeUI(); updateCurrentPageBookmarkButtonUI(); renderBookmarkListUI();
+            if (gasEndpoint) fetch(`${gasEndpoint}?${new URLSearchParams({ action: 'syncBookmark', title, url: currentUrl, status: actionType, timestamp: new Date().getTime() }).toString()}`, { mode: 'no-cors' });
         }
-
         function toggleBookmarkPanel() { const panel = document.getElementById('bookmark-panel'); if (panel) panel.classList.toggle('translate-x-full'); }
-
         function renderBookmarkListUI() {
-            const listEl = document.getElementById('bookmark-list');
-            if (!listEl) return;
-            if (bookmarkList.length === 0) {
-                listEl.innerHTML = `<div class="py-12 text-center text-gray-400"><i class="far fa-star text-4xl mb-3 text-gray-300"></i><p class="text-xs font-semibold">ยังไม่มีลิงก์โปรดที่บันทึกไว้</p></div>`;
-                return;
-            }
-            listEl.innerHTML = [...bookmarkList].sort((a,b) => b.timestamp - a.timestamp).map(b => `
-                <div class="flex items-center justify-between gap-2 p-2.5 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 group">
-                    <div onclick="openBookmarkLink('${b.url}')" class="flex-1 overflow-hidden cursor-pointer">
-                        <p class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate group-hover:text-yellow-600 transition-colors">${b.title}</p>
-                        <p class="text-[9px] text-gray-400 truncate mt-0.5">${b.url}</p>
-                    </div>
-                    <button onclick="deleteBookmark('${b.url}')" class="text-gray-400 hover:text-red-500 p-1.5 transition-colors"><i class="fas fa-trash-alt text-xs"></i></button>
-                </div>
-            `).join('');
+            const listEl = document.getElementById('bookmark-list'); if (!listEl) return;
+            if (bookmarkList.length === 0) { listEl.innerHTML = `<div class="py-12 text-center text-gray-400"><i class="far fa-star text-4xl mb-3 text-gray-300"></i><p class="text-xs font-semibold">ยังไม่มีลิงก์โปรดที่บันทึกไว้</p></div>`; return; }
+            listEl.innerHTML = [...bookmarkList].sort((a,b) => b.timestamp - a.timestamp).map(b => `<div class="flex items-center justify-between gap-2 p-2.5 bg-gray-50 dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 group"><div onclick="openBookmarkLink('${b.url}')" class="flex-1 overflow-hidden cursor-pointer"><p class="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate group-hover:text-yellow-600 transition-colors">${b.title}</p><p class="text-[9px] text-gray-400 truncate mt-0.5">${b.url}</p></div><button onclick="deleteBookmark('${b.url}')" class="text-gray-400 hover:text-red-500 p-1.5 transition-colors"><i class="fas fa-trash-alt text-xs"></i></button></div>`).join('');
         }
-
         function openBookmarkLink(url) { toggleBookmarkPanel(); switchMainTab('home'); loadPage(url); }
-        function deleteBookmark(url) {
-            bookmarkList = bookmarkList.filter(b => b.url !== url);
-            localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList));
-            updateBookmarkBadgeUI(); updateCurrentPageBookmarkButtonUI(); renderBookmarkListUI();
-            if (gasEndpoint) syncBookmarkToGoogleSheet('', url, 'remove');
-        }
-
-        async function syncBookmarkToGoogleSheet(title, url, action) {
-            try {
-                const params = new URLSearchParams({ action: 'syncBookmark', title, url, status: action, timestamp: new Date().getTime() });
-                fetch(`${gasEndpoint}?${params.toString()}`, { mode: 'no-cors' });
-            } catch(e) {}
-        }
+        function deleteBookmark(url) { bookmarkList = bookmarkList.filter(b => b.url !== url); localStorage.setItem('jav_bookmarks', JSON.stringify(bookmarkList)); updateBookmarkBadgeUI(); updateCurrentPageBookmarkButtonUI(); renderBookmarkListUI(); if (gasEndpoint) fetch(`${gasEndpoint}?${new URLSearchParams({ action: 'syncBookmark', title:'', url, status: 'remove', timestamp: new Date().getTime() }).toString()}`, { mode: 'no-cors' }); }
+        
         async function syncBookmarksFromGoogleSheet() {
             if (!gasEndpoint) return;
-            try {
-                const res = await fetch(`${gasEndpoint}?action=getBookmarks`);
-                const data = await res.json();
-                if (data && data.success && Array.isArray(data.bookmarks)) {
-                    bookmarkList = data.bookmarks;
-                    updateBookmarkBadgeUI(); updateCurrentPageBookmarkButtonUI(); renderBookmarkListUI();
-                }
-            } catch(e) {}
-        }
-        async function syncToGoogleSheet(id, title, thumb, url, action, isSnapshot, parentId, snapshotIndex) {
-            try {
-                const params = new URLSearchParams({ action: 'sync', id, title, thumb, url, status: action, isSnapshot: isSnapshot ? 'true' : 'false', parentId, snapshotIndex, timestamp: new Date().getTime() });
-                fetch(`${gasEndpoint}?${params.toString()}`, { mode: 'no-cors' });
-            } catch(e) {}
-        }
-        async function syncFromGoogleSheet() {
-            if (!gasEndpoint) return;
-            try {
-                const res = await fetch(`${gasEndpoint}?action=getFavorites`);
-                const data = await res.json();
-                if (data && data.success && Array.isArray(data.favorites)) {
-                    favoriteList = data.favorites.map(f => ({ ...f, isSnapshot: f.isSnapshot === 'true' || f.isSnapshot === true, snapshotIndex: parseInt(f.snapshotIndex) || 0 }));
-                    localStorage.setItem('jav_favorites', JSON.stringify(favoriteList));
-                    updateFavCountBadge(); if (activeMainTab === 'favorites') renderFavoritesPage();
-                }
-            } catch(e) {}
-        }
-
-        function openConfigModal() {
-            const input = document.getElementById('gas-url-input');
-            if (input) input.value = gasEndpoint;
-            document.getElementById('config-modal').classList.remove('hidden'); document.getElementById('config-modal').classList.add('flex');
-        }
-        function closeConfigModal() { document.getElementById('config-modal').classList.add('hidden'); document.getElementById('config-modal').classList.remove('flex'); }
-        
-        async function testAndSaveGAS() {
-            const urlInput = document.getElementById('gas-url-input');
-            const url = urlInput ? urlInput.value.trim() : '';
-            if (!url) { showToast("กรุณากรอก Web App URL ก่อนครับ", "warning"); return; }
-            
-            // เช็คว่าเป็น URL ของ GAS จริงไหม
-            if (!url.includes('script.google.com/macros/')) {
-                showToast("URL ไม่ถูกต้อง ต้องเป็นลิงก์ของ Google Apps Script เท่านั้น", "error"); return;
-            }
-
-            gasEndpoint = url;
-            localStorage.setItem('gas_url', url); 
-            showToast("เชื่อมต่อ GAS Proxy สำเร็จ! ตอนนี้คุณจะดึงข้อมูลทะลวงบล็อกได้ 100%", "success");
-            closeConfigModal();
-            syncFromGoogleSheet(); syncBookmarksFromGoogleSheet(); 
-            
-            // Reload หน้าเดิมผ่าน Proxy
-            if(activeMainTab === 'home') loadPage(currentUrl);
+            try { const res = await fetch(`${gasEndpoint}?action=getBookmarks`); const data = await res.json(); if (data && data.success && Array.isArray(data.bookmarks)) { bookmarkList = data.bookmarks; updateBookmarkBadgeUI(); updateCurrentPageBookmarkButtonUI(); renderBookmarkListUI(); } } catch(e) {}
         }
         
-        function disconnectGAS() {
-            gasEndpoint = ''; localStorage.removeItem('gas_url'); 
-            const urlInput = document.getElementById('gas-url-input'); if (urlInput) urlInput.value = '';
-            showToast("ยกเลิกการเชื่อมต่อเรียบร้อยแล้ว", "info"); closeConfigModal();
-        }
-
+        // Cache Logic System for Favorites
         function initFavorites() {
             try { favoriteList = JSON.parse(localStorage.getItem('jav_favorites')) || []; updateFavCountBadge(); } catch(e) { favoriteList = []; }
-            if (gasEndpoint) syncFromGoogleSheet();
+            if (gasEndpoint && !isFavSynced) { syncFromGoogleSheet(); isFavSynced = true; } // Background sync only once
         }
+        
         function updateFavCountBadge() { const countEl = document.getElementById('fav-count'); if (countEl) countEl.innerText = favoriteList.length; }
 
         async function toggleFavorite(event, id, title, thumb, url, isSnapshot = false, parentId = '', snapshotIndex = 0) {
             if (event) event.stopPropagation();
-            const safeId = String(id || '').replace(/\s+/g, '_');
-            const uniqueKey = isSnapshot ? `snapshot_${parentId}_${snapshotIndex}` : safeId;
-            const existingIndex = favoriteList.findIndex(f => {
-                if (isSnapshot) return f.isSnapshot && f.parentId === parentId && f.thumb === thumb;
-                return !f.isSnapshot && f.id === id;
-            });
+            const safeId = String(id || '').replace(/\s+/g, '_'); const uniqueKey = isSnapshot ? `snapshot_${parentId}_${snapshotIndex}` : safeId;
+            const existingIndex = favoriteList.findIndex(f => { if (isSnapshot) return f.isSnapshot && f.parentId === parentId && f.thumb === thumb; return !f.isSnapshot && f.id === id; });
             let actionType = 'add';
-            if (existingIndex > -1) { favoriteList.splice(existingIndex, 1); actionType = 'remove'; }
-            else { favoriteList.push({ id, title: isSnapshot ? `${title} (Scene #${snapshotIndex})` : title, thumb, url, isSnapshot, parentId, snapshotIndex, timestamp: new Date().getTime() }); }
+            if (existingIndex > -1) { favoriteList.splice(existingIndex, 1); actionType = 'remove'; } else { favoriteList.push({ id, title: isSnapshot ? `${title} (Scene #${snapshotIndex})` : title, thumb, url, isSnapshot, parentId, snapshotIndex, timestamp: new Date().getTime() }); }
             
-            localStorage.setItem('jav_favorites', JSON.stringify(favoriteList)); updateFavCountBadge();
-            const cardBtn = document.querySelector(`#item-card-${uniqueKey} button i`);
-            if (cardBtn) cardBtn.className = actionType === 'add' ? "fas text-red-500 fa-heart text-sm" : "far fa-heart text-sm";
-            const modalBtn = document.querySelector(`#modal-heart-${uniqueKey} i`);
-            if (modalBtn) modalBtn.className = actionType === 'add' ? "fas text-red-500 fa-heart text-sm" : "far text-white fa-heart text-sm";
+            // Save instantly to local cache
+            localStorage.setItem('jav_favorites', JSON.stringify(favoriteList)); 
+            updateFavCountBadge();
+            
+            const cardBtn = document.querySelector(`#item-card-${uniqueKey} button i`); if (cardBtn) cardBtn.className = actionType === 'add' ? "fas text-red-500 fa-heart text-sm" : "far fa-heart text-sm";
+            const modalBtn = document.querySelector(`#modal-heart-${uniqueKey} i`); if (modalBtn) modalBtn.className = actionType === 'add' ? "fas text-red-500 fa-heart text-sm" : "far text-white fa-heart text-sm";
+            
+            if (activeMainTab === 'favorites') renderFavoritesPage(); // Render directly from cache
+            
+            if (gasEndpoint) { fetch(`${gasEndpoint}?${new URLSearchParams({ action: 'sync', id, title, thumb, url, status: actionType, isSnapshot: isSnapshot ? 'true' : 'false', parentId, snapshotIndex, timestamp: new Date().getTime() }).toString()}`, { mode: 'no-cors' }); }
+        }
 
-            if (activeMainTab === 'favorites') renderFavoritesPage();
-            if (gasEndpoint) syncToGoogleSheet(uniqueKey, title, thumb, url, actionType, isSnapshot, parentId, snapshotIndex);
+        async function syncFromGoogleSheet() {
+            if (!gasEndpoint) return;
+            try {
+                const res = await fetch(`${gasEndpoint}?action=getFavorites`); const data = await res.json();
+                if (data && data.success && Array.isArray(data.favorites)) {
+                    favoriteList = data.favorites.map(f => ({ ...f, isSnapshot: f.isSnapshot === 'true' || f.isSnapshot === true, snapshotIndex: parseInt(f.snapshotIndex) || 0 }));
+                    localStorage.setItem('jav_favorites', JSON.stringify(favoriteList)); 
+                    updateFavCountBadge();
+                    if (activeMainTab === 'favorites') renderFavoritesPage();
+                }
+            } catch(e) {}
+        }
+
+        function scanAndPopulateDatesDropdown() {
+            const dateSelect = document.getElementById('fav-date-filter');
+            if (!dateSelect) return;
+            const currentSelectedValue = dateSelect.value;
+            dateSelect.innerHTML = '<option value="all">ทั้งหมด</option>';
+            const dateSet = new Set();
+            favoriteList.forEach(item => { if (item.timestamp) { dateSet.add(new Date(item.timestamp).toLocaleDateString('th-TH')); } });
+            
+            const sortedDates = Array.from(dateSet).sort((a, b) => {
+                const parse = dStr => { const p = dStr.split('/'); return new Date(parseInt(p[2])-543, parseInt(p[1])-1, parseInt(p[0])); };
+                return parse(b) - parse(a);
+            });
+            
+            sortedDates.forEach(dStr => { dateSelect.innerHTML += `<option value="${dStr}">${dStr}</option>`; });
+            if (Array.from(dateSelect.options).some(opt => opt.value === currentSelectedValue)) dateSelect.value = currentSelectedValue;
         }
 
         function renderFavoritesPage() {
             const grid = document.getElementById('gallery-grid');
             const favFilter = document.getElementById('favorites-filter-container');
-            const bulkBar = document.getElementById('fav-bulk-action-bar');
-            
             if (favoriteList.length === 0) {
                 if(favFilter) favFilter.classList.add('hidden');
-                if(bulkBar) bulkBar.classList.add('hidden');
-                grid.innerHTML = `<div class="col-span-full py-20 text-center dark:text-gray-400"><i class="far fa-heart text-5xl text-gray-300 mb-4 block"></i><p class="font-bold">ยังไม่มีรายการโปรด</p></div>`;
+                grid.innerHTML = `<div class="col-span-full py-20 text-center dark:text-gray-400"><i class="far fa-heart text-5xl text-gray-300 mb-4 block"></i><p class="font-bold">ยังไม่มีรายการโปรดในเครื่องของคุณ</p></div>`;
                 return;
             }
-            if(activeMainTab === 'favorites' && favFilter) favFilter.classList.remove('hidden');
+            if(activeMainTab === 'favorites' && favFilter) {
+                favFilter.classList.remove('hidden');
+                scanAndPopulateDatesDropdown();
+            }
             filterFavorites();
         }
 
         function filterFavorites() {
             if (activeMainTab !== 'favorites') return;
-            const queryInput = document.getElementById('fav-search-input');
-            const query = queryInput ? queryInput.value.toLowerCase().trim() : '';
+            const query = document.getElementById('fav-search-input') ? document.getElementById('fav-search-input').value.toLowerCase().trim() : '';
+            const selectedDate = document.getElementById('fav-date-filter') ? document.getElementById('fav-date-filter').value : 'all';
+            const selectedSort = document.getElementById('fav-sort-filter') ? document.getElementById('fav-sort-filter').value : 'newest';
+            
             let filteredList = [...favoriteList];
             if (query) filteredList = filteredList.filter(f => (f.id && String(f.id).toLowerCase().includes(query)) || (f.title && String(f.title).toLowerCase().includes(query)));
-            filteredList.sort((a,b) => b.timestamp - a.timestamp);
-            currentlyRenderedFavs = filteredList; renderGrid(filteredList);
+            if (selectedDate !== 'all') filteredList = filteredList.filter(f => f.timestamp && new Date(f.timestamp).toLocaleDateString('th-TH') === selectedDate);
+            
+            if (selectedSort === 'newest') filteredList.sort((a, b) => b.timestamp - a.timestamp);
+            else if (selectedSort === 'oldest') filteredList.sort((a, b) => a.timestamp - b.timestamp);
+
+            if (filteredList.length === 0) {
+                document.getElementById('gallery-grid').innerHTML = `<div class="col-span-full py-20 text-center dark:text-gray-400"><p class="font-bold">ไม่พบรูปภาพจากตัวกรองที่เลือก</p></div>`;
+            } else {
+                renderGrid(filteredList);
+            }
         }
 
         function toggleMovieDetailsToggle() {
-            const drawer = document.getElementById('movie-info-drawer');
-            const icon = document.getElementById('toggle-info-icon');
+            const drawer = document.getElementById('movie-info-drawer'); const icon = document.getElementById('toggle-info-icon');
             if (!drawer) return;
-            if (drawer.classList.contains('hidden')) { drawer.classList.remove('hidden'); icon.style.transform = 'rotate(180deg)'; }
+            if (drawer.classList.contains('hidden')) { drawer.classList.remove('hidden'); icon.style.transform = 'rotate(180deg)'; } 
             else { drawer.classList.add('hidden'); icon.style.transform = 'rotate(0deg)'; }
         }
 
-        // 🎯 Accurate Movie Scene Scanner (กรองเรื่องอื่นออก)
         async function openModal(id, url, thumbUrl, title) {
-            const modal = document.getElementById('modal');
-            modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; 
+            const modal = document.getElementById('modal'); modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.style.overflow = 'hidden'; 
+            document.getElementById('movie-info-drawer').classList.add('hidden'); document.getElementById('toggle-info-icon').style.transform = 'rotate(0deg)';
+            document.getElementById('m-id').innerText = id; document.getElementById('m-title-short').innerText = title || id; document.getElementById('m-title').innerText = title || id;
             
-            document.getElementById('movie-info-drawer').classList.add('hidden');
-            document.getElementById('toggle-info-icon').style.transform = 'rotate(0deg)';
-
-            document.getElementById('m-id').innerText = id;
-            document.getElementById('m-title-short').innerText = title || id;
-            document.getElementById('m-title').innerText = title || id;
-            document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-1.5"></i> นักแสดง:</strong> กำลังสแกน...`;
-            document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-1.5"></i> แนวหนัง:</strong> กำลังสแกน...`;
-            document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-1.5"></i> ค่าย:</strong> กำลังสแกน...`;
-            document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-spinner fa-spin text-orange-500 mr-1.5"></i> จำนวนรูป:</strong> กำลังสแกน...`;
-            
-            document.getElementById('btn-dl').disabled = true; document.getElementById('btn-dl-individual').disabled = true;
+            document.querySelector('.actor-list').innerHTML = `<span class="text-gray-400 animate-pulse"><i class="fas fa-spinner fa-spin mr-1"></i> กำลังสแกน...</span>`;
+            document.querySelector('.genre-list').innerHTML = `<span class="text-gray-400 animate-pulse"><i class="fas fa-spinner fa-spin mr-1"></i> กำลังสแกน...</span>`;
+            document.querySelector('.maker-list').innerHTML = `<span class="text-gray-400 animate-pulse"><i class="fas fa-spinner fa-spin mr-1"></i> กำลังสแกน...</span>`;
+            document.querySelector('.count-val').innerHTML = `<span class="text-gray-400 animate-pulse"><i class="fas fa-spinner fa-spin mr-1"></i> กำลังสแกน...</span>`;
             
             const itemUrl = url || `${TARGET_URL}video/${id.toLowerCase().replace('-', '00')}`;
             let highResCover = thumbUrl ? thumbUrl.replace('sn.jpg', 'pl.jpg').replace('-thumb.jpg', '.jpg').replace('ps.jpg', 'pl.jpg') : null;
@@ -943,97 +786,71 @@
             renderModalImages(currentImages, id, title || id);
 
             try {
-                // ดึงข้อมูลหนังด้วย Proxy
-                const html = await fetchHtml(itemUrl);
-                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const html = await fetchHtml(itemUrl); const doc = new DOMParser().parseFromString(html, 'text/html');
                 
-                let stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"]')).map(a => a.innerText.trim()).filter(Boolean))];
-                let genres = [...new Set(Array.from(doc.querySelectorAll('a[href*="/genre/"], a[href*="/category/"]')).map(a => a.innerText.trim()).filter(Boolean))];
-                let makers = [...new Set(Array.from(doc.querySelectorAll('a[href*="/company/"], a[href*="/maker"]')).map(a => a.innerText.trim()).filter(Boolean))];
+                // Advanced Metadata Scanning (Make clickable links)
+                let stars = [...new Set(Array.from(doc.querySelectorAll('a[href*="/star/"], a[href*="/actress"]')).map(a => {
+                    const name = a.innerText.trim(); const href = resolveUrl(a.getAttribute('href'), itemUrl);
+                    return name ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-pink-600 hover:underline hover:text-pink-500 font-bold px-1">${name}</a>` : null;
+                }).filter(Boolean))];
+                
+                let genres = [...new Set(Array.from(doc.querySelectorAll('a[href*="/genre/"], a[href*="/category/"]')).map(a => {
+                    const name = a.innerText.trim(); const href = resolveUrl(a.getAttribute('href'), itemUrl);
+                    return name ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-blue-600 hover:underline hover:text-blue-500 font-bold px-1">${name}</a>` : null;
+                }).filter(Boolean))];
+                
+                let makers = [...new Set(Array.from(doc.querySelectorAll('a[href*="/company/"], a[href*="/maker"]')).map(a => {
+                    const name = a.innerText.trim(); const href = resolveUrl(a.getAttribute('href'), itemUrl);
+                    return name ? `<a href="#" onclick="triggerDirectSearch('${escapeQuotes(name)}', '${href}'); return false;" class="text-purple-600 hover:underline hover:text-purple-500 font-bold px-1">${name}</a>` : null;
+                }).filter(Boolean))];
 
-                document.getElementById('m-star').innerHTML = `<strong><i class="fas fa-user-circle text-pink-500 mr-1.5"></i> นักแสดง:</strong> ${stars.join(', ') || '-'}`;
-                document.getElementById('m-genre').innerHTML = `<strong><i class="fas fa-tags text-blue-500 mr-1.5"></i> แนวหนัง:</strong> ${genres.join(', ') || '-'}`;
-                document.getElementById('m-maker').innerHTML = `<strong><i class="fas fa-building text-purple-500 mr-1.5"></i> ค่าย:</strong> ${makers.join(', ') || '-'}`;
+                document.querySelector('.actor-list').innerHTML = stars.length ? stars.join(', ') : '<span class="text-gray-400">-</span>';
+                document.querySelector('.genre-list').innerHTML = genres.length ? genres.join(', ') : '<span class="text-gray-400">-</span>';
+                document.querySelector('.maker-list').innerHTML = makers.length ? makers.join(', ') : '<span class="text-gray-400">-</span>';
 
-                const snapshotSet = new Set();
-                if (highResCover) snapshotSet.add(highResCover);
+                const snapshotSet = new Set(); if (highResCover) snapshotSet.add(highResCover);
                 const cleanId = id.toLowerCase().replace(/[^a-z0-9]/g, '');
 
                 doc.querySelectorAll('img').forEach(img => {
                     let rawS = img.getAttribute('data-original') || img.getAttribute('data-src') || img.getAttribute('src');
                     if (!rawS || rawS.includes('logo') || rawS.includes('avatar') || rawS.includes('banner')) return;
-
-                    // ป้องกันการดึงรูปจากกล่องหนังแนะนำเรื่องอื่น
                     const parentLink = img.closest('a');
-                    if (parentLink) {
-                        const href = parentLink.getAttribute('href') || '';
-                        if (href.includes('/video/') && !href.toLowerCase().includes(cleanId)) return; 
-                    }
-
-                    let s = resolveUrl(rawS, itemUrl);
-                    let altText = (img.getAttribute('alt') || '').toLowerCase();
-                    let sLower = s.toLowerCase();
-
+                    if (parentLink) { const href = parentLink.getAttribute('href') || ''; if (href.includes('/video/') && !href.toLowerCase().includes(cleanId)) return; }
+                    let s = resolveUrl(rawS, itemUrl); let altText = (img.getAttribute('alt') || '').toLowerCase(); let sLower = s.toLowerCase();
                     const isScenePattern = sLower.includes('/snapshot/') || sLower.match(/-\d+\.jpg/i) || sLower.match(/-\d+t\.jpg/i) || sLower.match(/jp-\d+\.jpg/i) || altText.includes('screenshot');
-                    if (isScenePattern && !sLower.includes('ps.jpg') && !sLower.includes('sn.jpg')) {
-                        let largeSceneUrl = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg');
-                        snapshotSet.add(largeSceneUrl);
-                    }
+                    if (isScenePattern && !sLower.includes('ps.jpg') && !sLower.includes('sn.jpg')) { let largeSceneUrl = s.replace(/(\d+)t\.jpg/i, '$1.jpg').replace('sn.jpg', 'pl.jpg').replace('ps.jpg', 'pl.jpg'); snapshotSet.add(largeSceneUrl); }
                 });
 
                 currentImages = Array.from(snapshotSet);
-                document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-1.5"></i> จำนวนรูป:</strong> ${currentImages.length} รูป`;
-                
+                document.querySelector('.count-val').innerText = `${currentImages.length} รูป`;
                 renderModalImages(currentImages, id, title || id);
-                document.getElementById('btn-dl').disabled = false; document.getElementById('btn-dl-individual').disabled = false;
-
-            } catch(e) {
-                document.getElementById('m-count').innerHTML = `<strong><i class="fas fa-images text-orange-500 mr-1.5"></i> จำนวนรูป:</strong> โหลดได้เฉพาะปก`;
-                document.getElementById('btn-dl').disabled = false; document.getElementById('btn-dl-individual').disabled = false;
-            }
+            } catch(e) { document.querySelector('.count-val').innerHTML = `<span class="text-red-500">โหลดได้เฉพาะปก</span>`; }
         }
 
         function renderModalImages(images, id, title) {
-            const container = document.getElementById('modal-images');
-            const safeId = String(id || '').replace(/\s+/g, '_');
-            
+            const container = document.getElementById('modal-images'); const safeId = String(id || '').replace(/\s+/g, '_');
             container.innerHTML = images.map((src, i) => {
-                const isSnapshot = i > 0;
-                const uniqueKey = isSnapshot ? `snapshot_${safeId}_${i}` : safeId;
-                const isFav = favoriteList.some(f => {
-                    if (isSnapshot) return f.isSnapshot && f.parentId === id && f.thumb === src;
-                    return !f.isSnapshot && f.id === id;
-                });
+                const isSnapshot = i > 0; const uniqueKey = isSnapshot ? `snapshot_${safeId}_${i}` : safeId;
+                const isFav = favoriteList.some(f => { if (isSnapshot) return f.isSnapshot && f.parentId === id && f.thumb === src; return !f.isSnapshot && f.id === id; });
                 const animDelay = (i % 8) * 0.05;
-
                 return `
                     <div class="masonry-item animate-fade-up" style="animation-delay: ${animDelay}s">
                         <div class="group relative rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-xl transition-all">
                             <div class="absolute top-2.5 left-2.5 z-10 bg-black/60 backdrop-blur-md text-white text-[9px] px-2 py-0.5 rounded-full font-bold">${i === 0 ? 'COVER' : '#' + i}</div>
-                            <button id="modal-heart-${uniqueKey}" onclick="event.stopPropagation(); toggleFavorite(null, '${id}', '${escapeQuotes(title)}', '${src}', '${currentUrl}', ${isSnapshot}, '${id}', ${i})" class="absolute bottom-2.5 left-2.5 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-md">
-                                <i class="${isFav ? 'fas text-red-500' : 'far text-white'} fa-heart text-sm"></i>
-                            </button>
-                            <div onclick="openFullImgModal(${i})" class="cursor-zoom-in overflow-hidden">
-                                ${getRobustImgTag(src, "w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500")}
-                            </div>
-                            <div class="absolute bottom-2.5 right-2.5 flex gap-1 z-20">
-                                <button onclick="event.stopPropagation(); downloadSingleImage('${src}', '${id}_${i === 0 ? 'cover' : i}.jpg')" class="bg-primary/90 hover:bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-90" title="ดาวน์โหลด">
-                                    <i class="fas fa-download text-xs"></i>
-                                </button>
-                            </div>
+                            <button id="modal-heart-${uniqueKey}" onclick="event.stopPropagation(); toggleFavorite(null, '${id}', '${escapeQuotes(title)}', '${src}', '${currentUrl}', ${isSnapshot}, '${id}', ${i})" class="absolute bottom-2.5 left-2.5 z-20 w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center hover:scale-110 active:scale-95 transition-all shadow-md"><i class="${isFav ? 'fas text-red-500' : 'far text-white'} fa-heart text-sm"></i></button>
+                            <div onclick="openFullImgModal(${i})" class="cursor-zoom-in overflow-hidden">${getRobustImgTag(src, "w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500")}</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); document.getElementById('modal').classList.remove('flex'); document.body.style.overflow = 'auto'; }
+
         function openFullImgModal(index) { slideshowActiveIndex = index; document.getElementById('full-img-modal').classList.remove('hidden'); document.getElementById('full-img-modal').classList.add('flex'); updateFullImgView(); }
         function closeFullImgModal() { stopSlideshow(); document.getElementById('full-img-modal').classList.add('hidden'); document.getElementById('full-img-modal').classList.remove('flex'); }
 
         function updateFullImgView() {
-            const targetImg = document.getElementById('full-modal-target-img');
-            const infoText = document.getElementById('slideshow-info');
+            const targetImg = document.getElementById('full-modal-target-img'); const infoText = document.getElementById('slideshow-info');
             if (!targetImg || !currentImages[slideshowActiveIndex]) return;
             targetImg.style.opacity = '0';
             setTimeout(() => { targetImg.src = currentImages[slideshowActiveIndex]; targetImg.onload = () => { targetImg.style.opacity = '1'; }; if (infoText) infoText.innerText = `${slideshowActiveIndex + 1} / ${currentImages.length}`; }, 100);
@@ -1042,19 +859,9 @@
         function openCurrentImageSource() { if (currentImages[slideshowActiveIndex]) window.open(currentImages[slideshowActiveIndex], '_blank'); }
         function nextFullImg() { if (!currentImages.length) return; slideshowActiveIndex = (slideshowActiveIndex + 1) % currentImages.length; updateFullImgView(); }
         function prevFullImg() { if (!currentImages.length) return; slideshowActiveIndex = (slideshowActiveIndex - 1 + currentImages.length) % currentImages.length; updateFullImgView(); }
-        
         function toggleSlideshow() { slideshowInterval ? stopSlideshow() : startSlideshow(); }
-        function startSlideshow() {
-            const icon = document.getElementById('play-icon');
-            slideshowSpeed = parseInt(document.getElementById('slideshow-speed').value);
-            if (icon) icon.className = "fas fa-pause";
-            slideshowInterval = setInterval(() => nextFullImg(), slideshowSpeed);
-        }
-        function stopSlideshow() {
-            const icon = document.getElementById('play-icon');
-            if (icon) icon.className = "fas fa-play";
-            if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; }
-        }
+        function startSlideshow() { const icon = document.getElementById('play-icon'); slideshowSpeed = parseInt(document.getElementById('slideshow-speed').value); if (icon) icon.className = "fas fa-pause"; slideshowInterval = setInterval(() => nextFullImg(), slideshowSpeed); }
+        function stopSlideshow() { const icon = document.getElementById('play-icon'); if (icon) icon.className = "fas fa-play"; if (slideshowInterval) { clearInterval(slideshowInterval); slideshowInterval = null; } }
         function changeSlideshowSpeed() { if (slideshowInterval) { stopSlideshow(); startSlideshow(); } }
 
         document.addEventListener('keydown', (e) => {
@@ -1062,76 +869,20 @@
             if (!document.getElementById('full-img-modal').classList.contains('hidden')) { if (e.key === 'ArrowRight') nextFullImg(); else if (e.key === 'ArrowLeft') prevFullImg(); }
         });
 
-        async function fetchBlobRacing(url) {
-            let cleanUrl = url.replace(/^https?:\/\//, '');
-            const proxies = [
-                `https://images.weserv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
-                `https://wsrv.nl/?url=${encodeURIComponent(cleanUrl)}&cors=1`,
-                `https://corsproxy.io/?${encodeURIComponent(url)}`
-            ];
-            for (const pUrl of proxies) { try { const res = await fetch(pUrl); if (res.ok) return await res.blob(); } catch(e) {} }
-            throw new Error("Download Blob Failed");
+        function openConfigModal() { const input = document.getElementById('gas-url-input'); if (input) input.value = gasEndpoint; const modal = document.getElementById('config-modal'); if (modal) { modal.classList.remove('hidden'); modal.classList.add('flex'); } }
+        function closeConfigModal() { const modal = document.getElementById('config-modal'); if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); } }
+        
+        async function testAndSaveGAS() {
+            const urlInput = document.getElementById('gas-url-input'); const url = urlInput ? urlInput.value.trim() : '';
+            if (!url) { showToast("กรุณากรอก Web App URL ก่อนครับ", "warning"); return; }
+            gasEndpoint = url; localStorage.setItem('gas_url', url); showToast("เชื่อมต่อ Google Sheet สำเร็จ!", "success"); closeConfigModal(); syncFromGoogleSheet(); syncBookmarksFromGoogleSheet(); 
+        }
+        
+        function disconnectGAS() {
+            gasEndpoint = ''; localStorage.removeItem('gas_url'); const urlInput = document.getElementById('gas-url-input'); if (urlInput) urlInput.value = ''; showToast("ยกเลิกการเชื่อมต่อเรียบร้อยแล้ว", "info"); closeConfigModal();
         }
 
-        async function downloadSingleImage(url, filename) {
-            try {
-                const blob = await fetchBlobRacing(url);
-                const objUrl = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = objUrl; link.download = filename;
-                document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                setTimeout(() => URL.revokeObjectURL(objUrl), 100);
-            } catch (err) { showToast("ไม่สามารถดาวน์โหลดได้ คลิกขวา -> บันทึกรูปภาพ แทนครับ", "warning"); }
-        }
-
-        async function downloadAllIndividuallyModal() {
-            if (!currentImages.length) return;
-            const btn = document.getElementById('btn-dl-individual');
-            const id = document.getElementById('m-id').innerText;
-            btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> กำลังโหลด...`;
-            
-            try {
-                for (let i = 0; i < currentImages.length; i++) {
-                    const blob = await fetchBlobRacing(currentImages[i]);
-                    const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = `${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`; link.click();
-                    await new Promise(r => setTimeout(r, 200));
-                }
-                showToast("ดาวน์โหลดไฟล์รูปภาพเรียบร้อยแล้ว", "success");
-            } catch(e) { showToast("เกิดข้อผิดพลาดระหว่างดาวน์โหลด", "error"); } finally { btn.disabled = false; btn.innerHTML = `<i class="fas fa-cloud-download-alt"></i> โหลดทีละรูป`; }
-        }
-
-        async function downloadAllModal() {
-            if (!currentImages.length) return;
-            const btn = document.getElementById('btn-dl');
-            const status = document.getElementById('dl-status');
-            const zip = new JSZip(); const id = document.getElementById('m-id').innerText;
-            btn.disabled = true; status.innerHTML = `<i class="fas fa-circle-notch fa-spin text-primary"></i> เตรียมไฟล์...`;
-            
-            try {
-                for (let i = 0; i < currentImages.length; i++) {
-                    status.innerHTML = `<i class="fas fa-circle-notch fa-spin text-primary"></i> ดึงภาพ (${i + 1}/${currentImages.length})...`;
-                    const blob = await fetchBlobRacing(currentImages[i]);
-                    zip.file(`${id}_${i === 0 ? 'cover' : 'scene_'+i}.jpg`, blob);
-                }
-                status.innerHTML = `<i class="fas fa-cog fa-spin text-primary"></i> บีบอัดไฟล์ ZIP...`;
-                const content = await zip.generateAsync({type:"blob"});
-                const link = document.createElement('a'); link.href = URL.createObjectURL(content); link.download = `${id}_Gallery.zip`; link.click();
-                status.innerHTML = `<i class="fas fa-check-circle text-green-500"></i> บันทึก ZIP สำเร็จ!`;
-            } catch(e) { status.innerHTML = `<i class="fas fa-times-circle text-red-500"></i> โหลดไม่สำเร็จ`; } finally { btn.disabled = false; }
-        }
-
-        function downloadAllIndividually() { downloadAllIndividuallyModal(); }
-        function downloadAll() { downloadAllModal(); }
-
-        window.onload = () => {
-            initFavorites(); loadBookmarks(); loadLatest();
-            // แจ้งเตือนให้ใส่ GAS Endpoint ถ้ายังไม่เคยตั้งค่า
-            if (!gasEndpoint) {
-                setTimeout(() => {
-                    showToast("อย่าลืมกดรูปโล่เพื่อตั้งค่า Google Proxy สำหรับกันบล็อกนะครับ", "warning");
-                }, 1500);
-            }
-        };
+        window.onload = () => { initFavorites(); loadBookmarks(); loadLatest(); };
     </script>
 </body>
 </html>
